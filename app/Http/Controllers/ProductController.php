@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     public function discount(){
+        error_log("Controller executed");
         $dsc = new DiscountService();
         $d = $dsc->calculateDiscount(1000);
 
