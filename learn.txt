@@ -70,3 +70,7 @@ What I Learned From the Base Controller Error
 ==> The file routes/web.php defines web routes for the Laravel application. It maps
     URLs to  controllers and methods that handle request.
 
+==> In Laravel, middleware runs before the controller. Middleware is used to filter
+    HTTP requests. It can perform tasks such as authentication, logging, and request
+    validation before the request reaches the controller.
+
