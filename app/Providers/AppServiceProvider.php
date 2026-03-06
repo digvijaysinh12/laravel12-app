@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-
+use App\Services\PaymentService;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -11,7 +11,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(PaymentService::class, function($app){
+            return new PaymentService();
+        });
     }
 
     /**
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        error_log("AppServiceProvider boot executed");
+
     }
 }
