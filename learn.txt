@@ -74,3 +74,11 @@ What I Learned From the Base Controller Error
     HTTP requests. It can perform tasks such as authentication, logging, and request
     validation before the request reaches the controller.
 
+==> In Laravel, bind() creates new instance of class every time it is requested from    
+    the service Container. signletone() creates only one instance of class and reauses
+    the same instance throught the application.
+
+==> In Laravel, service providers are used to bootstrap application Services. The register()
+    method is used to bind Services into the service Container. The boot() methods is 
+    executed after all services are registered and is used to perform actions such as
+    registering view composers,events or configuration values.
