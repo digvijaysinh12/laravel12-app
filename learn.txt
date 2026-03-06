@@ -1,0 +1,42 @@
+06/03/2026
+
+What I Learned From the Base Controller Error
+==> During development, I received the error:
+    “Target [App\Http\Controllers\Controller] is not instantiable.”
+==> From this error, I learned that the base controller in Laravel is an abstract class.
+==> An abstract class cannot be created as an object. It is only used as a parent class
+    for other Controllers.
+==> The file: app/Http/Controllers/Controller.php is the base controller in Laravel.
+    It provided common functionality that other controllers can inherit.
+==> I mistakely added application logic inside the based controller. This caused 
+    Laravel to try to instantiate it, which is not allowed.
+==> Keep the base controller simple. Crete new controller(for example companyController)
+    Extend the base controller using.
+    class CompanyController extends Controller
+
+==> I learned that Laravel’s base controller is an abstract class. It cannot be used 
+    directly. It is designed to be extended by other controllers. When I placed logic 
+    the base controller, Laravel tried to instantiate it and showed an error. The 
+    correct approach is to create a separate controller that extends the base controller. 
+
+
+==> Maintenance mode is used when the application is under Maintenance or updates. When
+    we run php artisan down, Laravel stops normal users from accessing the website and 
+    shows a maintenance page. After the maintenance work is finished, we run php artisan
+    up to make the application available again.
+
+==> In Laravel, public/index.php is the entry point of the application. When a user sends
+    a request from the browser, the request first goes to this file. It loads the 
+    Laravel framework, initializes the application, and sends the request to the 
+    routing system.
+
+==> The file bootstrap/app.php is responsible for starting the Laravel application.
+    It creates the application instance and loads important components like service
+    providers and middleware. This file prepares the framework so it can handle 
+    incoming requests.
+    ==> It does things like:
+        -> Creates the Laravel application instance
+        -> Registers service providers
+        -> Sets up middleware
+        -> Prepare application to hanlde requests
+
