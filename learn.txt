@@ -40,3 +40,33 @@ What I Learned From the Base Controller Error
         -> Sets up middleware
         -> Prepare application to hanlde requests
 
+==> app/ --> contains main application code . Like Controllers, Models, Middleware,
+    Services --> in simple it contains the core application logic such as controllers,
+    models, and middleware. Developers write most of the application code in folder.
+
+==> bootstrap/ responsible for initializing the Laravel application. It loads configuration,
+    service providers, and middleware required to start the framework.
+
+==> config / --> Stores configuration files. app.php,database.php,mail.php.cache.php
+    app.php --> Controls main application settings. like application name,timezone,
+                locale,service providers, alias
+    database.php --> Controls database connection. like Mysql,SQLite,PostgreSql
+    cache.php --> Controls application caching system. file cache, redis,database cache
+    mail.php --> controls email sending configuration SMTP,Mailgun,SendMail
+    queue.php --> handle background jobs. it allows also like sending emails,
+                    processing uploads,notifications
+    session.php --> Controls user session storage Sessions stores like loggesin user ,temp data
+    filesystem.php --> Controls file storage systems. suppots localstorage,public storage,Amaznon S3
+
+==> In Laravel, public/index.php is the entry point of the application. When a user
+    sends a request from the browser, the request first reaches file. it loads composer
+    autoloader and initializes the Laravel application using bootstrap/app.php.
+    After that, Laravel processes the request and sends a response back to the browser.
+
+==> bootstrap/app.php cretaes Laravel application instance and prepares the framework.
+    It creates the Laravel app object, Registers service providers,Registers middleware,
+    Prepares the app to handle requests
+
+==> The file routes/web.php defines web routes for the Laravel application. It maps
+    URLs to  controllers and methods that handle request.
+
