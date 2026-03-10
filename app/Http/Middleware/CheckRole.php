@@ -13,11 +13,10 @@ class CheckRole
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next,$role): Response
     {
-        $role = $request->role;
 
-        if($role !== 'admin'){
+        if($request->role !== 'admin'){
             return Response("Access Denied Admin Only.",403);
         }
         return $next($request);

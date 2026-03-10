@@ -89,6 +89,10 @@ Route::get('/product/{p}',function(Product $p){
 
 Route::get('/dashboard', DashboardController::class);
 
-Route::get('/admin',function(){
-    return "Welcome Admin";
-})->middleware('checkrole');
+// Route::get('/admin',function(){
+//     return "Welcome Admin";
+// })->middleware('checkrole');
+
+Route::get('/admin', function () {
+    return "Admin Panel";
+})->middleware('checkrole:admin');
