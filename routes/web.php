@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Models\Product;
@@ -59,9 +60,7 @@ Route::get('/profile/{name?}', function ($name = "Guest") {
     return "Profile: " . $name;
 });
 
-Route::get('/dashboard', function () {
-    return "Dashboard Page";
-})->name('dashboard');
+
 
 Route::redirect('/home', '/dashboard');
 
@@ -87,3 +86,5 @@ Route::fallback(function () {
 Route::get('/product/{p}',function(Product $p){
     return $p;
 });
+
+Route::get('/dashboard', DashboardController::class);
