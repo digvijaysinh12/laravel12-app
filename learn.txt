@@ -82,3 +82,6 @@ What I Learned From the Base Controller Error
     method is used to bind Services into the service Container. The boot() methods is 
     executed after all services are registered and is used to perform actions such as
     registering view composers,events or configuration values.
+
+==> Facade in Laravel provides static interface to classes that are resolved from Service Controller.
+
