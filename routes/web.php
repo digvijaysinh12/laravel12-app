@@ -96,3 +96,12 @@ Route::get('/dashboard', DashboardController::class);
 Route::get('/admin', function () {
     return "Admin Panel";
 })->middleware('checkrole:admin');
+
+
+Route::get('/form',function(){
+    return view('form');
+});
+
+Route::post('/submit-form',function(){
+    return "Form Submitted";
+});
