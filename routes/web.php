@@ -3,6 +3,7 @@
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
+use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -82,3 +83,7 @@ Route::fallback(function () {
     return "Page Not Found";
 });
 
+
+Route::get('/product/{p}',function(Product $p){
+    return $p;
+});
