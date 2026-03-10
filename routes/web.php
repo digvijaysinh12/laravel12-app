@@ -105,3 +105,8 @@ Route::get('/form',function(){
 Route::post('/submit-form',function(){
     return "Form Submitted";
 });
+
+Route::get('/products', [ProductController::class, 'index']);
+
+
+Route::resource('products',ProductController::class);
