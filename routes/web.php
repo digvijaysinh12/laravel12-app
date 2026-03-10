@@ -35,3 +35,8 @@ Route::get('/faced-test', function(){
     ];
 
 });
+
+
+Route::get('/greet', function(){
+    return Greeting::hello("Digvijaysinh");
+});
