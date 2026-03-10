@@ -110,3 +110,14 @@ Route::get('/products', [ProductController::class, 'index']);
 
 
 Route::resource('products',ProductController::class);
+
+
+Route::get('/res/view',[ProductController::class,'viewE']);
+
+Route::get('/res/json', [ProductController::class,'jsonE']);
+
+Route::get('/res/red', [ProductController::class,'redirectE']);
+
+Route::get('/res/d', [ProductController::class,'downloadE']);
+
+Route::get('/res/mac', [ProductController::class,'macroE']);

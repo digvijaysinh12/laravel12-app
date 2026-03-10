@@ -32,7 +32,7 @@ class ProductController extends Controller
     {
         Product::create($request->all());
 
-        return redirect()->route('products.index')->with('success','Product created successfully');
+        return redirect()->route('products.index')->with('success', 'Product created successfully');
     }
 
     /**
@@ -40,7 +40,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return view('products.show',compact('product'));
+        return view('products.show', compact('product'));
     }
 
     /**
@@ -48,17 +48,17 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        return view('products.edit',compact('product'));
+        return view('products.edit', compact('product'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id,Product $product)
-    {  
-       $product->update($request->all());
-       
-       return redirect()->route('products.index')->with('success','Product updated successfully');
+    public function update(Request $request, string $id, Product $product)
+    {
+        $product->update($request->all());
+
+        return redirect()->route('products.index')->with('success', 'Product updated successfully');
     }
 
     /**
@@ -68,6 +68,36 @@ class ProductController extends Controller
     {
         $product->delete();
 
-        return redirect()->route('products.index')->with('success','Product deleted successfully');
+        return redirect()->route('products.index')->with('success', 'Product deleted successfully');
+    }
+
+
+    public function viewE()
+    {
+        return view('products.view');
+    }
+
+    public function jsonE()
+    {
+        return response()->json([
+            'name' => "Digvijaysinh",
+            'salary' => 12000,
+            "pos" => 'PHP'
+        ]);
+    }
+
+    public function redirectE()
+    {
+        return redirect()->route('products.index');
+    }
+
+    public function downloadE()
+    {
+        return response()->download(storage_path('app/test.txt'));
+    }
+
+    public function macroE()
+    {
+        return response()->success("Product created successfully");
     }
 }
