@@ -40,3 +40,45 @@ Route::get('/faced-test', function(){
 Route::get('/greet', function(){
     return Greeting::hello("Digvijaysinh");
 });
+
+
+Route::get('/Get', function () {
+    return "Hello From Get Route";
+});
+
+Route::post('/submit', function () {
+    return "Form submitted successfully";
+});
+
+Route::get('/user/{name}', function ($name) {
+    return "User: " . $name;
+});
+
+Route::get('/profile/{name?}', function ($name = "Guest") {
+    return "Profile: " . $name;
+});
+
+Route::get('/dashboard', function () {
+    return "Dashboard Page";
+})->name('dashboard');
+
+Route::redirect('/home', '/dashboard');
+
+
+Route::prefix('admin')->group(function () {
+
+    Route::get('/users', function () {
+        return "Admin Users";
+    });
+
+    Route::get('/settings', function () {
+        return "Admin Settings";
+    });
+
+
+});
+
+Route::fallback(function () {
+    return "Page Not Found";
+});
+
