@@ -6,7 +6,7 @@
     <title>Layout File</title>
 </head>
 <body>
-    <h1>Layout Website</h1>
+    @include('partials.navbar')
     @yield('content')
 </body>
 </html>
