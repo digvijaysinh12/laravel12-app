@@ -85,3 +85,5 @@ What I Learned From the Base Controller Error
 
 ==> Facade in Laravel provides static interface to classes that are resolved from Service Controller.
 
+==> Response Macros help to avoid repeating the same response code and keep responses consistent across application
+

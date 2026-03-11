@@ -121,3 +121,7 @@ Route::get('/res/red', [ProductController::class,'redirectE']);
 Route::get('/res/d', [ProductController::class,'downloadE']);
 
 Route::get('/res/mac', [ProductController::class,'macroE']);
+
+Route::get('/home',function(){
+    return view('home');
+});
