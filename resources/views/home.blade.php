@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="{{ asset('css/app.css') }}">
+
+<body>
 @extends('layouts.app')
 @section('content')
 
@@ -9,3 +12,4 @@
 </x-alert>
 
 @endsection
+</body>
