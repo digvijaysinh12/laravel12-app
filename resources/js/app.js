@@ -1,3 +1,7 @@
 import './bootstrap';
 
-console.log("Laravel Vite running");
+import Alpine from 'alpinejs';
+
+window.Alpine = Alpine;
+
+Alpine.start();
