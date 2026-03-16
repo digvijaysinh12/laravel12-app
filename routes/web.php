@@ -22,4 +22,6 @@ Route::middleware('auth')->group(function () {
 Route::get('/product/create',[ProductController::class,'create']);
 Route::post('/product/store',[ProductController::class,'store']);
 
+Route::get('product/search',[ProductController::class,'search']);
+
 require __DIR__.'/auth.php';

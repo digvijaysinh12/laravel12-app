@@ -28,27 +28,38 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-public function store(Request $request)
-{
 
-    if($request->has('name')){
-        echo "Name exists <br>";
+    public function search(Request $request)
+    {
+        $category = $request->query('category');
+        $price = $request->query('price');
+
+        return[
+            'category' => $category,
+            'price' => $price
+        ];
     }
+    public function store(Request $request)
+    {
 
-    if($request->filled('description')){
-        echo "Description filled <br>";
+        if ($request->has('name')) {
+            echo "Name exists <br>";
+        }
+
+        if ($request->filled('description')) {
+            echo "Description filled <br>";
+        }
+
+        dd(
+            $request->input('name'),
+            $request->price,
+            $request->all(),
+            $request->has('category'),
+            $request->filled('description')
+        );
+
+        dump($request);
     }
-
-    dd(
-$request->input('name'),
-$request->price,
-$request->all(),
-$request->has('category'),
-$request->filled('description')
-);
-
-    dump($request);
-}
 
     /**
      * Display the specified resource.
