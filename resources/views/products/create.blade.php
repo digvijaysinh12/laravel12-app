@@ -1,17 +1,18 @@
-<h2>Create Product</h2>
-
-<form method="POST" action="{{ route('products.store') }}">
-
+<form action="/product/store" method="POST">
 @csrf
 
-<input type="text" name="name" placeholder="Product Name">
+<label>Name</label>
+<input type="text" name="name">
 
-<br><br>
+<label>Price</label>
+<input type="number" name="price">
 
-<input type="number" name="price" placeholder="Price">
+<label>Description</label>
+<textarea name="description"></textarea>
 
-<br><br>
+<label>Category</label>
+<input type="text" name="category">
 
-<button type="submit">Save</button>
+<button type="submit">Add Product</button>
 
 </form>

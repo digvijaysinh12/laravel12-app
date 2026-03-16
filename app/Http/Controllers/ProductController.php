@@ -28,12 +28,27 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        Product::create($request->all());
+public function store(Request $request)
+{
 
-        return redirect()->route('products.index')->with('success', 'Product created successfully');
+    if($request->has('name')){
+        echo "Name exists <br>";
     }
+
+    if($request->filled('description')){
+        echo "Description filled <br>";
+    }
+
+    dd(
+$request->input('name'),
+$request->price,
+$request->all(),
+$request->has('category'),
+$request->filled('description')
+);
+
+    dump($request);
+}
 
     /**
      * Display the specified resource.
