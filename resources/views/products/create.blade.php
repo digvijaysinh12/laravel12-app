@@ -1,3 +1,13 @@
+@if ($errors->any())
+<div>
+    @foreach ($errors->all() as $err)
+
+    <p style="color:red">{{ $err }}</p>
+    
+    @endforeach
+</div>
+@endif
+
 <form action="/product/store" method="POST">
 @csrf
 

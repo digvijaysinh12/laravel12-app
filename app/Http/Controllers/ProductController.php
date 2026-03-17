@@ -10,13 +10,16 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $products = Product::all();
+    // public function index()
+    // {
+    //     $products = Product::all();
 
-        return view('products.index', compact('products'));
-    }
-
+    //     return view('products.index', compact('products'));
+    // }
+public function index()
+{
+    return response()->json(Product::all());
+}
     /**
      * Show the form for creating a new resource.
      */
@@ -39,35 +42,45 @@ class ProductController extends Controller
             'price' => $price
         ];
     }
-    public function store(Request $request)
-    {
+    // public function store(Request $request)
+    // {
+    //     $validate = $request->validate([
+    //         'name' => 'required',
+    //         'price' => 'required|numeric',
+    //         'description' => 'max:500',
+    //         'category' => 'required'
+    //     ]);
 
-        if ($request->has('name')) {
-            echo "Name exists <br>";
-        }
+    //     Product::create($validate);
 
-        if ($request->filled('description')) {
-            echo "Description filled <br>";
-        }
+    //     return redirect()->route('product.index')->with('success','Product created successfully');
+    // }
 
-        dd(
-            $request->input('name'),
-            $request->price,
-            $request->all(),
-            $request->has('category'),
-            $request->filled('description')
-        );
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required',
+        'price' => 'required|numeric',
+        'description' => 'max:500',
+        'category' => 'required'
+    ]);
 
-        dump($request);
-    }
+    $product = Product::create($validated);
+
+    return response()->json($product);
+}
 
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
-    {
-        return view('products.show', compact('product'));
-    }
+    // public function show(Product $product)
+    // {
+    //     return view('products.show', compact('product'));
+    // }
+public function show(Product $product)
+{
+    return response()->json($product);
+}
 
     /**
      * Show the form for editing the specified resource.
@@ -80,22 +93,35 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id, Product $product)
-    {
-        $product->update($request->all());
+    // public function update(Request $request, string $id, Product $product)
+    // {
+    //     $validated = $request->validate([
+    //         'name' =>'required',
+    //         'price' => 'required|numeric',
+    //         'description' => 'max:500',
+    //         'category' => 'required'
+    //     ]);
 
-        return redirect()->route('products.index')->with('success', 'Product updated successfully');
-    }
+    //     $product->update($validated);
+
+    //     return redirect()->route('product.index')->with('success', 'Product updated successfully');
+    // }
+    public function update(Request $request, Product $product)
+{
+    $product->update($request->all());
+
+    return response()->json($product);
+}
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Product $product)
-    {
-        $product->delete();
+public function destroy(Product $product)
+{
+    $product->delete();
 
-        return redirect()->route('products.index')->with('success', 'Product deleted successfully');
-    }
+    return response()->json(['message' => 'Deleted successfully']);
+}
 
 
     public function viewE()
