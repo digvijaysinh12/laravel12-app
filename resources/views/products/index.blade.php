@@ -1,41 +1,71 @@
-<h2>Products</h2>
+@extends('layouts.app')
 
-<a href="{{ route('products.create') }}">Add Product</a>
+@section('content')
 
-<table border="1" cellpadding="10">
-<tr>
-<th>ID</th>
-<th>Name</th>
-<th>Price</th>
-<th>Actions</th>
-</tr>
+<div class="container mt-4">
 
-@foreach($products as $product)
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Products</h4>
+        <a href="{{ route('products.create') }}" class="btn btn-primary">Add Product</a>
+    </div>
 
-<tr>
-<td>{{ $product->id }}</td>
-<td>{{ $product->name }}</td>
-<td>{{ $product->price }}</td>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th>Image</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
 
-<td>
+                <tbody>
+                    @forelse ($products as $p)
+                        <tr>
+                            <td>{{ $p->name }}</td>
 
-<a href="{{ route('products.show',$product->id) }}">View</a>
+                            <td>₹{{ number_format($p->price) }}</td>
 
-<a href="{{ route('products.edit',$product->id) }}">Edit</a>
+                            <td>{{ $p->category }}</td>
 
-<form action="{{ route('products.destroy',$product->id) }}" method="POST" style="display:inline">
+                            <td>
+                                <img src="{{ asset('storage/'.$p->image) }}"
+                                     width="60" height="60"
+                                     style="object-fit: cover; border-radius: 6px;">
+                            </td>
 
-@csrf
-@method('DELETE')
+                            <td class="text-end">
+                                <a href="{{ route('products.show', $p->id) }}" class="btn btn-sm btn-outline-secondary">View</a>
+                                <a href="{{ route('products.edit', $p->id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
 
-<button type="submit">Delete</button>
+                                <form action="{{ route('products.destroy', $p->id) }}"
+                                      method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
 
-</form>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Delete this product?')">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No products available
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
 
-</td>
+            </table>
+        </div>
+    </div>
 
-</tr>
+</div>
 
-@endforeach
-
-</table>
+@endsection
