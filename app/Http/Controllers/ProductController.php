@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
+use App\Facades\Product as ProductFacade;
 
 class ProductController extends Controller
 {
@@ -61,7 +62,7 @@ class ProductController extends Controller
 
         $validate['image'] = $imagePath;
 
-        $product = $this->productService->store($validate);
+        $product = ProductFacade::store($validate);
 
         return redirect()->route('products.index')
             ->with('success', 'Product created successfully');
@@ -98,7 +99,7 @@ class ProductController extends Controller
             'category' => 'required'
         ]);
 
-        $product = $this->productService->update($validated, $product);
+        $product = ProductFacade::update($validated, $product);
         return redirect()->route('products.index')->with('success', 'Product updated successfully');
     }
 
@@ -107,7 +108,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $this->productService->delete($product);
+        ProductFacade::delete($product);
         return redirect()->route('products.index')->with('success', 'Product deleted successfully');
     }
 

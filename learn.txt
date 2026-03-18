@@ -87,3 +87,9 @@ What I Learned From the Base Controller Error
 
 ==> Response Macros help to avoid repeating the same response code and keep responses consistent across application
 
+==> What is config --> Global settings store karva mate. like app name, app URL, custome values
+
+
+==== Facade ====
+==> shortcut/static access to class
+==> Auth::user(); Route::get(); --> Behind the scenes -> service container

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\GreetingService;
+use App\Services\ProductService;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
 use App\Services\PaymentService;
@@ -21,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind('greeting', function ($app) {
             return new GreetingService();
         });
+
+        $this->app->bind('product',ProductService::class);
     }
 
     /**
