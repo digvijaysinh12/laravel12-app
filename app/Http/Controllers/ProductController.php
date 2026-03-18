@@ -10,16 +10,13 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    // public function index()
-    // {
-    //     $products = Product::all();
+    public function index()
+    {
+        $products = Product::all();
 
-    //     return view('products.index', compact('products'));
-    // }
-public function index()
-{
-    return response()->json(Product::all());
-}
+        return view('products.index', compact('products'));
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -37,50 +34,40 @@ public function index()
         $category = $request->query('category');
         $price = $request->query('price');
 
-        return[
+        return [
             'category' => $category,
             'price' => $price
         ];
     }
-    // public function store(Request $request)
-    // {
-    //     $validate = $request->validate([
-    //         'name' => 'required',
-    //         'price' => 'required|numeric',
-    //         'description' => 'max:500',
-    //         'category' => 'required'
-    //     ]);
+    public function store(Request $request)
+    {
+        $validate = $request->validate([
+            'name' => 'required',
+            'price' => 'required|numeric',
+            'description' => 'max:500',
+            'category' => 'required'
+        ]);
 
-    //     Product::create($validate);
+        $imagePath = $request->file('image')->store('products', 'public');
 
-    //     return redirect()->route('product.index')->with('success','Product created successfully');
-    // }
+        $validate['image'] = $imagePath;
 
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required',
-        'price' => 'required|numeric',
-        'description' => 'max:500',
-        'category' => 'required'
-    ]);
+        Product::create($validate);
 
-    $product = Product::create($validated);
+        return redirect()->route('products.index')
+            ->with('success', 'Product created successfully');
+    }
 
-    return response()->json($product);
-}
+
 
     /**
      * Display the specified resource.
      */
-    // public function show(Product $product)
-    // {
-    //     return view('products.show', compact('product'));
-    // }
-public function show(Product $product)
-{
-    return response()->json($product);
-}
+    public function show(Product $product)
+    {
+        return view('products.show', compact('product'));
+    }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -93,35 +80,29 @@ public function show(Product $product)
     /**
      * Update the specified resource in storage.
      */
-    // public function update(Request $request, string $id, Product $product)
-    // {
-    //     $validated = $request->validate([
-    //         'name' =>'required',
-    //         'price' => 'required|numeric',
-    //         'description' => 'max:500',
-    //         'category' => 'required'
-    //     ]);
-
-    //     $product->update($validated);
-
-    //     return redirect()->route('product.index')->with('success', 'Product updated successfully');
-    // }
     public function update(Request $request, Product $product)
-{
-    $product->update($request->all());
+    {
+        $validated = $request->validate([
+            'name' => 'required',
+            'price' => 'required|numeric',
+            'description' => 'max:500',
+            'category' => 'required'
+        ]);
 
-    return response()->json($product);
-}
+        $product->update($validated);
+
+        return redirect()->route('products.index')->with('success', 'Product updated successfully');
+    }
 
     /**
      * Remove the specified resource from storage.
      */
-public function destroy(Product $product)
-{
-    $product->delete();
+    public function destroy(Product $product)
+    {
+        $product->delete();
 
-    return response()->json(['message' => 'Deleted successfully']);
-}
+        return redirect()->route('products.index')->with('success','Product deleted successfully');
+    }
 
 
     public function viewE()
