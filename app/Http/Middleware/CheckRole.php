@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Product;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,3 +24,5 @@ class CheckRole
         abort(403,'Unauthorized');
     }
 }
+
+
