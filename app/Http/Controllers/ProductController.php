@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -10,6 +11,14 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    protected $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
+
     public function index()
     {
         $products = Product::all();
@@ -52,7 +61,7 @@ class ProductController extends Controller
 
         $validate['image'] = $imagePath;
 
-        Product::create($validate);
+        $product = $this->productService->store($validate);
 
         return redirect()->route('products.index')
             ->with('success', 'Product created successfully');
@@ -89,8 +98,7 @@ class ProductController extends Controller
             'category' => 'required'
         ]);
 
-        $product->update($validated);
-
+        $product = $this->productService->update($validated, $product);
         return redirect()->route('products.index')->with('success', 'Product updated successfully');
     }
 
@@ -99,38 +107,8 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $product->delete();
-
-        return redirect()->route('products.index')->with('success','Product deleted successfully');
+        $this->productService->delete($product);
+        return redirect()->route('products.index')->with('success', 'Product deleted successfully');
     }
 
-
-    public function viewE()
-    {
-        return view('products.view');
-    }
-
-    public function jsonE()
-    {
-        return response()->json([
-            'name' => "Digvijaysinh",
-            'salary' => 12000,
-            "pos" => 'PHP'
-        ]);
-    }
-
-    public function redirectE()
-    {
-        return redirect()->route('products.index');
-    }
-
-    public function downloadE()
-    {
-        return response()->download(storage_path('app/test.txt'));
-    }
-
-    public function macroE()
-    {
-        return response()->success("Product created successfully");
-    }
 }
