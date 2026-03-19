@@ -1,0 +1,11 @@
+.card {
+    border-radius: 10px;
+}
+
+.card-title {
+    font-weight: bold;
+}
+
+.btn {
+    border-radius: 6px;
+}

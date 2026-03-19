@@ -11,7 +11,7 @@
 <!-- Bootstrap -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-@vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/products.js'])
+@vite(['resources/css/app.css','resources/css/admin.css', 'resources/js/products.js'])
 </head>
 <body>
 
