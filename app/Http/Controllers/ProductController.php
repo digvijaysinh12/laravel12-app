@@ -55,7 +55,8 @@ class ProductController extends Controller
             'name' => 'required',
             'price' => 'required|numeric',
             'description' => 'max:500',
-            'category' => 'required'
+            'category' => 'required',
+            'image' => 'required|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
         $imagePath = $request->file('image')->store('products', 'public');
@@ -96,8 +97,14 @@ class ProductController extends Controller
             'name' => 'required',
             'price' => 'required|numeric',
             'description' => 'max:500',
-            'category' => 'required'
+            'category' => 'required',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products', 'public');
+            $validated['image'] = $imagePath;
+        }
 
         $product = ProductFacade::update($validated, $product);
         return redirect()->route('products.index')->with('success', 'Product updated successfully');
