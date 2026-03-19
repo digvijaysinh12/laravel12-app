@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProductRequest;
 use App\Models\Product;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
@@ -49,15 +50,9 @@ class ProductController extends Controller
             'price' => $price
         ];
     }
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        $validate = $request->validate([
-            'name' => 'required',
-            'price' => 'required|numeric',
-            'description' => 'max:500',
-            'category' => 'required',
-            'image' => 'required|image|mimes:jpg,jpeg,png|max:2048'
-        ]);
+        $validate = $request->validated();
 
         $imagePath = $request->file('image')->store('products', 'public');
 
