@@ -5,7 +5,8 @@
 <div class="container mt-4">
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Products</h4>
+        <h4 class="mb-0">{{ $page_title }}</h4>
+        <p class="text-muted">Total Products: {{ $total_products }}</p>
         <a href="{{ route('products.create') }}" class="btn btn-primary">Add Product</a>
     </div>
 
