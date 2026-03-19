@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\GreetingService;
 use App\Services\ProductService;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use App\Services\PaymentService;
 
@@ -36,6 +37,10 @@ class AppServiceProvider extends ServiceProvider
                 'success'=>true,
                 'data'=>$data
             ]);
+        });
+
+        View::composer('*', function($view){
+            $view->with('current_user',auth()->user());
         });
 
     }

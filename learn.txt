@@ -93,3 +93,7 @@ What I Learned From the Base Controller Error
 ==== Facade ====
 ==> shortcut/static access to class
 ==> Auth::user(); Route::get(); --> Behind the scenes -> service container
+
+
+==== View Composer ===
+==> Automatically send to all views --> without passing from controller every time

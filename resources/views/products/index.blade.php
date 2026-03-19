@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-
+<p>Welcome, {{ $current_user->name ?? 'Guest' }}</p>
 <div class="container mt-4">
 
     <div class="d-flex justify-content-between align-items-center mb-3">
