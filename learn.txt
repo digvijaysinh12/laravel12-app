@@ -107,4 +107,11 @@ What I Learned From the Base Controller Error
 
 === What is Signed URL? ===
 ==> It is a protected link --> If someone changes URL --> not allowed , Only original link works
-==> Real example like /unsubscribe/1 --> Anyone can change it to --> /unsubscribe/2 this is wrong 
+==> Real example like /unsubscribe/1 --> Anyone can change it to --> /unsubscribe/2 this is wrong
+
+=== HTTP stateless ===
+==> Every request is new, server forgets previous data
+==> SO we remember cart items using Session
+
+==> If the user clicks cart what should happen? ==> Get existing cart from session , If product already exists --> Increase quantity
+    Else -->add new product --> Save back to session

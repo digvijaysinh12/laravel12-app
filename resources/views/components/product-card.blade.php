@@ -1,36 +1,64 @@
-<div class="card shadow-sm h-100">
+<div class="card shadow-sm h-100 border-0">
 
-@if ($product->image)
-<img src="{{ asset('storage/' . $product->image) }}"
-     class="card-img-top"
-     style="height:200px; object-fit:cover;">
-@else
-<img src="{{ asset('storage/' . $product->image) }}"
-     class="card-img-top"
-     style="height:200px; object-fit:cover;">
-@endif
-
-<div class="card-body">
-    <h5 class="card-title">{{ $product->name }}</h5>
-
-    <p class="card-text mb-1">
-        <strong>Price:</strong> ₹{{ number_format($product->price) }}
-    </p>
-    @if ($product->price>1000)
-        <span class="badge bg-success">Premium</span> 
+    {{-- Product Image --}}
+    @if ($product->image)
+        <img src="{{ asset('storage/' . $product->image) }}"
+             class="card-img-top"
+             style="height:220px; object-fit:cover;">
     @else
-        <span class="badge bg-secondary">Normal</span>   
+        <img src="https://via.placeholder.com/300x220?text=No+Image"
+             class="card-img-top"
+             style="height:220px; object-fit:cover;">
     @endif
 
-    
-    <p class="card-text mb-2">
-        <strong>Category:</strong> {{ $product->category ?? 'No Category'}}
-    </p>
+    <div class="card-body d-flex flex-column">
 
-    <div class="d-flex justify-content-between">
-        <a href="{{ route('products.show', $product->id) }}" class="btn btn-sm btn-outline-secondary">View</a>
-        <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+        {{-- Title --}}
+        <h6 class="fw-semibold mb-1">
+            {{ $product->name }}
+        </h6>
+
+        {{-- Category --}}
+        <small class="text-muted mb-2">
+            {{ $product->category ?? 'Uncategorized' }}
+        </small>
+
+        {{-- Price + Badge --}}
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold">
+                ₹{{ number_format($product->price) }}
+            </span>
+
+            @if ($product->price > 1000)
+                <span class="badge bg-success">Premium</span>
+            @else
+                <span class="badge bg-light text-dark">Standard</span>
+            @endif
+        </div>
+
+        {{-- Spacer --}}
+        <div class="mt-auto">
+
+            {{-- Action Buttons --}}
+            <div class="d-flex gap-2 mb-2">
+                <a href="{{ route('products.show', $product->id) }}" 
+                   class="btn btn-sm btn-outline-dark w-100">
+                    View
+                </a>
+
+                <a href="{{ route('products.edit', $product->id) }}" 
+                   class="btn btn-sm btn-outline-primary w-100">
+                    Edit
+                </a>
+            </div>
+
+            {{-- Add to Cart --}}
+            <a href="{{ route('cart.add', $product->id) }}" 
+               class="btn btn-dark w-100">
+                Add to Cart
+            </a>
+
+        </div>
+
     </div>
-</div>
-
 </div>
