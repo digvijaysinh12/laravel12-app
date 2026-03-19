@@ -78,4 +78,9 @@ Route::get('/test-json',function(){
     return response()->json(['status'=>'true']);
 });
 
+Route::get('/download-file',function(){
+    $path = storage_path('app/public/products/7nBHWQhO9SR2nNgMZKGeP3nkqVonQWM4zMqBodoL.png');
+    return response()->download($path);
+});
+
 require __DIR__.'/auth.php';
