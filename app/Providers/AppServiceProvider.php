@@ -31,12 +31,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        error_log("AppServiceProvider boot executed");
-
-        Response::macro('success', function ($message) {
+        Response::macro('success', function ($data) {
             return response()->json([
-                'status' => 'success',
-                'message' => $message
+                'success'=>true,
+                'data'=>$data
             ]);
         });
 

@@ -118,10 +118,6 @@ class ProductController extends Controller
     {
         $products = Product::all();
 
-        return  response()->json([
-            'status' => true,
-            'message' => "Product fetched successfully",
-            'data' => $products
-        ]);
+        return  response()->success($products);
     }
 }
