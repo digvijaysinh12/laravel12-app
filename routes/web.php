@@ -20,7 +20,7 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth','verified'])->group(function(){
+Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', function () {
         return view('dashboard');
@@ -44,43 +44,41 @@ Route::middleware('auth')->group(function () {
 
 });
 
-Route::get('/products', [ProductController::class,'index'])->name('products.index');
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
-Route::middleware(['auth','checkrole:admin'])->group(function(){
 
-    Route::get('/products/create', [ProductController::class,'create'])->name('products.create');
+Route::middleware(['auth', 'checkrole:admin'])->group(function () {
 
-    Route::post('/products', [ProductController::class,'store'])->name('products.store');
+    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
 
-Route::get('/products/{product}/edit', [ProductController::class,'edit'])->name('products.edit');
+    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
 
-Route::put('/products/{product}', [ProductController::class,'update'])->name('products.update');
+    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 
-Route::delete('/products/{product}', [ProductController::class,'destroy'])->name('products.destroy');
-
-Route::get('/products/{product}', [ProductController::class,'show'])->name('products.show');
 
 });
 
-Route::get('/products/{id}', [ProductController::class,'show'])->name('products.show');
 
-Route::get('/api/products',[ProductController::class,'apiProducts']);
+Route::get('/api/products', [ProductController::class, 'apiProducts']);
 
-Route::get('/test-string',function(){
+Route::get('/test-string', function () {
     return "Hello Intern";
 });
 
-Route::get('/test-array',function(){
+Route::get('/test-array', function () {
     return ['name' => "Digvijaysinh"];
 });
 
-Route::get('/test-json',function(){
-    return response()->json(['status'=>'true']);
+Route::get('/test-json', function () {
+    return response()->json(['status' => 'true']);
 });
 
-Route::get('/download-file',function(){
+Route::get('/download-file', function () {
     $path = storage_path('app/public/products/7nBHWQhO9SR2nNgMZKGeP3nkqVonQWM4zMqBodoL.png');
     return response()->download($path);
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
