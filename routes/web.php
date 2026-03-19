@@ -64,7 +64,7 @@ Route::get('/products/{product}', [ProductController::class,'show'])->name('prod
 
 Route::get('/products/{id}', [ProductController::class,'show'])->name('products.show');
 
-
+Route::get('/api/products',[ProductController::class,'apiProducts']);
 
 Route::get('/test-string',function(){
     return "Hello Intern";

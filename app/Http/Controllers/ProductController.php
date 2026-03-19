@@ -114,4 +114,14 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Product deleted successfully');
     }
 
+    public function apiProducts()
+    {
+        $products = Product::all();
+
+        return  response()->json([
+            'status' => true,
+            'message' => "Product fetched successfully",
+            'data' => $products
+        ]);
+    }
 }
