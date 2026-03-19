@@ -3,9 +3,7 @@
 @section('content')
 
 <div class="container mt-4">
-
-<p>Welcome, {{ $current_user->name ?? 'Guest' }}</p>
-
+    
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">{{ $page_title }}</h4>
     <p class="text-muted mb-0">Total Products: {{ $total_products }}</p>

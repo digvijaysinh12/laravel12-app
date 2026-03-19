@@ -8,29 +8,28 @@
 
 <title>{{ config('app.name', 'Laravel') }}</title>
 
-<!-- Fonts -->
-<link rel="preconnect" href="https://fonts.bunny.net">
-<link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet">
-
 <!-- Bootstrap -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- Scripts -->
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 </head>
+<body>
 
-<body class="bg-light">
+{{-- Navbar --}}
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <span class="navbar-brand">{{ $app_name }}</span>
 
-<div class="min-h-screen">
+        <span class="text-white">
+            Welcome, {{ $current_user->name ?? 'Guest' }}
+        </span>
+    </div>
+</nav>
 
-    @include('layouts.navigation')
-
-    <!-- Page Content -->
-    <main class="container mt-4">
-@yield('content')
-    </main>
-
+{{-- Main Content --}}
+<div class="container mt-4">
+    @yield('content')
 </div>
 
 </body>
