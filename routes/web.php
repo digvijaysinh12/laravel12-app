@@ -65,4 +65,17 @@ Route::get('/products/{product}', [ProductController::class,'show'])->name('prod
 Route::get('/products/{id}', [ProductController::class,'show'])->name('products.show');
 
 
+
+Route::get('/test-string',function(){
+    return "Hello Intern";
+});
+
+Route::get('/test-array',function(){
+    return ['name' => "Digvijaysinh"];
+});
+
+Route::get('/test-json',function(){
+    return response()->json(['status'=>'true']);
+});
+
 require __DIR__.'/auth.php';
