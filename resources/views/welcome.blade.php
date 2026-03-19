@@ -23,6 +23,8 @@
 
         <div class="ms-auto text-white">
             Welcome, {{ $current_user->name ?? 'Guest' }}
+
+            In , <p>{{ $app_name }}</p>
         </div>
     </div>
 </nav>

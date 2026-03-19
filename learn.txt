@@ -97,3 +97,8 @@ What I Learned From the Base Controller Error
 
 ==== View Composer ===
 ==> Automatically send to all views --> without passing from controller every time
+
+=== Global View Data ===
+==> Share data with all views without using composer
+==> Views composer is dynamic logic, View:share Global variable
+

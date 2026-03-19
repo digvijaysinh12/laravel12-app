@@ -43,5 +43,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with('current_user',auth()->user());
         });
 
+        View::share('app_name','admin_panel');
+
     }
 }
