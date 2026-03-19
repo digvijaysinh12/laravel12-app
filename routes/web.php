@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\URL;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,9 +59,7 @@ Route::middleware(['auth', 'checkrole:admin'])->group(function () {
 
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 
-
 });
-
 
 Route::get('/api/products', [ProductController::class, 'apiProducts']);
 
@@ -79,6 +78,14 @@ Route::get('/test-json', function () {
 Route::get('/download-file', function () {
     $path = storage_path('app/public/products/7nBHWQhO9SR2nNgMZKGeP3nkqVonQWM4zMqBodoL.png');
     return response()->download($path);
+});
+
+Route::get('/unsubscribe/{user}',function($user){
+    return "Unsubscribed user: " . $user;
+})->name('unsubscribe')->middleware('signed');
+
+Route::get('/test-signed',function(){
+    return URL::signedRoute('unsubscribe',['user' =>1]);
 });
 
 require __DIR__ . '/auth.php';

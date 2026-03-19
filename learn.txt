@@ -104,3 +104,7 @@ What I Learned From the Base Controller Error
 
 === url() helper ===
 ==> It generates a full URL from a path, Direct path, Hardcoded, If route changes --> breaks
+
+=== What is Signed URL? ===
+==> It is a protected link --> If someone changes URL --> not allowed , Only original link works
+==> Real example like /unsubscribe/1 --> Anyone can change it to --> /unsubscribe/2 this is wrong 
