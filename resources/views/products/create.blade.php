@@ -2,54 +2,72 @@
 
 @section('content')
 
-<div class="container mt-5">
+    <div class="container mt-5">
 
-    <div class="card shadow-sm mx-auto" style="max-width: 500px;">
-        <div class="card-body">
+        <div class="card shadow-sm mx-auto" style="max-width: 500px;">
+            <div class="card-body">
 
-            <h4 class="mb-4 text-center fw-bold">➕ Create Product</h4>
+                <h4 class="mb-4 text-center fw-bold">➕ Create Product</h4>
 
-            <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data">
-                @csrf
+                <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data">
+                    @csrf
 
-                <div class="mb-3">
-                    <label class="form-label">Product Name</label>
-                    <input type="text" name="name" class="form-control" placeholder="Enter product name">
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Product Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="Enter product name" value="{{ old('name') }}" >
+                        @if ($errors->has('name'))
+                            <span class="text-danger">
+                                {{ $errors->first('name') }}
+                            </span>
+                        @endif
 
-                <div class="mb-3">
-                    <label class="form-label">Price</label>
-                    <input type="number" name="price" class="form-control" placeholder="Enter price">
-                </div>
+                    </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <textarea name="description" class="form-control" placeholder="Enter description"></textarea>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="number" name="price" class="form-control" placeholder="Enter price" value="{{ old('price') }}">
+                        @if ($errors->has('price'))
+                            <span class="text-danger">
+                                {{ $errors->first('price') }}
+                            </span>
+                        @endif
+                    </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Category</label>
-                    <input type="text" name="category" class="form-control" placeholder="Enter category">
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" placeholder="Enter description">
+                            {{ old('description') }}
+                        </textarea>
+                    </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Product Image</label>
-                    <input type="file" name="image" class="form-control">
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <input type="text" name="category" class="form-control" placeholder="Enter category" value="{{ old('category') }}">
+                        @if ($errors->has('category'))
+                            <span class="text-danger">
+                                {{ $errors->first('category') }}
+                            </span>
+                        @endif
+                    </div>
 
-                <div class="d-flex justify-content-between">
-                    <a href="{{ route('products.index') }}" class="btn btn-secondary">⬅ Back</a>
+                    <div class="mb-3">
+                        <label class="form-label">Product Image</label>
+                        <input type="file" name="image" class="form-control">
+                    </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        💾 Save Product
-                    </button>
-                </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ route('products.index') }}" class="btn btn-secondary">⬅ Back</a>
 
-            </form>
+                        <button type="submit" class="btn btn-primary">
+                            💾 Save Product
+                        </button>
+                    </div>
 
+                </form>
+
+            </div>
         </div>
-    </div>
 
-</div>
+    </div>
 
 @endsection
