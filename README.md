@@ -1,147 +1,166 @@
-# Mini Admin Panel (Laravel 12)
+# 🛠 Mini Admin Panel (Laravel 12)
 
-## Project Overview
-This project is a Mini Admin Panel built using Laravel 12.  
-It includes features like Product CRUD operations, authentication system, role-based access control, cart functionality, and API responses.
+## 📌 Project Overview
+
+This project is a **Mini Admin Panel** built using **Laravel 12**.
+It demonstrates core Laravel concepts such as routing, middleware, service container, facades, and API development.
+
+The application allows admins to manage products and users with proper authentication and role-based access.
+
+---
+
+## 🚀 Features Implemented
+
+### 🔐 Authentication
+
+* User Registration, Login, Logout
+* Password reset functionality (Laravel Breeze)
+
+### 👤 Role-Based Access Control
+
+* Admin and User roles
+* Custom middleware (`CheckRole`)
+* Admin-only routes protection
+
+### 📦 Product Management
+
+* Create, Read, Update, Delete (CRUD)
+* Product image upload
+* Route Model Binding used
+
+### 🛒 Cart System
+
+* Add to cart
+* Remove from cart
+* Clear cart
+
+### ⚙️ Service Layer
+
+* `ProductService` for business logic
+* Clean separation of concerns
+
+### 🧩 Custom Configuration
+
+* `config/company.php`
+* Environment-based values using `.env`
+
+### 🪞 Custom Facade
+
+* Created custom facade for Product operations
+* Connected with Service Container
+
+### 🔌 Service Provider
+
+* Custom bindings in `AppServiceProvider`
+* View composer and response macro
+
+### 🌐 API Development
+
+* API endpoint: `/api/products`
+* Returns JSON response
+* Rate limiting applied (`throttle:60,1`)
+
+### 🔒 Security
+
+* CSRF protection in forms
+* Signed routes implemented
+
+### ⚡ Deployment Optimization
+
+* Used optimization commands:
+
+  * `php artisan config:cache`
+  * `php artisan route:cache`
+  * `php artisan view:cache`
+  * `php artisan optimize`
 
 ---
 
-## Features Implemented
-- User Authentication (Login, Register, Profile)
-- Role-based Middleware (Admin & User)
-- Product Management (CRUD)
-- Product Image Upload
-- Cart System (Add, Remove, Clear)
-- API for Products
-- Custom Response Macro
-- Signed URL Implementation
-- File Download Feature
-- Custom Service Provider
-- Custom Facade (Product, Greeting)
-- View Composer & Global Data Sharing
+## 🧠 Concepts Learned
+
+### 🔄 Request Lifecycle
+
+Request → Middleware → Route → Controller → Response
+
+### 📦 Service Container & Dependency Injection
+
+* Used for binding services
+* Constructor injection in controllers
+
+### 🪄 Facades
+
+* Static-like interface for services
+* Connected to Service Container internally
+
+### ⚙️ Config vs env()
+
+* `env()` → used in config files
+* `config()` → used throughout application
 
 ---
-aravel Concepts Covered
-Request Lifecycle
 
-Request → Service Provider → Middleware → Controller → Response
+## 🛠 Setup Instructions
 
-Service Providers initialize services
+```bash
+git clone 
+cd laravel12-app
 
-Middleware checks authentication and roles
+composer install
+cp .env.example .env
 
-Controller handles logic
+# Configure database in .env
 
-Response is returned
+php artisan key:generate
+php artisan migrate
 
-Service Container
+npm install
+npm run dev
 
-Laravel automatically resolves dependencies.
+php artisan serve
+```
 
-Example:
+---
 
-public function __construct(PaymentService $ps)
+## 📂 Project Structure (Important Folders)
 
-Object created automatically
+* `app/` → Core application logic
+* `routes/` → Web & API routes
+* `config/` → Configuration files
+* `resources/` → Blade templates
+* `public/` → Entry point (`index.php`)
+* `storage/` → Logs & uploads
 
-Binding defined in AppServiceProvider
+---
 
-Singleton used for same instance
-
-Dependency Injection
-
-Constructor Injection used in controllers
-
-Services injected automatically
-
-Facades
-
-Example:
-
-ProductFacade::store($data);
-
-Calls ProductService internally
-
-Uses Service Container
-
-Middleware
-
-Custom middleware CheckRole:
-
-Checks authentication
-
-Allows only admin access
-
-Routing
-
-Named routes
-
-Route model binding
-
-Middleware groups
-
-Signed URLs
-
-Request Handling
-
-$request->input()
-
-$request->query()
-
-Form Request Validation
-
-File Upload
-
-Responses
-
-View
-
-JSON
-
-Redirect
-
-Download
-
-Response Macro
-
-Views (Blade)
-
-Layouts
-
-Components
-
-View Composer
-
-Global data sharing
-
-Screenshots
+## 📸 Screenshots
 
 (Add screenshots here)
 
-Homepage
+* Dashboard
+* Product List
+* Create Product
+* API Response (Postman)
 
-Product List
+---
 
-Add Product
 
-Cart Page
+## 🎥 Demo Video (Optional)
 
-API Response
+(Add video link here)
 
-What I Learned
+---
 
-Request lifecycle
+## 📌 Conclusion
 
-Service Container & DI
+This project helped in understanding:
 
-bind vs singleton
+* Laravel architecture
+* Clean code practices
+* Real-world admin panel structure
+* API development with rate limiting
 
-Facades
+---
 
-Middleware
+## 👨‍💻 Author
 
-Validation & file upload
-
-API handling
-
-Blade system
+**Digvijaysinh Sarvaiya**
