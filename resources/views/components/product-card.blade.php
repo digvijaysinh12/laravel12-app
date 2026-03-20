@@ -23,10 +23,9 @@
             {{ $product->category ?? 'Uncategorized' }}
         </small>
 
-        {{-- Price + Badge --}}
         <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="fw-bold">
-                ₹{{ number_format($product->price) }}
+                @currency($product->price)
             </span>
 
             @if ($product->price > 1000)
@@ -36,10 +35,8 @@
             @endif
         </div>
 
-        {{-- Spacer --}}
         <div class="mt-auto">
 
-            {{-- Action Buttons --}}
             <div class="d-flex gap-2 mb-2">
                 <a href="{{ route('products.show', $product->id) }}" 
                    class="btn btn-sm btn-outline-dark w-100">
@@ -52,7 +49,6 @@
                 </a>
             </div>
 
-            {{-- Add to Cart --}}
             <a href="{{ route('cart.add', $product->id) }}" 
                class="btn btn-dark w-100">
                 Add to Cart

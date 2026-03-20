@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\GreetingService;
 use App\Services\ProductService;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -46,6 +47,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::share('app_name','admin_panel');
+
+        Blade::directive('currency',function($amount){
+            return "<?php echo '₹' . number_formate($amount);?>";
+        });
 
     }
 }
