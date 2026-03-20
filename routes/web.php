@@ -77,7 +77,6 @@ Route::middleware(['auth', 'checkrole:admin'])->group(function () {
 
 });
 
-Route::get('/api/products', [ProductController::class, 'apiProducts']);
 
 Route::get('/test-string', function () {
     return "Hello Intern";
