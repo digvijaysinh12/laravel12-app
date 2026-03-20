@@ -7,6 +7,8 @@ use App\Models\Product;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
 use App\Facades\Product as ProductFacade;
+use Illuminate\Support\Facades\Log;
+
 
 class ProductController extends Controller
 {
@@ -23,6 +25,7 @@ class ProductController extends Controller
 
     public function index()
     {
+        Log::info('Reached ProductController index');
         $products = Product::all();
 
         $total_products = $products->count();

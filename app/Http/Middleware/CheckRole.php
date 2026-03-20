@@ -6,6 +6,8 @@ use App\Models\Product;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
+
 
 class CheckRole
 {
@@ -16,7 +18,7 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next,$role): Response
     {
-
+        Log::info('Reached Middleware:CheckRole');
         if (!auth()->check()) {
             return redirect()->route('login');
         }
