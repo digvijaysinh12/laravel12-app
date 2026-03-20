@@ -1,35 +1,52 @@
-<x-app-layout>
+@extends('layouts.app')
 
-<x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-        {{ __('Dashboard') }}
-    </h2>
-</x-slot>
 
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+@section('content')
 
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-            
-            <div class="p-6 text-gray-900 dark:text-gray-100">
-                
-                {{ __("You're logged in!") }}
+<div class="container">
 
-                <br><br>
+    <div class="row mb-4">
+        <div class="col">
+            <h3>Dashboard</h3>
+            <p class="text-muted">Welcome, {{ $current_user->name ?? 'Guest' }}</p>
+        </div>
+    </div>
+    
 
-                <p>
-                    Welcome, {{ $current_user->name ?? 'Guest' }}
-                </p>
+    <div class="row">
 
-                <p>
-                    {{ $app_name }}
-                </p>
-
+        {{-- Total Products --}}
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6>Total Products</h6>
+                    <h3>{{ \App\Models\Product::count() }}</h3>
+                </div>
             </div>
+        </div>
 
+        {{-- Cart Items --}}
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6>Cart Items</h6>
+                    <h3>{{ count(session('cart', [])) }}</h3>
+                </div>
+            </div>
+        </div>
+
+        {{-- App Name --}}
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6>Application</h6>
+                    <h5>{{ $app_name }}</h5>
+                </div>
+            </div>
         </div>
 
     </div>
+
 </div>
 
-</x-app-layout>
+@endsection

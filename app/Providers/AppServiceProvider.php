@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
         View::share('app_name','admin_panel');
 
         Blade::directive('currency',function($amount){
-            return "<?php echo '₹' . number_formate($amount);?>";
+            return "<?php echo '₹' . number_format($amount);?>";
         });
 
     }
