@@ -1,40 +1,21 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+@extends('layouts.app')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+@section('content')
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+<div class="text-center mt-5">
+    <h1>Welcome to {{ config('app.name') }}</h1>
+    <p class="text-muted">Simple Product Management App</p>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    @guest
+        <a href="{{ route('login') }}" class="btn btn-primary m-2">Login</a>
+        <a href="{{ route('register') }}" class="btn btn-warning m-2">Register</a>
+    @endguest
 
-    @vite(['resources/css/app.css','resources/css/admin.css','resources/js/products.js'])
-</head>
+    @auth
+        <a href="{{ route('dashboard') }}" class="btn btn-success mt-3">
+            Go to Dashboard
+        </a>
+    @endauth
+</div>
 
-<body class="bg-light">
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-dark bg-dark">
-        <div class="container d-flex justify-content-between">
-            
-            <a class="navbar-brand" href="{{ route('products.index') }}">
-                {{ $app_name }}
-            </a>
-
-            <div class="text-white">
-                Welcome, {{ $current_user->name ?? 'Guest' }}
-            </div>
-
-        </div>
-    </nav>
-
-    <!-- Content -->
-    <div class="container mt-4">
-        @yield('content')
-    </div>
-
-</body>
-
-</html>
+@endsection

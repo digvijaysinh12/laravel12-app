@@ -1,41 +1,48 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     <div class="container">
 
-        <a class="navbar-brand" href="{{ route('dashboard') }}">
-            {{ $app_name }}
+        <!-- Logo -->
+        <a class="navbar-brand fw-bold" href="/">
+            {{ config('app.name') }}
         </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('products.index') }}">Products</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('cart.index') }}">Cart</a>
-                </li>
-            </ul>
-
-            <span class="text-white me-3">
-                Welcome, {{ $current_user->name ?? 'Guest' }}
-            </span>
+        <div class="ms-auto d-flex align-items-center gap-2">
 
             @auth
-                <form method="POST" action="{{ route('logout') }}">
+                <span class="text-muted">
+                    Welcome, {{ auth()->user()->name }}
+                </span>
+
+                <a href="{{ route('dashboard') }}" class="btn btn-outline-dark btn-sm">
+                    Dashboard
+                </a>
+
+                <a href="{{ route('products.index') }}" class="btn btn-outline-secondary btn-sm">
+                    Products
+                </a>
+
+                <a href="{{ route('cart.index') }}" class="btn btn-outline-primary btn-sm">
+                    Cart ({{ count(session('cart', [])) }})
+                </a>
+
+                <form action="{{ route('logout') }}" method="POST" class="d-inline">
                     @csrf
-                    <button class="btn btn-outline-light btn-sm">Logout</button>
+                    <button class="btn btn-outline-danger btn-sm">
+                        Logout
+                    </button>
                 </form>
+
+            @else
+                <a href="{{ route('login') }}" class="btn btn-outline-dark btn-sm">
+                    Login
+                </a>
+
+                <a href="{{ route('register') }}" class="btn btn-dark btn-sm">
+                    Register
+                </a>
             @endauth
 
         </div>
+
     </div>
 </nav>

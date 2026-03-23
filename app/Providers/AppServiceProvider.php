@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\GreetingService;
 use App\Services\ProductService;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\View;
@@ -51,6 +52,8 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('currency',function($amount){
             return "<?php echo '₹' . number_format($amount);?>";
         });
+
+        Paginator::useBootstrapFive();
 
     }
 }

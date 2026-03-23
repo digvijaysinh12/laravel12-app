@@ -13,14 +13,12 @@
 
     <div class="card-body d-flex flex-column">
 
-        {{-- Title --}}
         <h6 class="fw-semibold mb-1">
             {{ $product->name }}
         </h6>
 
-        {{-- Category --}}
         <small class="text-muted mb-2">
-            {{ $product->category ?? 'Uncategorized' }}
+            {{ $product->category->name ?? 'Uncategorized' }}
         </small>
 
         <div class="d-flex justify-content-between align-items-center mb-2">

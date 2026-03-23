@@ -1,3 +1,3 @@
-<div style="color: red;">
-    {{ $slot }}
-</div>
+    <div style="color: red;">
+        {{ $slot }}
+    </div>

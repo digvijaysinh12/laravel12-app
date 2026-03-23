@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProductRequest;
+use App\Models\Category;
 use App\Models\Product;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
@@ -23,16 +24,24 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        Log::info('Reached ProductController index');
-        $products = Product::all();
+        $search = $request->get('search');
 
-        $total_products = $products->count();
+        $query = Product::with('category');
+
+        if ($search) {
+            $query->where('name', 'LIKE', '%' . $search . '%');
+        }
+
+        $products = $query->paginate(9)->appends([
+            'search' => $search
+        ]);
+
+        $total_products = $query->count();
         $page_title = "Product List";
 
-
-        return view('products.index', compact('products','total_products','page_title'));
+        return view('products.index', compact('products', 'total_products', 'page_title'));
     }
 
     /**
@@ -40,7 +49,8 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return view('products.create');
+        $categories = Category::all();
+        return view('products.create', compact('categories'));
     }
 
     /**
@@ -65,6 +75,8 @@ class ProductController extends Controller
 
         $validate['image'] = $imagePath;
 
+        //dd($validate);
+
         $product = ProductFacade::store($validate);
 
         return redirect()->route('products.index')
@@ -85,9 +97,11 @@ class ProductController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
+    
     public function edit(Product $product)
     {
-        return view('products.edit', compact('product'));
+        $categories = Category::all();
+        return view('products.edit', compact('product','categories'));
     }
 
     /**
@@ -99,7 +113,7 @@ class ProductController extends Controller
             'name' => 'required',
             'price' => 'required|numeric',
             'description' => 'max:500',
-            'category' => 'required',
+            'category_id' => 'required',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
@@ -115,6 +129,7 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    
     public function destroy(Product $product)
     {
         ProductFacade::delete($product);
@@ -125,6 +140,6 @@ class ProductController extends Controller
     {
         $products = Product::all();
 
-        return  response()->success($products);
+        return response()->success($products);
     }
 }

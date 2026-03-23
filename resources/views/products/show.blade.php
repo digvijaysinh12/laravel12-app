@@ -18,7 +18,7 @@
 
             <h5 class="text-muted mb-3">₹{{ number_format($product->price) }}</h5>
 
-            <p class="mb-2"><strong>Category:</strong> {{ $product->category }}</p>
+            <p class="mb-2"><strong>Category:</strong> {{ $product->category->name }}</p>
 
             <p class="text-muted">{{ $product->description }}</p>
 
