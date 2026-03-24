@@ -28,29 +28,29 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
-        public function index(Request $request)
-        {
-            $query = Product::with('category');
+    public function index(Request $request)
+    {
+        $query = Product::with('category');
 
-            if ($request->filled('search')) {
-                $query->where('name', 'LIKE', '%' . $request->search . '%');
-            }
-
-            $total_products = (clone $query)->count();
-
-            $products = $query->paginate(9)->appends([
-                'search' => $request->search
-            ]);
-
-            $page_title = "Product List";
-
-            Log::channel('products')->info('Product list viewed',[
-                'user_id' => auth()->id(),
-                'search' => $request->search
-            ]);
-
-            return view('products.index', compact('products', 'total_products', 'page_title'));
+        if ($request->filled('search')) {
+            $query->where('name', 'LIKE', '%' . $request->search . '%');
         }
+
+        $total_products = (clone $query)->count();
+
+        $products = $query->paginate(9)->appends([
+            'search' => $request->search
+        ]);
+
+        $page_title = "Product List";
+
+        Log::channel('products')->info('Product list viewed', [
+            'user_id' => auth()->id(),
+            'search' => $request->search
+        ]);
+
+        return view('products.index', compact('products', 'total_products', 'page_title'));
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -59,8 +59,8 @@ class ProductController extends Controller
     {
         $categories = Category::all();
 
-        Log::channel('products')->info('Create product page opened',[
-            'user_id' =>auth()->id()
+        Log::channel('products')->info('Create product page opened', [
+            'user_id' => auth()->id()
         ]);
 
         return view('products.create', compact('categories'));
@@ -137,7 +137,7 @@ class ProductController extends Controller
 
             return back()->with('error', $e->getMessage());
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
 
             Log::channel('products')->error('General error', [
                 'message' => $e->getMessage()
@@ -150,16 +150,16 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-        public function show(Product $product)
-        {
+    public function show(Product $product)
+    {
 
-            Log::channel('products')->info('Product vieved',[
-                'user_id' => auth()->id(),
-                'product_id' => $product->id()
-            ]);
+        Log::channel('products')->info('Product vieved', [
+            'user_id' => auth()->id(),
+            'product_id' => $product->id()
+        ]);
 
-            return view('products.show', compact('product'));
-        }
+        return view('products.show', compact('product'));
+    }
 
 
     /**
@@ -170,7 +170,7 @@ class ProductController extends Controller
     {
         $categories = Category::all();
 
-        Log::channel('products')->info('Edit product page opened',[
+        Log::channel('products')->info('Edit product page opened', [
             'user_id' => auth()->id(),
             'product_id' => $product->id
         ]);
