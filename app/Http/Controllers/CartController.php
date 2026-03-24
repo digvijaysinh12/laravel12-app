@@ -7,24 +7,27 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         $cart = session()->get('cart', []);
         $products = Product::whereIn('id', array_keys($cart))->get();
-
         return view('cart.index', compact('products', 'cart'));
     }
 
-    public function add($id){
-    $cart = session()->get('cart', []);
+    public function add($id)
+    {
 
-    $cart[$id] = ($cart[$id] ?? 0) + 1;
+        $cart = session()->get('cart', []);
 
-    session()->put('cart', $cart);
+        $cart[$id] = ($cart[$id] ?? 0) + 1;
 
-    return back();
+        session()->put('cart', $cart);
+
+        return back();
     }
 
-    public function remove($id){
+    public function remove($id)
+    {
         $cart = session()->get('cart', []);
 
         if (isset($cart[$id])) {
@@ -36,7 +39,8 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('success', 'Product removed');
     }
 
-    public function clear(){
+    public function clear()
+    {
         session()->forget('cart');
 
         return redirect()->route('cart.index')->with('success', 'Cart cleared');
