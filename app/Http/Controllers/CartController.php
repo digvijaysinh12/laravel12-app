@@ -15,17 +15,13 @@ class CartController extends Controller
     }
 
     public function add($id){
-        $cart = session()->get('cart', []);
+    $cart = session()->get('cart', []);
 
-        if (isset($cart[$id])) {
-            $cart[$id]++;
-        } else {
-            $cart[$id] = 1;
-        }
+    $cart[$id] = ($cart[$id] ?? 0) + 1;
 
-        session()->put('cart', $cart);
+    session()->put('cart', $cart);
 
-        return redirect()->route('cart.index')->with('success', 'Product added to cart');
+    return back();
     }
 
     public function remove($id){
