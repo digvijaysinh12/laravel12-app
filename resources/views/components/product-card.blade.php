@@ -47,10 +47,10 @@
                 </a>
             </div>
 
-            <a href="{{ route('cart.add', $product->id) }}" 
-               class="btn btn-dark w-100">
-                Add to Cart
-            </a>
+            <form action="{{ route('cart.add',$product->id) }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-dark w-100" >Add to Cart</button>
+            </form>
 
         </div>
 
