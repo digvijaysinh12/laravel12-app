@@ -27,7 +27,9 @@ class AppServiceProvider extends ServiceProvider
             return new GreetingService();
         });
 
-        $this->app->bind('product',ProductService::class);
+        $this->app->bind(ProductService::class, function ($app) {
+            return new ProductService();
+        });
     }
 
     /**
@@ -38,18 +40,18 @@ class AppServiceProvider extends ServiceProvider
         Log::info('AppServiceProvider boot executed');
         Response::macro('success', function ($data) {
             return response()->json([
-                'success'=>true,
-                'data'=>$data
+                'success' => true,
+                'data' => $data
             ]);
         });
 
-        View::composer('*', function($view){
-            $view->with('current_user',auth()->user());
+        View::composer('*', function ($view) {
+            $view->with('current_user', auth()->user());
         });
 
-        View::share('app_name','admin_panel');
+        View::share('app_name', 'admin_panel');
 
-        Blade::directive('currency',function($amount){
+        Blade::directive('currency', function ($amount) {
             return "<?php echo '₹' . number_format($amount);?>";
         });
 
