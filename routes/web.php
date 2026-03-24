@@ -53,9 +53,9 @@ Route::middleware('auth')->group(function () {
         ->name('products.show');
 
     Route::get('/cart',[CartController::class,'index'])->name('cart.index');
-    Route::get('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
-    Route::get('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-    Route::get('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+    Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
+    Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+Route::delete('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 });
 
 
@@ -103,6 +103,19 @@ Route::get('/unsubscribe/{user}',function($user){
 
 Route::get('/test-signed',function(){
     return URL::signedRoute('unsubscribe',['user' =>1]);
+});
+
+
+
+
+
+
+
+
+
+
+Route::fallback(function () {
+    return response()->view('errors.404', [], 404);
 });
 
 require __DIR__ . '/auth.php';
