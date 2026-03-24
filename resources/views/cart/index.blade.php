@@ -3,7 +3,7 @@
 @section('content')
 <div class="container py-4">
 
-    <h3 class="mb-4 fw-bold">Shopping Cart</h3>
+    <h4 class="mb-4">Shopping Cart</h4>
 
     @if(session('success'))
         <div class="alert alert-success">
@@ -15,9 +15,10 @@
 
     <div class="row">
 
+        {{-- LEFT: CART ITEMS --}}
         <div class="col-md-8">
 
-            <div class="card shadow-sm">
+            <div class="card">
                 <div class="card-body p-0">
 
                     @php $grandTotal = 0; @endphp
@@ -29,36 +30,23 @@
                             $grandTotal += $total;
                         @endphp
 
-                        <div class="d-flex align-items-center border-bottom p-3">
+                        <div class="d-flex justify-content-between align-items-center border-bottom p-3">
 
-                            {{-- Product Info --}}
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1 fw-semibold">
-                                    {{ $product->name }}
-                                </h6>
-
-                                <small class="text-muted">
-                                    ₹{{ number_format($product->price) }} each
-                                </small>
-
-                                <div class="mt-2">
-                                    <span class="badge bg-light text-dark">
-                                        Qty: {{ $qty }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {{-- Price --}}
-                            <div class="text-end me-3">
-                                <strong>₹{{ number_format($total) }}</strong>
-                            </div>
-
-                            {{-- Remove --}}
                             <div>
-                                <a href="{{ route('cart.remove', $product->id) }}"
-                                   class="btn btn-outline-danger btn-sm">
-                                    Remove
-                                </a>
+                                <div>{{ $product->name }}</div>
+                                <small class="text-muted">
+                                    ₹{{ number_format($product->price) }} × {{ $qty }}
+                                </small>
+                            </div>
+
+                            <div class="text-end">
+                                <div>₹{{ number_format($total) }}</div>
+
+                                <form action="{{ route('cart.remove', $product->id) }}" method="POST" class="mt-1">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-outline-danger">Remove</button>
+                                </form>
                             </div>
 
                         </div>
@@ -72,33 +60,33 @@
         {{-- RIGHT: SUMMARY --}}
         <div class="col-md-4">
 
-            <div class="card shadow-sm">
+            <div class="card">
                 <div class="card-body">
 
-                    <h5 class="mb-3">Order Summary</h5>
-
-
+                    <h5 class="mb-3">Summary</h5>
 
                     <div class="d-flex justify-content-between mb-3">
-                        <strong>Total</strong>
+                        <span>Total</span>
                         <strong>₹{{ number_format($grandTotal) }}</strong>
                     </div>
 
                     <button class="btn btn-dark w-100 mb-2">
-                        Proceed to Checkout
+                        Checkout
                     </button>
 
                     <a href="{{ route('products.index') }}" 
-                       class="btn btn-outline-secondary w-100">
+                       class="btn btn-outline-secondary w-100 mb-2">
                         Continue Shopping
                     </a>
 
-                    <hr>
-
-                    <a href="{{ route('cart.clear') }}" 
-                       class="btn btn-outline-danger w-100">
-                        Clear Cart
-                    </a>
+                    {{-- ❗ FIXED: Clear Cart (should NOT be GET) --}}
+                    <form action="{{ route('cart.clear') }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button class="btn btn-outline-danger w-100">
+                            Clear Cart
+                        </button>
+                    </form>
 
                 </div>
             </div>
@@ -109,14 +97,11 @@
 
     @else
 
-        {{-- EMPTY STATE --}}
+        {{-- EMPTY --}}
         <div class="text-center py-5">
-            <h5 class="mb-3">Your cart is empty</h5>
-            <p class="text-muted">Looks like you haven’t added anything yet.</p>
-
-            <a href="{{ route('products.index') }}" 
-               class="btn btn-dark">
-                Start Shopping
+            <h5>Your cart is empty</h5>
+            <a href="{{ route('products.index') }}" class="btn btn-dark mt-3">
+                Browse Products
             </a>
         </div>
 
