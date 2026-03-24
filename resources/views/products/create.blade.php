@@ -2,84 +2,142 @@
 
 @section('content')
 
-    <div class="container mt-5">
+<div class="container mt-5">
 
-        <div class="card shadow-sm mx-auto" style="max-width: 500px;">
-            <div class="card-body">
+    <div class="card mx-auto" style="max-width: 500px;">
+        <div class="card-body">
 
-                <h4 class="mb-4 text-center fw-bold">➕ Create Product</h4>
+            <h4 class="mb-4 text-center">Create Product</h4>
 
-                <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data">
-                    @csrf
+            {{-- 🔴 GLOBAL ERROR BOX --}}
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-                    <div class="mb-3">
-                        <label class="form-label">Product Name</label>
-                        <input type="text" name="name" class="form-control" placeholder="Enter product name"
-                            value="{{ old('name') }}">
-                        @if ($errors->has('name'))
-                            <span class="text-danger">
-                                {{ $errors->first('name') }}
-                            </span>
-                        @endif
+            <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data">
+                @csrf
 
-                    </div>
+                {{-- NAME --}}
+                <div class="mb-3">
+                    <label>Product Name</label>
+                    <input type="text" name="name"
+                        class="form-control @error('name') is-invalid @enderror"
+                        value="{{ old('name') }}">
 
-                    <div class="mb-3">
-                        <label class="form-label">Price</label>
-                        <input type="number" name="price" class="form-control" placeholder="Enter price"
-                            value="{{ old('price') }}">
-                        @if ($errors->has('price'))
-                            <span class="text-danger">
-                                {{ $errors->first('price') }}
-                            </span>
-                        @endif
-                    </div>
+                    @error('name')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" placeholder="Enter description">
-                                {{ old('description') }}
-                            </textarea>
-                    </div>
+                {{-- PRICE --}}
+                <div class="mb-3">
+                    <label>Price</label>
+                    <input type="number" name="price"
+                        class="form-control @error('price') is-invalid @enderror"
+                        value="{{ old('price') }}">
 
-                    <div class="mb-3">
-                        <label class="form-label">Category</label>
+                    @error('price')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                </div>
 
-                        <select name="category_id" class="form-control">
-                            <option value="">-- Select Category --</option>
+                {{-- STOCK --}}
+                <div class="mb-3">
+                    <label>Stock</label>
+                    <input type="number" name="stock"
+                        class="form-control @error('stock') is-invalid @enderror"
+                        value="{{ old('stock') }}">
 
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
+                    @error('stock')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                </div>
 
-                        @if ($errors->has('category_id'))
-                            <span class="text-danger">
-                                {{ $errors->first('category_id') }}
-                            </span>
-                        @endif
-                    </div>
+                {{-- DESCRIPTION --}}
+                <div class="mb-3">
+                    <label>Description</label>
+                    <textarea name="description"
+                        class="form-control @error('description') is-invalid @enderror">{{ old('description') }}</textarea>
 
-                    <div class="mb-3">
-                        <label class="form-label">Product Image</label>
-                        <input type="file" name="image" class="form-control">
-                    </div>
+                    @error('description')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                </div>
 
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ route('products.index') }}" class="btn btn-secondary">⬅ Back</a>
+                {{-- CATEGORY --}}
+                <div class="mb-3">
+                    <label>Category</label>
 
-                        <button type="submit" class="btn btn-primary">
-                            💾 Save Product
-                        </button>
-                    </div>
+                    <select name="category_id"
+                        class="form-control @error('category_id') is-invalid @enderror">
 
-                </form>
+                        <option value="">-- Select Category --</option>
 
-            </div>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}"
+                                {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    @error('category_id')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                </div>
+
+                {{-- IMAGE --}}
+                <div class="mb-3">
+                    <label>Product Image</label>
+                    <input type="file" name="image"
+                        class="form-control @error('image') is-invalid @enderror">
+
+                    @error('image')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                </div>
+
+                {{-- BUTTONS --}}
+                <div class="d-flex justify-content-between">
+                    <a href="{{ route('products.index') }}" class="btn btn-secondary">
+                        Back
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        Save Product
+                    </button>
+                </div>
+
+            </form>
+
         </div>
-
     </div>
+
+</div>
+
+{{-- 🔥 AUTO FOCUS FIRST ERROR --}}
+@if ($errors->any())
+<script>
+    document.querySelector('.is-invalid')?.focus();
+</script>
+@endif
 
 @endsection
