@@ -18,7 +18,10 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next,$role): Response
     {
-        Log::info('Reached Middleware:CheckRole');
+        Log::info('Reached Middleware:CheckRole',[
+            'user' => auth()->id()
+        ]);
+        
         if (!auth()->check()) {
             return redirect()->route('login');
         }
