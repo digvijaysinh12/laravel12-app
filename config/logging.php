@@ -131,8 +131,20 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/products.log'),
             'level' => 'info',
-        ]
+        ],
 
+        'orders' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/orders.log'),
+            'level' => 'info',
+            'days' => 7,
+        ],
+
+        'authlog' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/auth.log'),
+            'level' => 'warning' 
+        ],
     ],
 
 ];
