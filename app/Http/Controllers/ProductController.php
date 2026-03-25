@@ -38,7 +38,7 @@ class ProductController extends Controller
 
         $products = $result['products'];
 
-        return view('products.index',[
+        return view('products.index', [
             'products' => $result['products'],
             'total_products' => $result['total'],
             'page_title' => 'Product Lit'
@@ -77,22 +77,22 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
 
-            Log::channel('products')->info('Controller: Store product');
+        Log::channel('products')->info('Controller: Store product');
 
-            $data = $request->validated();
+        $data = $request->validated();
 
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('products', 'public');
-                $data['image'] = $imagePath;
-            }
-
-            $this->productService->createProduct($data);
-
-            return redirect()->route('products.index')
-                    ->with('success','Product created successfully');
-
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products', 'public');
+            $data['image'] = $imagePath;
         }
-    
+
+        $this->productService->createProduct($data);
+
+        return redirect()->route('products.index')
+            ->with('success', 'Product created successfully');
+
+    }
+
 
     /**
      * Display the specified resource.
@@ -102,7 +102,7 @@ class ProductController extends Controller
 
         Log::channel('products')->info('Controller: Show product');
 
-        $product= $this->productService->getProduct($product);
+        $product = $this->productService->getProduct($product);
 
         return view('products.show', compact('product'));
     }
@@ -184,5 +184,21 @@ class ProductController extends Controller
         $products = Product::all();
 
         return response()->success($products);
+    }
+
+    public function export()
+    {
+        return response()->streamDownload(function () {
+            $products = Product::all();
+
+            $file = fopen('php://output', 'w');
+
+            fputcsv($file, ['name', 'price', 'description']);
+
+            foreach ($products as $p) {
+                fputcsv($file, [$p->name, $p->price, $p->desciption]);
+            }
+        }, 'products.csv');
+
     }
 }
