@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -39,6 +40,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 */
 
 Route::middleware('auth')->group(function () {
+     Route::get('/pay', [PaymentController::class, 'pay']);
+
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 
