@@ -11,6 +11,7 @@ class ProductOutOfStockException extends Exception
     {
         if ($request->expectsJson()) {
             return response()->json([
+                'success' =>false,
                 'error' => 'Product is out of stock'
             ], 400);
         }
@@ -20,6 +21,8 @@ class ProductOutOfStockException extends Exception
 
     public function report()
     {
-        Log::warning('Out of stock product accessed');
+        Log::channel('products')->warning('Product out of stock',[
+            'message' => $this->getMessage()
+        ]);
     }
 }
