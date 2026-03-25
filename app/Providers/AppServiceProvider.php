@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\DiscountService;
 use App\Services\GreetingService;
 use App\Services\ProductService;
 use Illuminate\Pagination\Paginator;
@@ -20,11 +21,18 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(PaymentService::class, function ($app) {
+            Log::info('PaymentService bind called');
             return new PaymentService();
         });
 
         $this->app->bind('greeting', function ($app) {
             return new GreetingService();
+        });
+
+        // signleton -> same instance reused
+        $this->app->singleton(DiscountService::class, function($app){
+            Log::info('DiscountService singletone created');
+            return new PaymentService();
         });
 
         $this->app->bind(ProductService::class, function ($app) {
