@@ -40,11 +40,13 @@
                    class="btn btn-sm btn-outline-dark w-100">
                     View
                 </a>
-
-                <a href="{{ route('products.edit', $product->id) }}" 
+                @if(auth()->check() && auth()->user()->role === 'admin')
+                                <a href="{{ route('products.edit', $product->id) }}" 
                    class="btn btn-sm btn-outline-primary w-100">
                     Edit
                 </a>
+                @endif
+
             </div>
 
             <form action="{{ route('cart.add',$product->id) }}" method="POST">
