@@ -9,11 +9,15 @@ class PaymentController extends Controller
 {
     protected $ps;
 
-    public function __construct(PaymentService $ps){
+    public function __construct(PaymentService $ps)
+    {
         $this->ps = $ps;
     }
 
-    public function pay(){
-        return $this->ps->processPayment(500);
+    public function pay()
+    {
+
+        $result = $this->ps->processPayment(500);
+        return $result;
     }
 }
