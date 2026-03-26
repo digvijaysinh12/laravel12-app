@@ -2,47 +2,58 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
 use App\Models\Product;
+use App\Services\CartService;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
+    protected $cartService;
+
+    public function __construct(CartService $cartService){
+        $this->cartService = $cartService;
+    }
     public function index()
     {
-        $cart = session()->get('cart', []);
-        $products = Product::whereIn('id', array_keys($cart))->get();
-        return view('cart.index', compact('products', 'cart'));
+        $cart = $this->cartService->getCart();
+
+        return view('cart.index', compact('cart'));
     }
 
     public function add($id)
     {
+        $this->cartService->add($id);
 
-        $cart = session()->get('cart', []);
-
-        $cart[$id] = ($cart[$id] ?? 0) + 1;
-
-        session()->put('cart', $cart);
-
-        return back();
-    }
-
-    public function remove($id)
-    {
-        $cart = session()->get('cart', []);
-
-        if (isset($cart[$id])) {
-            unset($cart[$id]);
-        }
-
-        session()->put('cart', $cart);
-
-        return redirect()->route('cart.index')->with('success', 'Product removed');
+        return back()->with('success','Added to cart');
     }
 
     public function clear()
     {
-        session()->forget('cart');
+
+        $this->cartService->clear();
 
         return redirect()->route('cart.index')->with('success', 'Cart cleared');
+    }
+
+    public function increment($id)
+    {
+        $this->cartService->increment($id);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function decrement($id)
+    {
+        $this->cartService->decrement($id);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function remove($id)
+    {
+        $this->cartService->remove($id);
+
+        return response()->json(['success' => true]);
     }
 }
