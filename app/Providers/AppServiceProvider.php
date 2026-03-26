@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\CartItem;
 use App\Services\DiscountService;
 use App\Services\GreetingService;
 use App\Services\ProductService;
@@ -32,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
         // signleton -> same instance reused
         $this->app->singleton(DiscountService::class, function($app){
             Log::info('DiscountService singletone created');
-            return new PaymentService();
+            return new DiscountService();
         });
 
         $this->app->bind(ProductService::class, function ($app) {
@@ -55,6 +56,16 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('*', function ($view) {
             $view->with('current_user', auth()->user());
+
+            $cartCount = 0;
+
+            if(auth()->check()){
+                $cartCount = CartItem::whereHas('cart', function($q){
+                    $q->where('user_id', auth()->id());
+                })->count();
+
+                $view->with('cartCount',$cartCount);
+            }
         });
 
         View::share('app_name', 'admin_panel');
