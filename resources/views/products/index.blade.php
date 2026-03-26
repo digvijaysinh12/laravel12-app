@@ -25,11 +25,11 @@
         @if(auth()->check() && auth()->user()->role === 'admin')
         <div class="d-flex gap-2">
 
-            <a href="{{ route('admin.products.export') }}" class="btn btn-success">
+            <a href="{{ route('products.export') }}" class="btn btn-success">
                 ⬇️ Download CSV
             </a>
 
-            <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
+            <a href="{{ route('products.create') }}" class="btn btn-primary">
                 ➕ Add Product
             </a>
 

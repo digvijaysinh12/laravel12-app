@@ -22,7 +22,7 @@
                 </a>
 
                 <a href="{{ route('cart.index') }}" class="btn btn-outline-primary btn-sm">
-                    Cart ({{ count(session('cart', [])) }})
+                    Cart ({{ $cartCount }})
                 </a>
 
                 <form action="{{ route('logout') }}" method="POST" class="d-inline">

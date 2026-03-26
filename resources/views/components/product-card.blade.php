@@ -2,13 +2,10 @@
 
     {{-- Product Image --}}
     @if ($product->image)
-        <img src="{{ asset('storage/' . $product->image) }}"
-             class="card-img-top"
-             style="height:220px; object-fit:cover;">
+        <img src="{{ asset('storage/' . $product->image) }}" class="card-img-top" style="height:220px; object-fit:cover;">
     @else
-        <img src="https://via.placeholder.com/300x220?text=No+Image"
-             class="card-img-top"
-             style="height:220px; object-fit:cover;">
+        <img src="https://via.placeholder.com/300x220?text=No+Image" class="card-img-top"
+            style="height:220px; object-fit:cover;">
     @endif
 
     <div class="card-body d-flex flex-column">
@@ -36,23 +33,24 @@
         <div class="mt-auto">
 
             <div class="d-flex gap-2 mb-2">
-                <a href="{{ route('products.show', $product->id) }}" 
-                   class="btn btn-sm btn-outline-dark w-100">
+                <a href="{{ route('products.show', $product->id) }}" class="btn btn-sm btn-outline-dark w-100">
                     View
                 </a>
                 @if(auth()->check() && auth()->user()->role === 'admin')
-                                <a href="{{ route('products.edit', $product->id) }}" 
-                   class="btn btn-sm btn-outline-primary w-100">
-                    Edit
-                </a>
+                    <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-outline-primary w-100">
+                        Edit
+                    </a>
                 @endif
 
             </div>
 
-            <form action="{{ route('cart.add',$product->id) }}" method="POST">
-                @csrf
-                <button type="submit" class="btn btn-sm btn-outline-dark w-100" >Add to Cart</button>
-            </form>
+            @if(auth()->check() && auth()->user()->role === 'user')
+                <form action="{{ route('cart.add', $product->id) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-outline-dark w-100">Add to Cart</button>
+                </form>
+            @endif
+
 
         </div>
 
