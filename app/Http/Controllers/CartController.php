@@ -28,6 +28,13 @@ class CartController extends Controller
         return back()->with('success','Added to cart');
     }
 
+    public function remove($id)
+    {
+        $this->cartService->remove($id);
+
+        return redirect()->route('cart.index')->with('success', 'Product removed');
+    }
+
     public function clear()
     {
 
@@ -39,21 +46,12 @@ class CartController extends Controller
     public function increment($id)
     {
         $this->cartService->increment($id);
-
-        return response()->json(['success' => true]);
+        return back();
     }
 
     public function decrement($id)
     {
         $this->cartService->decrement($id);
-
-        return response()->json(['success' => true]);
-    }
-
-    public function remove($id)
-    {
-        $this->cartService->remove($id);
-
-        return response()->json(['success' => true]);
+        return back();
     }
 }
