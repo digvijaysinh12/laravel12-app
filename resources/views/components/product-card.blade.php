@@ -43,7 +43,7 @@
                 @endif
 
             </div>
-
+            
             @if(auth()->check() && auth()->user()->role === 'user')
                 <form action="{{ route('cart.add', $product->id) }}" method="POST">
                     @csrf

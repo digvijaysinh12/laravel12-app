@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -29,8 +32,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
     Route::delete('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
     Route::post('/cart/increment/{id}', [CartController::class, 'increment']);
-Route::post('/cart/decrement/{id}', [CartController::class, 'decrement']);
-Route::delete('/cart/remove/{id}', [CartController::class, 'remove']);
+    Route::post('/cart/decrement/{id}', [CartController::class, 'decrement']);
+    Route::delete('/cart/remove/{id}', [CartController::class, 'remove']);
+
+    Route::post('/checkout', [CheckoutController::class, 'store'])
+    ->name('checkout');
+
+    Route::get('/invoice/{order}', [InvoiceController::class, 'show'])
+        ->name('invoice.show');
 
 });
 
@@ -63,6 +72,10 @@ Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });
 
+Route::get('/test-redis', function () {
+    Redis::set('test_key', 'Hello Redis');
+    return Redis::get('test_key');
+});
 require __DIR__.'/auth.php';
 require __DIR__.'/admin.php';
 require __DIR__.'/product.php';

@@ -22,12 +22,19 @@
 
                 <div class="mt-4">
                     <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">Back</a>
+                    @if(auth()->check() && auth()->user()->role === 'user')
+                        <form action="{{ route('cart.add', $product->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Add to Cart</button>
+                        </form>
+                    @endif
 
                     @if(auth()->check() && auth()->user()->role === 'admin')
                         <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-outline-primary w-100">
                             Edit
                         </a>
                     @endif
+
                 </div>
 
             </div>
