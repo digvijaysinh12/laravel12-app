@@ -1,33 +1,15 @@
 <?php
+
 namespace App\Services;
-use App\Exceptions\ProductNotFoundException;
+
 use App\Models\Product;
-use Exception;
 use Illuminate\Support\Facades\Log;
 
 class ProductService
 {
-    public function store(array $data)
-    {
-        return Product::create($data);
-    }
-
-    public function update(array $data, Product $product)
-    {
-        $product->update($data);
-        return $product->fresh();
-    }
-
-    public function delete(Product $product)
-    {
-        return $product->delete();
-    }
-
-
     public function getAllProducts($request)
     {
-
-        Log::channel('products')->info('ProductService: Fetching products', [
+        Log::channel('products')->info('Fetching products', [
             'search' => $request->search
         ]);
 
@@ -51,82 +33,37 @@ class ProductService
 
     public function createProduct(array $data)
     {
+        Log::channel('products')->info('Creating product');
 
-        try {
-            Log::info('ProductService: creating products', $data);
-
-            if (isset($data['stock'])&&$data['stock'] <= 0) {
-                throw new ProductNotFoundException("Stock is zero");
-            }
-
-            $product = Product::create($data);
-
-
-            return $product;
-
-        } catch (Exception $e) {
-
-            Log::channel('products')->error('ProductService: create failed', [
-                'error' => $e->getMessage()
-            ]);
-
-            throw $e;
-        }
+        return Product::create($data);
     }
 
     public function updateProduct(array $data, Product $product)
     {
+        Log::channel('products')->info('Updating product', [
+            'product_id' => $product->id
+        ]);
 
-        try {
-            Log::channel('products')->info('ProductService: Updating product', [
-                'product_id' => $product->id,
-                'data' => $data
-            ]);
+        $product->update($data);
 
-            $product->update($data);
-
-
-            return $product;
-        } catch (Exception $e) {
-
-            Log::channel('products')->error('ProductService: update failed', [
-                'product_id' => $product->id,
-                'error' => $e->getMessage()
-            ]);
-
-            throw $e;
-        }
+        return $product->fresh();
     }
-
 
     public function deleteProduct(Product $product)
     {
-        try {
-            Log::channel('products')->warning('ProductService: Deleting product', [
-                'product_id' => $product->id
-            ]);
+        Log::channel('products')->warning('Deleting product', [
+            'product_id' => $product->id
+        ]);
 
-            return $product->delete();
-        } catch (Exception $e) {
-            Log::channel('products')->error('ProductService: Delete failed', [
-                'product_id' => $product->id,
-                'error' => $e->getMessage()
-            ]);
-
-            throw $e;
-        }
+        return $product->delete();
     }
 
     public function getProduct(Product $product)
     {
-        if (!$product) {
-            throw new ProductNotFoundException("Product not found");
-        }
-        Log::channel('products')->info('ProductService: Fetch single product', [
+        Log::channel('products')->info('Fetching single product', [
             'product_id' => $product->id
         ]);
 
         return $product->load('category');
     }
 }
-
