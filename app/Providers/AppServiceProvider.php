@@ -55,17 +55,16 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('*', function ($view) {
+            $cart = session()->get('cart', []);
             $view->with('current_user', auth()->user());
 
             $cartCount = 0;
 
-            if(auth()->check()){
-                $cartCount = CartItem::whereHas('cart', function($q){
-                    $q->where('user_id', auth()->id());
-                })->count();
-
-                $view->with('cartCount',$cartCount);
+            foreach($cart as $item){
+                $cartCount+= $item['quantity'];
             }
+                $view->with('cartCount',$cartCount);
+            
         });
 
         View::share('app_name', 'admin_panel');
