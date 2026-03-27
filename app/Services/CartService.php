@@ -4,32 +4,35 @@ namespace App\Services;
 
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Product;
 
 class CartService
 {
     public function getCart()
     {
-        return Cart::with('items.product')
-                ->where('user_id',auth()->id())
-                ->first();
+        return session()->get('cart',[]);
     }
 
     public function add($productId)
-    {
-        $cart = Cart::firstOrCreate([
-            'user_id' => auth()->id()
-        ]);
+    {   
+        //get current cart from session
+        $cart = session()->get('cart',[]);
 
-        $item = $cart->items()->where('product_id', $productId)->first();
+        // check if already exist
+        if(isset($cart[$productId])){
+            $cart[$productId]['quantity']++;
+        }else{
+            $product = Product::findOrFail($productId);
 
-        if ($item) {
-            $item->increment('quantity');
-        } else {
-            $cart->items()->create([
-                'product_id' => $productId,
-                'quantity' => 1
-            ]);
+            $cart[$productId] = [
+                'name' => $product->name,
+                'price' => $product->price,
+                'quantity' => 1,
+                'image' => $product->image
+            ];
         }
+
+        session()->put('cart',$cart);
     }
 
     public function remove($productId)
@@ -43,40 +46,32 @@ class CartService
 
     public function increment($productId)
     {
-        $cart = Cart::where('user_id', auth()->id())->first();
+        $cart = session()->get('cart',[]);
 
-        if ($cart) {
-            $item = $cart->items()->where('product_id', $productId)->first();
-
-            if ($item) {
-                $item->increment('quantity');
-            }
+        if(isset($cart[$productId])){
+            $cart[$productId]['quantity']++;
         }
+
+        session()->put('cart',$cart);
     }
 
     public function decrement($productId)
     {
-        $cart = Cart::where('user_id', auth()->id())->first();
+        $cart = session()->get('cart',[]);
 
-        if ($cart) {
-            $item = $cart->items()->where('product_id', $productId)->first();
-
-            if ($item) {
-                if ($item->quantity > 1) {
-                    $item->decrement('quantity');
-                } else {
-                    $item->delete();
-                }
+        if(isset($cart[$productId])){
+            if($cart[$productId]['quantity']>1){
+                $cart[$productId]['quantity']--;
+            }else{
+                unset($cart[$productId]);
             }
         }
+
+        session()->put('cart',$cart);
     }
 
     public function clear()
     {
-        $cart = Cart::where('user_id', auth()->id())->first();
-
-        if ($cart) {
-            $cart->items()->delete();
-        }
+        session()->forget('cart');
     }
 }
