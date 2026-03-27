@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -28,6 +29,14 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $key = 'cart:user_' . auth()->id();
+        $saved = Redis::get($key);
+
+        if($saved){
+            session()->put('cart', json_decode($saved, true));
+            Redis::del($key); // delete from the redis and its back in session now
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -36,6 +45,19 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        if(auth()->check()){
+
+            $cart = session()->get('cart',[]);
+
+            if(!empty($cart)){
+                Redis::setex(
+                    'cart:user_' . auth()->id(),
+                    60*60*24*30,// 30 Days
+                    json_encode($cart)
+                );
+            }
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
