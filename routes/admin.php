@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminOrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 
@@ -41,6 +42,18 @@ Route::middleware(['auth', 'checkrole:admin'])
                 ->whereNumber('product')
                 ->name('destroy');
 
+        });
+
+
+        Route::prefix('orders')->name('orders.')->group(function () {
+            Route::get('/', [AdminOrderController::class, 'index'])
+                ->name('admin.orders.index');
+
+            Route::get('/{order}', [AdminOrderController::class, 'show'])
+                ->name('admin.orders.show');
+
+            Route::put('/{order}/status', [AdminOrderController::class, 'updateStatus'])
+                ->name('admin.orders.status');
         });
 
     });
