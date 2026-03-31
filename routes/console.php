@@ -16,4 +16,6 @@ Schedule::command('log:clear')->weekly();
 
 Schedule::command('promotion:send')->dailyAt('10:00');
 
+Schedule::command('orders:update-status')->hourly();
 
+Schedule::command('birthday:emails')->dailyAt('09:00');
