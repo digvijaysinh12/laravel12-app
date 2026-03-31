@@ -115,3 +115,26 @@ What I Learned From the Base Controller Error
 
 ==> If the user clicks cart what should happen? ==> Get existing cart from session , If product already exists --> Increase quantity
     Else -->add new product --> Save back to session
+
+
+30/03/2026
+
+HTTP Client
+==> It is used to send requests to other websites and get data.
+==> Like our website wants user data, weather info, payment status
+==> So we ask another server 
+    Http::get('http://api.com/users');
+    Hey server, give me users data.
+==> Why do we use it?
+    payment-> Razorpay api
+    Maps->Google Maps api
+    Login->Google/Facebook api
+    weather-> Weather api
+==> Benefits --> Easy syntax, Clean code, Built in error handling, Retry,timeout support, Testing support
+==> When we write this     Http::get('http://api.com/users'); Behind the scenes: 1. Laravel uses  Guzzle
+    Sends HTTP request, Gets response, Returns response object
+==> Payment gateway
+    Sending notifications
+    AI APIs
+    External services
+
