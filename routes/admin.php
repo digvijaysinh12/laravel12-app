@@ -1,21 +1,46 @@
 <?php
 
-use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductController;
 
-Route::middleware(['auth', 'checkrole:admin'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+| Only accessible by authenticated users with admin role
+*/
 
-    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+Route::middleware(['auth', 'checkrole:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
 
-    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])
-        ->whereNumber('product')
-        ->name('products.edit');
-    Route::put('/products/{product}', [ProductController::class, 'update'])
-        ->whereNumber('product')
-        ->name('products.update');
+        // Dashboard (optional)
+        Route::get('/dashboard', function () {
+            return view('admin.dashboard');
+        })->name('dashboard');
 
-    Route::delete('/products/{product}', [ProductController::class, 'destroy'])
-        ->whereNumber('product')
-        ->name('products.destroy');
-});
+        // Product Management
+        Route::prefix('products')->name('products.')->group(function () {
+
+            Route::get('/create', [ProductController::class, 'create'])
+                ->name('create');
+
+            Route::post('/', [ProductController::class, 'store'])
+                ->name('store');
+
+            Route::get('/{product}/edit', [ProductController::class, 'edit'])
+                ->whereNumber('product')
+                ->name('edit');
+
+            Route::put('/{product}', [ProductController::class, 'update'])
+                ->whereNumber('product')
+                ->name('update');
+
+            Route::delete('/{product}', [ProductController::class, 'destroy'])
+                ->whereNumber('product')
+                ->name('destroy');
+
+        });
+
+    });
