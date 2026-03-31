@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderPlaced;
 use App\Services\CheckoutService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -12,10 +13,13 @@ class CheckoutController extends Controller
     {
         try {
             $invoice = $service->process();
+
             session()->put('last_invoice', $invoice);
-            return
-                view('invoice.index', compact('invoice'))
-                ->with('success','Order placed successfully');
+
+            //event(new OrderPlaced(auth()->user(), $invoice['grand_total']));
+
+            return view('invoice.index', compact('invoice'))
+                ->with('success', 'Order placed successfully');
 
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
