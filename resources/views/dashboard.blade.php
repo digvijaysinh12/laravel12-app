@@ -17,14 +17,7 @@
             </div>
         </div>
 
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm p-3">
-                <h6>Cart Items</h6>
-                <h3>{{ \App\Models\CartItem::whereHas('cart', function ($q) {
-        $q->where('user_id', auth()->id());
-    })->count() }}</h3>
-            </div>
-        </div>
+
 
         <div class="col-md-4 mb-3">
             <div class="card shadow-sm p-3">

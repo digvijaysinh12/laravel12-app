@@ -18,7 +18,7 @@
 
                 <h4 class="mb-4 text-center fw-bold">✏ Edit Product</h4>
 
-                <form method="POST" action="{{ route('products.update', $product->id) }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('admin.products.update', $product->id) }}" enctype="multipart/form-data">
 
                     @csrf
                     @method('PUT')

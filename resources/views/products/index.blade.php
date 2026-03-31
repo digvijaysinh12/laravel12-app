@@ -29,7 +29,7 @@
                 ⬇️ Download CSV
             </a>
 
-            <a href="{{ route('products.create') }}" class="btn btn-primary">
+            <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
                 ➕ Add Product
             </a>
 

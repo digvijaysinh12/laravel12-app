@@ -30,7 +30,7 @@
                     @endif
 
                     @if(auth()->check() && auth()->user()->role === 'admin')
-                        <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-outline-primary w-100">
+                        <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-sm btn-outline-primary w-100">
                             Edit
                         </a>
                     @endif
