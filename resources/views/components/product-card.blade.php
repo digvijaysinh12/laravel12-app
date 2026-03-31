@@ -17,6 +17,26 @@
         <small class="text-muted mb-2">
             {{ $product->category->name ?? 'Uncategorized' }}
         </small>
+        @php
+            $stock = $product->stock ?? 0;
+        @endphp
+
+        <div class="mb-2">
+            @if($stock > 10)
+                <span class="badge bg-success">
+                    In Stock ({{ $stock }})
+                </span>
+            @elseif($stock > 0)
+                <span class="badge bg-warning text-dark">
+                    Low Stock ({{ $stock }})
+                </span>
+            @else
+                <span class="badge bg-danger">
+                    Out of Stock
+                </span>
+            @endif
+        </div>
+
 
         <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="fw-bold">
@@ -37,13 +57,13 @@
                     View
                 </a>
                 @if(auth()->check() && auth()->user()->role === 'admin')
-                    <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-outline-primary w-100">
+                    <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-sm btn-outline-primary w-100">
                         Edit
                     </a>
                 @endif
 
             </div>
-            
+
             @if(auth()->check() && auth()->user()->role === 'user')
                 <form action="{{ route('cart.add', $product->id) }}" method="POST">
                     @csrf
