@@ -15,8 +15,17 @@ class ProductService
 
         $query = Product::with('category');
 
+
         if ($request->filled('search')) {
-            $query->where('name', 'LIKE', '%' . $request->search . '%');
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                ->orWhere('description', 'LIKE', "%{$search}%")
+                ->orWhereHas('category', function ($q2) use ($search) {
+                    $q2->where('name', 'LIKE', "%{$search}%");
+                });
+            });
         }
 
         $total = (clone $query)->count();
