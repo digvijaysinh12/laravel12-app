@@ -32,26 +32,56 @@ class CartController extends Controller
     {
         $this->cartService->remove($id);
 
-        return redirect()->route('cart.index')->with('success', 'Product removed');
+        $cart = $this->cartService->getCart();
+
+        return response()->json([
+            'grandTotal' => collect($cart)->sum(fn($i) => $i['price'] * $i['quantity'])
+        ]);
     }
 
     public function clear()
     {
-
         $this->cartService->clear();
 
-        return redirect()->route('cart.index')->with('success', 'Cart cleared');
+        return response()->json([
+            'grandTotal' => 0
+        ]);
     }
 
     public function increment($id)
     {
         $this->cartService->increment($id);
-        return back();
+
+        $cart = $this->cartService->getCart();
+        $item = $cart[$id];
+
+        return response()->json([
+            'quantity' => $item['quantity'],
+            'itemTotal' => $item['price'] * $item['quantity'],
+            'grandTotal' => collect($cart)->sum(fn($i) => $i['price'] * $i['quantity'])
+        ]);
     }
 
     public function decrement($id)
     {
         $this->cartService->decrement($id);
-        return back();
+
+        $cart = $this->cartService->getCart();
+
+        if (!isset($cart[$id])) {
+            return response()->json([
+                'quantity' => 0,
+                'itemTotal' => 0,
+                'grandTotal' => collect($cart)->sum(fn($i) => $i['price'] * $i['quantity'])
+            ]);
+        }
+
+        $item = $cart[$id];
+
+        return response()->json([
+            'quantity' => $item['quantity'],
+            'itemTotal' => $item['price'] * $item['quantity'],
+            'grandTotal' => collect($cart)->sum(fn($i) => $i['price'] * $i['quantity'])
+        ]);
     }
 }
