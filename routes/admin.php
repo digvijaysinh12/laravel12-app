@@ -47,13 +47,13 @@ Route::middleware(['auth', 'checkrole:admin'])
 
         Route::prefix('orders')->name('orders.')->group(function () {
             Route::get('/', [AdminOrderController::class, 'index'])
-                ->name('admin.orders.index');
+                ->name('index');
 
             Route::get('/{order}', [AdminOrderController::class, 'show'])
-                ->name('admin.orders.show');
+                ->name('show');
 
             Route::put('/{order}/status', [AdminOrderController::class, 'updateStatus'])
-                ->name('admin.orders.status');
+                ->name('status');
         });
 
     });

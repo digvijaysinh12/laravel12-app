@@ -2,112 +2,65 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Reports\ReportService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Product;
-use App\Models\User;
+use Throwable;
 
 class GenerateAdminReport extends Command
 {
-    protected $signature = 'report:admin {--type=sales} {--format=csv}';
+    protected $signature = 'report:generate {type} {format} {--days=30}';
 
-    protected $description = 'Generate admin reports';
+    protected $description = 'Generate admin reports (sales | inventory | customers) in csv/json/pdf';
 
-    public function handle()
+    public function handle(ReportService $reportService)
     {
-        $type = $this->option('type');
-        $format = $this->option('format');
+        $type = strtolower($this->argument('type'));
+        $format = strtolower($this->argument('format'));
+        $days = (int) $this->option('days');
 
-        if (!in_array($type, ['sales', 'inventory', 'customers'])) {
-            $this->error('Invalid type');
-            return;
+        if (! $reportService->isValidType($type)) {
+            $this->error('Invalid type. Allowed: sales, inventory, customers');
+            return Command::FAILURE;
         }
 
-        if (!in_array($format, ['csv', 'json'])) {
-            $this->error('Invalid format');
-            return;
+        if (! $reportService->isValidFormat($format)) {
+            $this->error('Invalid format. Allowed: csv, json, pdf');
+            return Command::FAILURE;
         }
 
-        $this->info("Generating {$type} report...");
+        try {
+            $this->info("Generating {$type} report ({$format}) for last {$days} days...");
 
-        $this->withProgressBar(range(1, 50), function () {
-            usleep(20000);
-        });
+            $total = $reportService->totalRecords($type, $days);
+            $this->output->progressStart(max(1, $total));
 
-        $data = $this->getReportData($type);
+            $report = $reportService->generate($type, $days, function (int $step = 1) {
+                $this->output->progressAdvance($step);
+            });
 
-        $fileName = "{$type}_" . time() . ".{$format}";
-        $path = "reports/{$fileName}";
+            $this->output->progressFinish();
 
-        if ($format === 'json') {
-            Storage::put($path, json_encode($data, JSON_PRETTY_PRINT));
-        } else {
-            Storage::put($path, $this->toCsv($data));
+            $path = $reportService->store($type, $format, $report);
+
+            $this->newLine();
+            $this->info("Saved: storage/app/{$path}");
+
+            // Console summaries
+            $this->table($report['summary_headers'], $report['summary_rows']);
+
+            if (! empty($report['details_rows'])) {
+                $this->newLine();
+                $this->table($report['details_headers'], $report['details_rows']);
+            }
+
+            // Optional email hook
+            $reportService->maybeEmail($path, $report['meta']);
+
+            return Command::SUCCESS;
+        } catch (Throwable $e) {
+            $this->output->progressFinish();
+            $this->error('Report generation failed: ' . $e->getMessage());
+            return Command::FAILURE;
         }
-
-        $this->newLine(2);
-        $this->info("Saved: storage/app/{$path}");
-
-        $this->table(array_keys($data[0] ?? []), $data);
-    }
-
-    private function getReportData($type)
-    {
-        return match ($type) {
-            'sales' => $this->salesReport(),
-            'inventory' => $this->inventoryReport(),
-            'customers' => $this->customerReport(),
-        };
-    }
-
-    private function salesReport()
-    {
-        $totalProducts = Product::count();
-        $totalValue = Product::sum('price');
-        $topProduct = Product::orderByDesc('price')->first()?->name ?? 'N/A';
-
-        return [
-            [
-                'Total Products' => $totalProducts,
-                'Total Value' => $totalValue,
-                'Top Product' => $topProduct,
-            ]
-        ];
-    }
-
-    private function inventoryReport()
-    {
-        return [
-            [
-                'Low Stock' => Product::where('stock', '<', 10)->count(),
-                'Out Of Stock' => Product::where('stock', 0)->count(),
-                'Total Value' => Product::sum('price'),
-            ]
-        ];
-    }
-
-    private function customerReport()
-    {
-        return [
-            [
-                'New Users Today' => User::whereDate('created_at', today())->count(),
-                'Total Users' => User::count(),
-                'Admins' => User::where('role', 'admin')->count(),
-            ]
-        ];
-    }
-
-    private function toCsv($data)
-    {
-        $output = fopen('php://temp', 'r+');
-
-        fputcsv($output, array_keys($data[0]));
-
-        foreach ($data as $row) {
-            fputcsv($output, $row);
-        }
-
-        rewind($output);
-        return stream_get_contents($output);
     }
 }
