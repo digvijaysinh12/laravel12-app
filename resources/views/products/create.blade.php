@@ -1,143 +1,73 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <x-card title="Create Product">
 
-<div class="container mt-5">
-
-    <div class="card mx-auto" style="max-width: 500px;">
-        <div class="card-body">
-
-            <h4 class="mb-4 text-center">Create Product</h4>
-
-            {{-- 🔴 GLOBAL ERROR BOX --}}
             @if ($errors->any())
-                <div class="alert alert-danger">
+                <x-alert type="danger">
                     <ul class="mb-0">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
-                </div>
+                </x-alert>
             @endif
 
-            <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data" class="d-grid gap-3">
                 @csrf
 
-                {{-- NAME --}}
-                <div class="mb-3">
-                    <label>Product Name</label>
-                    <input type="text" name="name"
-                        class="form-control @error('name') is-invalid @enderror"
-                        value="{{ old('name') }}">
-
-                    @error('name')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
-                    @enderror
+                <div>
+                    <label class="form-label">Product Name</label>
+                    <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}">
+                    @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
-                {{-- PRICE --}}
-                <div class="mb-3">
-                    <label>Price</label>
-                    <input type="number" name="price"
-                        class="form-control @error('price') is-invalid @enderror"
-                        value="{{ old('price') }}">
-
-                    @error('price')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
-                    @enderror
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Price</label>
+                        <input type="number" name="price" class="form-control @error('price') is-invalid @enderror" value="{{ old('price') }}">
+                        @error('price')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Stock</label>
+                        <input type="number" name="stock" class="form-control @error('stock') is-invalid @enderror" value="{{ old('stock') }}">
+                        @error('stock')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
                 </div>
 
-                {{-- STOCK --}}
-                <div class="mb-3">
-                    <label>Stock</label>
-                    <input type="number" name="stock"
-                        class="form-control @error('stock') is-invalid @enderror"
-                        value="{{ old('stock') }}">
-
-                    @error('stock')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
-                    @enderror
+                <div>
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control @error('description') is-invalid @enderror" rows="3">{{ old('description') }}</textarea>
+                    @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
-                {{-- DESCRIPTION --}}
-                <div class="mb-3">
-                    <label>Description</label>
-                    <textarea name="description"
-                        class="form-control @error('description') is-invalid @enderror">{{ old('description') }}</textarea>
-
-                    @error('description')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-
-                {{-- CATEGORY --}}
-                <div class="mb-3">
-                    <label>Category</label>
-
-                    <select name="category_id"
-                        class="form-control @error('category_id') is-invalid @enderror">
-
+                <div>
+                    <label class="form-label">Category</label>
+                    <select name="category_id" class="form-select @error('category_id') is-invalid @enderror">
                         <option value="">-- Select Category --</option>
-
                         @foreach ($categories as $category)
-                            <option value="{{ $category->id }}"
-                                {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
                                 {{ $category->name }}
                             </option>
                         @endforeach
                     </select>
-
-                    @error('category_id')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
-                    @enderror
+                    @error('category_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
-                {{-- IMAGE --}}
-                <div class="mb-3">
-                    <label>Product Image</label>
-                    <input type="file" name="image"
-                        class="form-control @error('image') is-invalid @enderror">
-
-                    @error('image')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
-                    @enderror
+                <div>
+                    <label class="form-label">Product Image</label>
+                    <input type="file" name="image" class="form-control @error('image') is-invalid @enderror">
+                    @error('image')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
-                {{-- BUTTONS --}}
-                <div class="d-flex justify-content-between">
-                    <a href="{{ route('products.index') }}" class="btn btn-secondary">
-                        Back
-                    </a>
-
-                    <button type="submit" class="btn btn-primary">
-                        Save Product
-                    </button>
+                <div class="d-flex justify-content-between align-items-center">
+                    <x-button variant="secondary" href="{{ route('products.index') }}">Back</x-button>
+                    <x-button type="submit">Save Product</x-button>
                 </div>
-
             </form>
-
-        </div>
+        </x-card>
     </div>
-
 </div>
-
-{{-- 🔥 AUTO FOCUS FIRST ERROR --}}
-@if ($errors->any())
-<script>
-    document.querySelector('.is-invalid')?.focus();
-</script>
-@endif
-
 @endsection

@@ -33,14 +33,14 @@
         <tr>
             <td>{{ $item['name'] }}</td>
             <td>{{ $item['quantity'] }}</td>
-            <td>₹{{ $item['price'] }}</td>
-            <td>₹{{ $item['total'] }}</td>
+            <td>Rs. {{ $item['price'] }}</td>
+            <td>Rs. {{ $item['total'] }}</td>
         </tr>
         @endforeach
     </table>
 
     <h3 class="text-right">
-        Total: ₹{{ $invoice['grand_total'] }}
+        Total: Rs. {{ $invoice['grand_total'] }}
     </h3>
 
 </body>

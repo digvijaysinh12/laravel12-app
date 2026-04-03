@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container py-5" style="max-width: 900px;">
+<div class="py-5 max-w-900 mx-auto">
 
     <div class="card shadow-sm p-4">
 
@@ -64,7 +64,7 @@
 
         {{-- Total --}}
         <div class="d-flex justify-content-end mt-3">
-            <div style="width: 250px;">
+            <div class="w-250">
                 <div class="d-flex justify-content-between">
                     <span class="fw-semibold">Total:</span>
                     <span class="fw-bold text-dark">
