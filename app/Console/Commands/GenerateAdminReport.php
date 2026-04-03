@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Reports\ReportService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Product;
@@ -9,46 +10,22 @@ use App\Models\User;
 
 class GenerateAdminReport extends Command
 {
-    protected $signature = 'report:admin {--type=sales} {--format=csv}';
-
+    protected $signature = 'report:generate {type} {format} {--days=30}';
     protected $description = 'Generate admin reports';
 
     public function handle()
     {
-        $type = $this->option('type');
-        $format = $this->option('format');
+        $type = $this->argument('type');
+        $format = $this->argument('format');
+        $days = $this->option('days');
 
-        if (!in_array($type, ['sales', 'inventory', 'customers'])) {
-            $this->error('Invalid type');
-            return;
-        }
+        $this->info("Generating $type report in $format format...");
 
-        if (!in_array($format, ['csv', 'json'])) {
-            $this->error('Invalid format');
-            return;
-        }
+        $reportService = new ReportService();
 
-        $this->info("Generating {$type} report...");
+        $filePath = $reportService->generate($type,$format,$days);
 
-        $this->withProgressBar(range(1, 50), function () {
-            usleep(20000);
-        });
-
-        $data = $this->getReportData($type);
-
-        $fileName = "{$type}_" . time() . ".{$format}";
-        $path = "reports/{$fileName}";
-
-        if ($format === 'json') {
-            Storage::put($path, json_encode($data, JSON_PRETTY_PRINT));
-        } else {
-            Storage::put($path, $this->toCsv($data));
-        }
-
-        $this->newLine(2);
-        $this->info("Saved: storage/app/{$path}");
-
-        $this->table(array_keys($data[0] ?? []), $data);
+        $this->info("Report generated: " . $filePath);
     }
 
     private function getReportData($type)
