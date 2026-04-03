@@ -24,20 +24,18 @@ return new class extends Migration
             $table->decimal('total_amount',10,2);
 
             // Order status
-            $table->enum('status',[
+            $table->enum('status', [
                 'pending',
                 'confirmed',
                 'shipped',
-                'delevered',
+                'delivered',
                 'cancelled'
             ])->default('pending');
 
-            //Payment
-            $table->string('payement_method')->nullable();
+            $table->string('payment_method')->nullable(); // ✅ fixed spelling
             $table->string('payment_status')->default('pending');
 
-            // Shipping
-            $table->text('Shipping_address');
+            $table->text('shipping_address'); // ✅ fixed case
             $table->string('phone');
 
             $table->timestamps();
