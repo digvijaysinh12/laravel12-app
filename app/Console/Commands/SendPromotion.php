@@ -8,17 +8,15 @@ use App\Models\User;
 class SendPromotion extends Command
 {
     protected $signature = 'promotion:send';
-
-    protected $description = 'Send promotional emails to customers';
+    protected $description = 'Send promotional emails';
 
     public function handle()
     {
         // Ask inputs
         $code = $this->ask('Enter discount code');
 
-        $percentage = (int) $this->ask('Enter discount percentage (0-100)');
+        $percentage = $this->ask('Enter discount percentage (0-100)');
 
-        // Validation
         if ($percentage < 0 || $percentage > 100) {
             return $this->error('Invalid percentage! Must be between 0 and 100.');
         }
@@ -36,7 +34,6 @@ class SendPromotion extends Command
         if ($users->isEmpty()) {
             return $this->warn('No users found for selected audience.');
         }
-
         // Preview
         $this->info('Preview:');
         $this->table(
@@ -67,7 +64,7 @@ class SendPromotion extends Command
         $this->info('Promotion emails sent successfully!');
     }
 
-    // 🎯 Audience logic
+    // Audience logic
     private function getAudienceUsers($audience)
     {
         return match ($audience) {
@@ -78,10 +75,14 @@ class SendPromotion extends Command
                 ->get(),
 
             'inactive' => User::where('role', 'user')
-                ->whereDoesntHave('orders') // optional
+                ->whereDoesntHave('orders') 
                 ->get(),
 
-            'top_buyers' => User::where('role', 'user')->take(5)->get(), // fallback
+            'top_buyers' => User::where('role', 'user')
+                ->withCount('orders')
+                ->orderBy('orders_count', 'desc')
+                ->take(5)
+                ->get(),
 
             default => collect(),
         };
