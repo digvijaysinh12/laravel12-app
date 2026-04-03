@@ -1,43 +1,34 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('page-title', 'Orders')
 
 @section('content')
+<x-card title="Orders">
+    <x-table :headers="['#','Order No','User','Total','Status','Action']">
+        @forelse($orders as $order)
+            <tr>
+                <td>{{ $order->id }}</td>
+                <td>{{ $order->order_number }}</td>
+                <td>{{ $order->user->name ?? 'N/A' }}</td>
+                <td>Rs. {{ number_format($order->total_amount, 2) }}</td>
+                <td>
+                    <span class="badge bg-{{ $order->status === 'delivered' ? 'success' : ($order->status === 'pending' ? 'warning text-dark' : 'info') }}">
+                        {{ ucfirst($order->status) }}
+                    </span>
+                </td>
+                <td>
+                    <x-button href="{{ route('admin.orders.show', $order->id) }}" class="btn-sm">View</x-button>
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">No orders found</td>
+            </tr>
+        @endforelse
+    </x-table>
 
-<h2>Orders</h2>
-
-<table border="1" width="100%" cellpadding="10">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Order No</th>
-            <th>User</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        @foreach($orders as $order)
-        <tr>
-            <td>{{ $order->id }}</td>
-            <td>{{ $order->order_number }}</td>
-            <td>{{ $order->user->name }}</td>
-            <td>₹{{ $order->total_amount }}</td>
-            <td>
-                <span style="color:
-                    {{ $order->status == 'pending' ? 'orange' :
-                       ($order->status == 'delivered' ? 'green' : 'blue') }}">
-                    {{ ucfirst($order->status) }}
-                </span>
-            </td>
-            <td>
-                <a href="{{ route('admin.orders.show', $order->id) }}">View</a>
-            </td>
-        </tr>
-        @endforeach
-    </tbody>
-</table>
-
-{{ $orders->links() }}
-
+    <div class="mt-3">
+        {{ $orders->links() }}
+    </div>
+</x-card>
 @endsection
