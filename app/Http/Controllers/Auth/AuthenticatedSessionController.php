@@ -50,12 +50,19 @@ class AuthenticatedSessionController extends Controller
             $cart = session()->get('cart',[]);
 
             if(!empty($cart)){
+
+                $userId = auth()->id();
+
                 Redis::setex(
                     'cart:user_' . auth()->id(),
                     60*60*24*30,// 30 Days
                     json_encode($cart)
                 );
+
+                Redis::sadd('cart_users',$userId);
             }
+
+
         }
 
         Auth::guard('web')->logout();
