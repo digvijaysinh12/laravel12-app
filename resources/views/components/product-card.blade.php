@@ -1,11 +1,10 @@
-<div class="card shadow-sm h-100 border-0">
+<div class="card shadow-sm h-100 border-0" data-product-id="{{ $product->id }}" data-stock="{{ $stock }}">
 
     {{-- Product Image --}}
     @if ($product->image)
-        <img src="{{ asset('storage/' . $product->image) }}" class="card-img-top" style="height:220px; object-fit:cover;">
+        <img src="{{ asset('storage/' . $product->image) }}" class="card-img-top product-thumb" alt="{{ $product->name }}">
     @else
-        <img src="https://via.placeholder.com/300x220?text=No+Image" class="card-img-top"
-            style="height:220px; object-fit:cover;">
+        <img src="https://via.placeholder.com/300x220?text=No+Image" class="card-img-top product-thumb" alt="No image">
     @endif
 
     <div class="card-body d-flex flex-column">
@@ -67,7 +66,11 @@
             @if(auth()->check() && auth()->user()->role === 'user')
                 <form action="{{ route('cart.add', $product->id) }}" method="POST">
                     @csrf
-                    <button type="submit" class="btn btn-sm btn-outline-dark w-100">Add to Cart</button>
+                    <button type="submit" class="btn btn-sm btn-outline-dark w-100 add-to-cart-btn"
+                        @disabled($stock <= 0)
+                        data-product-id="{{ $product->id }}">
+                        {{ $stock <= 0 ? 'Out of Stock' : 'Add to Cart' }}
+                    </button>
                 </form>
             @endif
 
