@@ -2,41 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\ProductNotFoundException;
-use App\Exceptions\ProductOutOfStockException;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\ProductService;
 use Exception;
+use Illuminate\Cache\TaggableStore;
 use Illuminate\Http\Request;
-use App\Facades\Product as ProductFacade;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-
-    protected $productService;
+    protected ProductService $productService;
 
     public function __construct(ProductService $productService)
     {
         $this->productService = $productService;
     }
 
+    public function featured()
+    {
+        $startedAt = microtime(true);
+        $featuredProducts = $this->productService->getFeaturedProducts();
+        $loadTimeMs = round((microtime(true) - $startedAt) * 1000, 2);
+
+        Log::channel('products')->info('Featured products loaded', [
+            'count' => $featuredProducts->count(),
+            'duration_ms' => $loadTimeMs,
+        ]);
+
+        return view('welcome', compact('featuredProducts', 'loadTimeMs'));
+    }
+
     public function index(Request $request)
     {
-        Log::info('Reached controller: ProductController@index');
-
-        Log::channel('products')->info('Controller: Product index');
-
+        $startedAt = microtime(true);
         $result = $this->productService->getAllProducts($request);
+        $categories = $this->productService->getAllCategories();
+        $loadTimeMs = round((microtime(true) - $startedAt) * 1000, 2);
 
-        $products = $result['products'];
+        Log::channel('products')->info('Product index loaded', [
+            'cache_key' => $result['cache_key'],
+            'duration_ms' => $loadTimeMs,
+        ]);
 
         $view = $request->routeIs('admin.*')
             ? 'admin.products.index'
@@ -45,13 +55,38 @@ class ProductController extends Controller
         return view($view, [
             'products' => $result['products'],
             'total_products' => $result['total'],
-            'page_title' => $request->routeIs('admin.*') ? 'Manage Products' : 'Product List',
+            'categories' => $categories,
+            'selected_category' => $request->query('category_id'),
+            'page_title' => $request->routeIs('admin.*') ? 'Manage Products' : 'Product Catalog',
+            'listing_route' => route('user.products.index'),
+            'load_time_ms' => $loadTimeMs,
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    public function categoryProducts(Request $request, Category $category)
+    {
+        $startedAt = microtime(true);
+        $result = $this->productService->getProductsByCategory($request, (int) $category->id);
+        $categories = $this->productService->getAllCategories();
+        $loadTimeMs = round((microtime(true) - $startedAt) * 1000, 2);
+
+        Log::channel('products')->info('Category products loaded', [
+            'category_id' => $category->id,
+            'cache_key' => $result['cache_key'],
+            'duration_ms' => $loadTimeMs,
+        ]);
+
+        return view('user.products.index', [
+            'products' => $result['products'],
+            'total_products' => $result['total'],
+            'categories' => $categories,
+            'selected_category' => $category->id,
+            'page_title' => "{$category->name} Products",
+            'listing_route' => route('user.products.category', $category),
+            'load_time_ms' => $loadTimeMs,
+        ]);
+    }
+
     public function create()
     {
         $categories = Category::all();
@@ -62,10 +97,6 @@ class ProductController extends Controller
 
         return view('admin.products.create', compact('categories'));
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
 
     public function search(Request $request)
     {
@@ -80,7 +111,6 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request)
     {
-
         Log::channel('products')->info('Controller: Store product');
 
         $data = $request->validated();
@@ -91,30 +121,25 @@ class ProductController extends Controller
         }
 
         $this->productService->createProduct($data);
+        $this->flushProductAndAdminCaches();
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product created successfully');
-
     }
 
-
-    /**
-     * Display the specified resource.
-     */
     public function show(Product $product)
     {
+        $startedAt = microtime(true);
+        $product = $this->productService->getProductById((int) $product->id);
+        $loadTimeMs = round((microtime(true) - $startedAt) * 1000, 2);
 
-        Log::channel('products')->info('Controller: Show product');
+        Log::channel('products')->info('Single product loaded', [
+            'product_id' => $product->id,
+            'duration_ms' => $loadTimeMs,
+        ]);
 
-        $product = $this->productService->getProduct($product);
-
-        return view('user.products.show', compact('product'));
+        return view('user.products.show', compact('product', 'loadTimeMs'));
     }
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
 
     public function edit(Product $product)
     {
@@ -125,13 +150,9 @@ class ProductController extends Controller
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateProductRequest $request, Product $product)
     {
         try {
-
             Log::info('Controller: Update product');
 
             $data = $request->validated();
@@ -140,12 +161,13 @@ class ProductController extends Controller
             }
 
             $this->productService->updateProduct($data, $product);
+            Cache::forget('product_'.$product->id);
+            Cache::forget('product.'.$product->id);
+            $this->flushProductAndAdminCaches();
 
             return redirect()->route('admin.products.index')
                 ->with('success', 'Product updated successfully');
-
         } catch (Exception $e) {
-
             Log::channel('products')->error('Controller: Update failed', [
                 'error' => $e->getMessage()
             ]);
@@ -154,22 +176,19 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-
     public function destroy(Product $product)
     {
         try {
             Log::channel('products')->warning('Controller: Delete product');
 
             $this->productService->deleteProduct($product);
+            Cache::forget('product_'.$product->id);
+            Cache::forget('product.'.$product->id);
+            $this->flushProductAndAdminCaches();
 
             return redirect()->route('admin.products.index')
                 ->with('success', 'Product deleted successfully');
-
         } catch (Exception $e) {
-
             Log::channel('products')->error('Controller: Delete failed', [
                 'error' => $e->getMessage()
             ]);
@@ -177,7 +196,6 @@ class ProductController extends Controller
             return back()->with('error', 'Delete failed');
         }
     }
-
 
     public function apiProducts()
     {
@@ -194,15 +212,26 @@ class ProductController extends Controller
     {
         return response()->streamDownload(function () {
             $products = Product::all();
-
             $file = fopen('php://output', 'w');
 
             fputcsv($file, ['name', 'price', 'description']);
 
             foreach ($products as $p) {
-                fputcsv($file, [$p->name, $p->price, $p->desciption]);
+                fputcsv($file, [$p->name, $p->price, $p->description]);
             }
         }, 'products.csv');
+    }
 
+    private function flushProductAndAdminCaches(): void
+    {
+        $this->productService->flushProductCaches();
+
+        if (Cache::getStore() instanceof TaggableStore) {
+            Cache::tags(['admin'])->flush();
+            return;
+        }
+
+        Cache::forget('admin.dashboard.stats');
+        Cache::forget('admin.recent.orders');
     }
 }

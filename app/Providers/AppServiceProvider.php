@@ -2,17 +2,18 @@
 
 namespace App\Providers;
 
-use App\Models\CartItem;
+use App\Models\Product;
+use App\Observers\ProductObserver;
 use App\Services\DiscountService;
 use App\Services\GreetingService;
+use App\Services\PaymentService;
 use App\Services\ProductService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use App\Services\PaymentService;
-use Illuminate\Support\Facades\Log;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,22 +22,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(PaymentService::class, function ($app) {
+        $this->app->bind(PaymentService::class, function () {
             Log::info('PaymentService bind called');
             return new PaymentService();
         });
 
-        $this->app->bind('greeting', function ($app) {
+        $this->app->bind('greeting', function () {
             return new GreetingService();
         });
 
-        // signleton -> same instance reused
-        $this->app->singleton(DiscountService::class, function($app){
-            Log::info('DiscountService singletone created');
+        // Singleton: same instance reused.
+        $this->app->singleton(DiscountService::class, function () {
+            Log::info('DiscountService singleton created');
             return new DiscountService();
         });
 
-        $this->app->bind(ProductService::class, function ($app) {
+        $this->app->bind(ProductService::class, function () {
             return new ProductService();
         });
     }
@@ -47,6 +48,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Log::info('AppServiceProvider boot executed');
+
         Response::macro('success', function ($data) {
             return response()->json([
                 'success' => true,
@@ -59,21 +61,22 @@ class AppServiceProvider extends ServiceProvider
             $view->with('current_user', auth()->user());
 
             $cartCount = 0;
-
-            foreach($cart as $item){
-                $cartCount+= $item['quantity'];
+            foreach ($cart as $item) {
+                $cartCount += $item['quantity'];
             }
-                $view->with('cartCount',$cartCount);
-            
+
+            $view->with('cartCount', $cartCount);
         });
 
         View::share('app_name', 'admin_panel');
 
         Blade::directive('currency', function ($amount) {
-            return "<?php echo '₹' . number_format($amount);?>";
+            return "<?php echo 'Rs. ' . number_format($amount, 2); ?>";
         });
 
-        Paginator::useBootstrapFive();
+        Paginator::useTailwind();
 
+        // Product cache invalidation (created/updated/deleted).
+        Product::observe(ProductObserver::class);
     }
 }

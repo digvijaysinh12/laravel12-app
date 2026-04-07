@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\Customer\OrderAnalyticsController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,9 @@ Route::delete('/profile', [ProfileController::class, 'destroy'])
 
 Route::prefix('products')->name('products.')->group(function () {
     Route::get('/', [ProductController::class, 'index'])->name('index');
+    Route::get('/category/{category}', [ProductController::class, 'categoryProducts'])
+        ->whereNumber('category')
+        ->name('category');
     Route::get('/export', [ProductController::class, 'export'])->name('export');
     Route::get('/{product}', [ProductController::class, 'show'])
         ->whereNumber('product')
@@ -41,6 +45,9 @@ Route::post('/checkout', [CheckoutController::class, 'store'])
 Route::get('/orders/realtime-example', function () {
     return view('user.orders.realtime-example');
 })->name('orders.realtime-example');
+
+Route::get('/orders/analytics', [OrderAnalyticsController::class, 'index'])
+    ->name('orders.analytics');
 
 Route::prefix('invoice')->name('invoice.')->group(function () {
     Route::get('/', function () {
