@@ -3,29 +3,29 @@
 @section('page-title', 'Order Details')
 
 @section('content')
-<div class="d-grid gap-3">
-    <x-card title="Order Summary">
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="text-muted text-uppercase small">Order No</div>
-                <div class="fw-semibold">{{ $order->order_number }}</div>
+<div class="space-y-6">
+    <x-card title="Order summary">
+        <div class="grid gap-4 md:grid-cols-3">
+            <div class="rounded-2xl bg-slate-50 p-4">
+                <div class="text-xs uppercase tracking-[0.24em] text-slate-500">Order No</div>
+                <div class="mt-2 text-lg font-semibold text-slate-900">{{ $order->order_number }}</div>
             </div>
-            <div class="col-md-4">
-                <div class="text-muted text-uppercase small">Customer</div>
-                <div class="fw-semibold">{{ $order->user->name ?? 'N/A' }}</div>
+            <div class="rounded-2xl bg-slate-50 p-4">
+                <div class="text-xs uppercase tracking-[0.24em] text-slate-500">Customer</div>
+                <div class="mt-2 text-lg font-semibold text-slate-900">{{ $order->user->name ?? 'N/A' }}</div>
             </div>
-            <div class="col-md-4">
-                <div class="text-muted text-uppercase small">Total</div>
-                <div class="fw-semibold">Rs. {{ number_format($order->total_amount, 2) }}</div>
+            <div class="rounded-2xl bg-slate-50 p-4">
+                <div class="text-xs uppercase tracking-[0.24em] text-slate-500">Total</div>
+                <div class="mt-2 text-lg font-semibold text-slate-900">Rs. {{ number_format($order->total_amount, 2) }}</div>
             </div>
         </div>
     </x-card>
 
-    <x-card title="Update Status">
-        <form method="POST" action="{{ route('admin.orders.status', $order->id) }}" class="d-flex align-items-center gap-3">
+    <x-card title="Update status">
+        <form method="POST" action="{{ route('admin.orders.status', $order->id) }}" class="flex flex-col gap-3 sm:flex-row sm:items-center">
             @csrf
             @method('PUT')
-            <select name="status" class="form-select w-auto">
+            <select name="status" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:w-56">
                 @foreach(['pending','confirmed','shipped','delivered','cancelled'] as $status)
                     <option value="{{ $status }}" {{ $order->status == $status ? 'selected' : '' }}>
                         {{ ucfirst($status) }}
@@ -39,15 +39,15 @@
     <x-card title="Items">
         <x-table :headers="['Product','Price','Qty','Total']">
             @forelse($order->items as $item)
-                <tr>
-                    <td>{{ $item->product->name ?? 'Deleted' }}</td>
-                    <td>Rs. {{ number_format($item->price, 2) }}</td>
-                    <td>{{ $item->quantity }}</td>
-                    <td>Rs. {{ number_format($item->price * $item->quantity, 2) }}</td>
+                <tr class="hover:bg-slate-50">
+                    <td class="px-3 py-4 text-slate-900">{{ $item->product->name ?? 'Deleted' }}</td>
+                    <td class="px-3 py-4 text-slate-600">Rs. {{ number_format($item->price, 2) }}</td>
+                    <td class="px-3 py-4 text-slate-600">{{ $item->quantity }}</td>
+                    <td class="px-3 py-4 font-semibold text-slate-900">Rs. {{ number_format($item->price * $item->quantity, 2) }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" class="text-center text-muted py-4">No items</td>
+                    <td colspan="4" class="px-3 py-16 text-center text-sm text-slate-500">No items.</td>
                 </tr>
             @endforelse
         </x-table>
