@@ -3,8 +3,12 @@
 namespace App\Services;
 
 use App\Events\OrderPlaced;
+use App\Events\ProductStockChanged;
+use App\Exceptions\ProductNotFoundException;
+use App\Exceptions\ProductOutOfStockException;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -57,12 +61,31 @@ class CheckoutService
             ]);
 
             foreach ($items as $item) {
+
+                $product = Product::find($item['id']);
+
+                if(!$product){
+                    throw new ProductNotFoundException();
+                }
+
+                    if ($product->stock < $item['quantity']) {
+                        throw new ProductOutOfStockException(
+                            $product->name . ' is out of stock'
+                        );
+                    }   
+                    
+                    // reduce product quantity
+                    $product->stock -= $item['quantity'];
+                    $product->save();
+
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item['id'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price']
                 ]);
+
+                broadcast(new ProductStockChanged($product->id,$product->stock))->toOthers();
             }
 
             session()->forget('cart');

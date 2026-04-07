@@ -31,17 +31,35 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <button
-                type="button"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100"
-                title="Notifications"
-            >
-                <span class="sr-only">Notifications</span>
-                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M15 17h5l-1.4-1.4a2 2 0 0 1-.6-1.4v-3.2a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M10 17a2 2 0 0 0 4 0" stroke-linecap="round"/>
-                </svg>
-            </button>
+            <div class="relative">
+                <button
+                    id="notificationBtn"
+                    type="button"
+                    class="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100"
+                >
+                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M15 17h5l-1.4-1.4a2 2 0 0 1-.6-1.4v-3.2a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />
+                        <path d="M10 17a2 2 0 0 0 4 0" />
+                    </svg>
+
+                    <span
+                        id="notificationCount"
+                        class="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white"
+                    >
+                        0
+                    </span>
+                </button>
+
+                <div id="notificationDropdown" class="absolute right-0 mt-2 hidden w-72 rounded-lg border bg-white shadow-lg">
+                    <div class="border-b p-3 text-sm font-semibold">
+                        Notifications
+                    </div>
+
+                    <div id="notificationList" class="max-h-60 overflow-y-auto text-sm">
+                        <p class="p-3 text-gray-500">No notifications</p>
+                    </div>
+                </div>
+            </div>
 
             @auth
                 <div class="hidden text-right sm:block">
