@@ -1,49 +1,58 @@
-const updateProductUI = ({ id, stock }) => {
-    if (typeof id === 'undefined') return;
-    const selectors = [
-        `.card[data-product-id="${id}"] [data-product-id]`,
-        `[data-product-id="${id}"].product-stock-badge`,
-    ];
+const resolveProductId = () => {
+    const root = document.querySelector('[data-product-detail]');
+    const id = root?.getAttribute('data-product-id');
+    return id ? Number(id) : null;
+};
 
-    document.querySelectorAll(selectors.join(',')).forEach((el) => {
-        const isBadge = el.classList.contains('product-stock-badge');
-        if (isBadge) {
-            el.dataset.stock = stock;
-            if (stock > 10) {
-                el.className = 'badge bg-success product-stock-badge';
-                el.textContent = `Stock: ${stock}`;
-            } else if (stock > 0) {
-                el.className = 'badge bg-warning text-dark product-stock-badge';
-                el.textContent = `Stock: ${stock}`;
-            } else {
-                el.className = 'badge bg-danger product-stock-badge';
-                el.textContent = 'Out of Stock';
-            }
-        }
+const stockBadgeClass = (stock) => {
+    if (stock > 10) {
+        return 'product-stock-badge inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700';
+    }
 
-        if (el.classList.contains('add-to-cart-btn')) {
-            el.dataset.stock = stock;
-            if (stock <= 0) {
-                el.setAttribute('disabled', 'disabled');
-                el.textContent = 'Out of Stock';
-            } else {
-                el.removeAttribute('disabled');
-                el.textContent = 'Add to Cart';
-            }
-        }
+    if (stock > 0) {
+        return 'product-stock-badge inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700';
+    }
+
+    return 'product-stock-badge inline-flex rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700';
+};
+
+const stockBadgeText = (stock) => (stock > 0 ? `Stock: ${stock}` : 'Out of Stock');
+
+const updateStockUI = (productId, stock) => {
+    document.querySelectorAll(`.product-stock-badge[data-product-id="${productId}"]`).forEach((badge) => {
+        badge.textContent = stockBadgeText(stock);
+        badge.className = stockBadgeClass(stock);
+    });
+
+    document.querySelectorAll(`.add-to-cart-btn[data-product-id="${productId}"]`).forEach((button) => {
+        button.disabled = stock <= 0;
+        button.textContent = stock <= 0 ? 'Out of Stock' : 'Add to Cart';
+        button.classList.toggle('cursor-not-allowed', stock <= 0);
+        button.classList.toggle('bg-slate-300', stock <= 0);
+        button.classList.toggle('hover:bg-black', stock > 0);
     });
 };
 
-const listenProductStock = () => {
-    if (!window.Echo) return;
-    window.Echo.channel('products')
-        .listen('ProductStockChanged', (e) => {
-            const id = e.product_id ?? e.id ?? e.product?.id;
-            const stock = e.stock ?? e.product?.stock;
-            updateProductUI({ id, stock });
+const subscribeProductStock = () => {
+    const productId = resolveProductId();
+
+    if (!window.Echo || !productId) {
+        return;
+    }
+
+    window.Echo.channel(`product.${productId}`)
+        .listen('.stock.updated', (event) => {
+            const liveStock = Number(event.stock);
+            const liveProductId = Number(event.productId);
+
+            console.log('[Realtime] stock.updated', event);
+
+            if (!Number.isFinite(liveStock) || !Number.isFinite(liveProductId)) {
+                return;
+            }
+
+            updateStockUI(liveProductId, liveStock);
         });
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    listenProductStock();
-});
+document.addEventListener('DOMContentLoaded', subscribeProductStock);

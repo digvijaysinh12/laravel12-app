@@ -25,6 +25,24 @@ const updateGrandTotal = (grandTotal) => {
     }
 };
 
+const updateSummary = (data) => {
+    const subtotalEl = document.querySelector('#cart-subtotal');
+    const taxEl = document.querySelector('#cart-tax');
+    const shippingEl = document.querySelector('#cart-shipping');
+
+    if (subtotalEl && typeof data.subtotal !== 'undefined') {
+        subtotalEl.textContent = formatCurrency(data.subtotal);
+    }
+
+    if (taxEl && typeof data.tax !== 'undefined') {
+        taxEl.textContent = formatCurrency(data.tax);
+    }
+
+    if (shippingEl && typeof data.shipping !== 'undefined') {
+        shippingEl.textContent = formatCurrency(data.shipping);
+    }
+};
+
 const getRow = (button) => button.closest('.cart-row');
 
 const renderEmptyState = () => {
@@ -92,6 +110,7 @@ const bindIncreaseDecrease = () => {
                 }
 
                 updateGrandTotal(result.grandTotal);
+                updateSummary(result);
             } catch (error) {
                 console.error(error);
             }
@@ -112,6 +131,7 @@ const bindRemove = () => {
                 const result = await request(url, 'DELETE');
                 row.remove();
                 updateGrandTotal(result.grandTotal);
+                updateSummary(result);
                 removeRowIfEmpty();
             } catch (error) {
                 console.error(error);
@@ -136,6 +156,7 @@ const bindClear = () => {
             await request(url, 'DELETE');
             document.querySelectorAll('.cart-row').forEach((row) => row.remove());
             updateGrandTotal(0);
+            updateSummary({ subtotal: 0, tax: 0, shipping: 0 });
             const summary = document.querySelector('aside');
             if (summary) {
                 summary.remove();

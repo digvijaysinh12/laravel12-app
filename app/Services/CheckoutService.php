@@ -9,6 +9,8 @@ use App\Exceptions\ProductOutOfStockException;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use Illuminate\Cache\TaggableStore;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -18,8 +20,10 @@ class CheckoutService
     public function process()
     {
         try {
+            $cartService = app(CartService::class);
+            $cartService->clearCartCache();
 
-            $cart = session('cart', []);
+            $cart = $cartService->getCartItems(true);
 
             if (empty($cart)) {
                 throw new Exception('Your cart is empty. Please add items before checkout.');
@@ -46,6 +50,7 @@ class CheckoutService
             }
 
             DB::beginTransaction();
+            $stockUpdates = [];
 
             $orderNumber = 'ORD-' . date('Y') . '-' . strtoupper(uniqid());
 
@@ -64,19 +69,19 @@ class CheckoutService
 
                 $product = Product::find($item['id']);
 
-                if(!$product){
+                if (! $product) {
                     throw new ProductNotFoundException();
                 }
 
-                    if ($product->stock < $item['quantity']) {
-                        throw new ProductOutOfStockException(
-                            $product->name . ' is out of stock'
-                        );
-                    }   
-                    
-                    // reduce product quantity
-                    $product->stock -= $item['quantity'];
-                    $product->save();
+                if ($product->stock < $item['quantity']) {
+                    throw new ProductOutOfStockException(
+                        $product->name.' is out of stock'
+                    );
+                }
+
+                // Reduce product quantity immediately after validation.
+                $product->stock -= $item['quantity'];
+                $product->save();
 
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -85,12 +90,22 @@ class CheckoutService
                     'price' => $item['price']
                 ]);
 
-                broadcast(new ProductStockChanged($product->id,$product->stock))->toOthers();
+                $stockUpdates[] = [
+                    'product_id' => (int) $product->id,
+                    'stock' => (int) $product->stock,
+                ];
             }
 
             session()->forget('cart');
 
             DB::commit();
+            $cartService->clearCartCache();
+            $this->clearAdminDashboardCache();
+
+            foreach ($stockUpdates as $update) {
+                Log::info('Broadcasting product stock update', $update);
+                broadcast(new ProductStockChanged($update['product_id'], $update['stock']))->toOthers();
+            }
 
             Log::info('Broadcasting new order placed event', [
                 'order_id' => $order->id,
@@ -124,5 +139,16 @@ class CheckoutService
                     : 'Something went wrong while placing your order. Please try again.'
             );
         }
+    }
+
+    private function clearAdminDashboardCache(): void
+    {
+        if (Cache::getStore() instanceof TaggableStore) {
+            Cache::tags(['admin'])->flush();
+            return;
+        }
+
+        Cache::forget('admin.dashboard.stats');
+        Cache::forget('admin.recent.orders');
     }
 }

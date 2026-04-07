@@ -11,23 +11,30 @@ class ProductStockChanged implements ShouldBroadcast
 {
     use Dispatchable, SerializesModels;
 
-    public $productId;
-    public $stock;
+    public int $productId;
+    public int $stock;
 
-    public function __construct($productId, $stock)
+    public function __construct(int $productId, int $stock)
     {
         $this->productId = $productId;
         $this->stock = $stock;
     }
 
-    // Public channel
-    public function broadcastOn()
+    public function broadcastOn(): Channel
     {
-        return new Channel('product.' . $this->productId);
+        return new Channel('product.'.$this->productId);
     }
 
-    public function broadcastAs()
+    public function broadcastAs(): string
     {
         return 'stock.updated';
+    }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'productId' => $this->productId,
+            'stock' => $this->stock,
+        ];
     }
 }
