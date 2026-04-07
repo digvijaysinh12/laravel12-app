@@ -1,33 +1,41 @@
-const userId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+const userId = document.querySelector('meta[name="auth-user-id"]')?.getAttribute('content');
+const userRole = document.querySelector('meta[name="auth-user-role"]')?.getAttribute('content');
 
-const statusClass = (status) => {
-    switch (status) {
-        case 'delivered':
-            return 'bg-success';
-        case 'pending':
-            return 'bg-warning text-dark';
-        case 'cancelled':
-            return 'bg-danger';
-        default:
-            return 'bg-info text-dark';
+const ensureRealtimeContainer = () => {
+    let container = document.querySelector('[data-realtime-notifications]');
+
+    if (!container) {
+        container = document.createElement('div');
+        container.setAttribute('data-realtime-notifications', 'true');
+        container.className = 'fixed right-4 top-20 z-50 flex max-w-sm flex-col gap-2';
+        document.body.appendChild(container);
     }
+
+    return container;
 };
 
-const updateOrderStatusBadge = (orderId, status) => {
-    document.querySelectorAll(`[data-order-status-badge][data-order-id="${orderId}"]`).forEach((badge) => {
-        badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-        badge.className = `badge ${statusClass(status)}`;
-    });
+const showRealtimeNotice = (message) => {
+    const container = ensureRealtimeContainer();
+    const notice = document.createElement('div');
+    notice.className = 'rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800 shadow-sm';
+    notice.textContent = message;
+    container.appendChild(notice);
+
+    setTimeout(() => {
+        notice.remove();
+    }, 4500);
 };
 
-const listenOrderStatus = () => {
-    if (!window.Echo || !userId) return;
+const subscribeToOrderStatus = () => {
+    if (!window.Echo || !userId || userRole !== 'user') {
+        return;
+    }
+
     window.Echo.private(`orders.${userId}`)
-        .listen('OrderStatusUpdated', (e) => {
-            const orderId = e.order_id ?? e.order?.id;
-            const status = e.status ?? e.order?.status;
-            if (orderId && status) updateOrderStatusBadge(orderId, status);
+        .listen('.order.status.updated', (event) => {
+            const label = event.order_number || `#${event.order_id}`;
+            showRealtimeNotice(`Order ${label} is now ${event.status}.`);
         });
 };
 
-document.addEventListener('DOMContentLoaded', listenOrderStatus);
+document.addEventListener('DOMContentLoaded', subscribeToOrderStatus);

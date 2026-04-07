@@ -1,53 +1,50 @@
-/**
- * Admin real-time handlers.
- * Loaded only on admin layout pages (body.hasClass('layout-admin')).
- */
+const userRole = document.querySelector('meta[name="auth-user-role"]')?.getAttribute('content');
 
-const isAdminPage = () => document.body?.classList?.contains('layout-admin');
+const ensureRealtimeContainer = () => {
+    let container = document.querySelector('[data-realtime-notifications]');
 
-const ensureToastContainer = () => {
-    let container = document.querySelector('.toast-container');
     if (!container) {
         container = document.createElement('div');
-        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.setAttribute('data-realtime-notifications', 'true');
+        container.className = 'fixed right-4 top-20 z-50 flex max-w-sm flex-col gap-2';
         document.body.appendChild(container);
     }
+
     return container;
 };
 
-const renderToast = ({ title = 'New Order', message, variant = 'success' }) => {
-    const container = ensureToastContainer();
-    const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-bg-${variant} border-0 show shadow`;
-    toast.setAttribute('role', 'alert');
-    toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">
-                <strong>${title}:</strong> ${message}
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Close"></button>
-        </div>
-    `;
-    container.appendChild(toast);
+const showAdminNotice = (title, message) => {
+    const container = ensureRealtimeContainer();
+    const notice = document.createElement('div');
+    notice.className = 'rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm';
+    const heading = document.createElement('strong');
+    heading.textContent = title;
+    const body = document.createElement('div');
+    body.textContent = message;
+    notice.appendChild(heading);
+    notice.appendChild(body);
+    container.appendChild(notice);
 
-    const closeBtn = toast.querySelector('.btn-close');
-    closeBtn?.addEventListener('click', () => toast.remove());
-    setTimeout(() => toast.remove(), 5000);
+    setTimeout(() => {
+        notice.remove();
+    }, 5000);
 };
 
 const subscribeAdminOrders = () => {
-    if (!window.Echo) return;
+    if (!window.Echo || userRole !== 'admin') {
+        return;
+    }
 
     window.Echo.private('admin.orders')
-        .listen('OrderPlaced', (e) => {
-            const { customer_name, total, item_count } = e.data ?? {};
-            const amount = Number(total ?? 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
-            const message = `${customer_name ?? 'Customer'} • ${item_count ?? 0} items • ${amount}`;
-            renderToast({ title: 'New Order', message });
+        .listen('.order.placed', (event) => {
+            const customer = event.customer_name || 'Customer';
+            const amount = Number(event.total || 0).toLocaleString('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+            });
+            const message = `${customer} placed ${event.order_number} (${event.item_count} items, ${amount})`;
+            showAdminNotice('New Order', message);
         });
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (!isAdminPage()) return;
-    subscribeAdminOrders();
-});
+document.addEventListener('DOMContentLoaded', subscribeAdminOrders);

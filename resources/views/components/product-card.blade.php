@@ -1,81 +1,51 @@
-<div class="card shadow-sm h-100 border-0" data-product-id="{{ $product->id }}" data-stock="{{ $stock }}">
-
-    {{-- Product Image --}}
+<div class="flex h-full flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
     @if ($product->image)
-        <img src="{{ asset('storage/' . $product->image) }}" class="card-img-top product-thumb" alt="{{ $product->name }}">
+        <img src="{{ asset('storage/' . $product->image) }}" class="h-52 w-full object-cover" alt="{{ $product->name }}">
     @else
-        <img src="https://via.placeholder.com/300x220?text=No+Image" class="card-img-top product-thumb" alt="No image">
+        <div class="flex h-52 items-center justify-center bg-slate-100 text-sm text-slate-400">
+            No Image
+        </div>
     @endif
 
-    <div class="card-body d-flex flex-column">
+    <div class="flex flex-1 flex-col p-5">
+        <h3 class="text-lg font-semibold tracking-tight text-slate-900">{{ $product->name }}</h3>
+        <p class="mt-1 text-sm text-slate-500">{{ $product->category->name ?? 'Uncategorized' }}</p>
 
-        <h6 class="fw-semibold mb-1">
-            {{ $product->name }}
-        </h6>
+        @php $stock = $product->stock ?? 0; @endphp
 
-        <small class="text-muted mb-2">
-            {{ $product->category->name ?? 'Uncategorized' }}
-        </small>
-        @php
-            $stock = $product->stock ?? 0;
-        @endphp
-
-        <div class="mb-2">
-            @if($stock > 10)
-                <span class="badge bg-success">
-                    In Stock ({{ $stock }})
-                </span>
-            @elseif($stock > 0)
-                <span class="badge bg-warning text-dark">
-                    Low Stock ({{ $stock }})
-                </span>
-            @else
-                <span class="badge bg-danger">
-                    Out of Stock
-                </span>
-            @endif
-        </div>
-
-
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-bold">
-                @currency($product->price)
+        <div class="mt-4">
+            <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $stock > 10 ? 'bg-emerald-100 text-emerald-700' : ($stock > 0 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700') }}">
+                {{ $stock > 10 ? 'In stock' : ($stock > 0 ? 'Low stock' : 'Out of stock') }}
             </span>
-
-            @if ($product->price > 1000)
-                <span class="badge bg-success">Premium</span>
-            @else
-                <span class="badge bg-light text-dark">Standard</span>
-            @endif
         </div>
 
-        <div class="mt-auto">
+        <div class="mt-4 text-xl font-semibold text-slate-900">
+            @currency($product->price)
+        </div>
 
-            <div class="d-flex gap-2 mb-2">
-                <a href="{{ route('products.show', $product->id) }}" class="btn btn-sm btn-outline-dark w-100">
-                    View
+        <div class="mt-5 space-y-2">
+            <a href="{{ route('user.products.show', $product->id) }}"
+               class="block rounded-2xl border border-slate-200 px-4 py-3 text-center text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
+                View
+            </a>
+
+            @if(auth()->check() && auth()->user()->role === 'admin')
+                <a href="{{ route('admin.products.edit', $product->id) }}"
+                   class="block rounded-2xl bg-slate-950 px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-slate-800">
+                    Edit
                 </a>
-                @if(auth()->check() && auth()->user()->role === 'admin')
-                    <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-sm btn-outline-primary w-100">
-                        Edit
-                    </a>
-                @endif
-
-            </div>
+            @endif
 
             @if(auth()->check() && auth()->user()->role === 'user')
-                <form action="{{ route('cart.add', $product->id) }}" method="POST">
+                <form action="{{ route('user.cart.add', $product->id) }}" method="POST">
                     @csrf
-                    <button type="submit" class="btn btn-sm btn-outline-dark w-100 add-to-cart-btn"
-                        @disabled($stock <= 0)
-                        data-product-id="{{ $product->id }}">
+                    <button type="submit"
+                        class="w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                        @disabled($stock <= 0)>
                         {{ $stock <= 0 ? 'Out of Stock' : 'Add to Cart' }}
                     </button>
                 </form>
             @endif
-
-
         </div>
-
     </div>
 </div>

@@ -1,17 +1,15 @@
-@props(['title' => null, 'actions' => null])
+@props(['title' => null])
 
-<div {{ $attributes->merge(['class' => 'card']) }}>
-    @if($title || $actions)
-        <div class="card__header">
-            <div class="card__title">{{ $title }}</div>
-            @if($actions)
-                <div class="card__actions">
-                    {{ $actions }}
-                </div>
-            @endif
+<div class="bg-white rounded-xl border shadow-sm">
+
+    @if($title)
+        <div class="p-4 border-b font-medium">
+            {{ $title }}
         </div>
     @endif
-    <div class="card__body">
+
+    <div class="p-4">
         {{ $slot }}
     </div>
+
 </div>

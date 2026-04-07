@@ -1,70 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config('app.name') }}@hasSection('title') - @yield('title')@endif</title>
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{{ config('app.name') }}</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @auth
+        <meta name="auth-user-id" content="{{ auth()->id() }}">
+        <meta name="auth-user-role" content="{{ auth()->user()->role }}">
+    @endauth
 
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        @auth
-            <meta name="user-id" content="{{ auth()->id() }}">
-            <meta name="user-role" content="{{ auth()->user()->role }}">
-        @endauth
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+    <x-topbar mode="user" :cart-count="$cartCount ?? 0" />
 
-    <body class="bg-light">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        @if (session('success') || session('error') || session('status'))
+            <div class="mb-6 space-y-3">
+                @if (session('success'))
+                    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
-        <x-navbar :cart-count="$cartCount ?? 0" />
+                @if (session('error'))
+                    <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                        {{ session('error') }}
+                    </div>
+                @endif
 
-        <main class="py-4">
-            <div class="container">
-                @yield('content')
+                @if (session('status'))
+                    <div class="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+                        {{ session('status') }}
+                    </div>
+                @endif
             </div>
-        </main>
-
-        @if(session('success') || session('error') || session('info'))
-
-            <div class="toast-container position-fixed top-0 end-0 p-3">
-
-                @if(session('success'))
-                    <div class="toast align-items-center text-bg-success border-0 show">
-                        <div class="d-flex">
-                            <div class="toast-body">
-                                {{ session('success') }}
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="toast align-items-center text-bg-danger border-0 show">
-                        <div class="d-flex">
-                            <div class="toast-body">
-                                {{ session('error') }}
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                @if(session('info'))
-                    <div class="toast align-items-center text-bg-primary border-0 show">
-                        <div class="d-flex">
-                            <div class="toast-body">
-                                {{ session('info') }}
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-            </div>
-
         @endif
 
-        @stack('scripts')
-
-    </body>
-    
+        @yield('content')
+    </main>
+</body>
 </html>
