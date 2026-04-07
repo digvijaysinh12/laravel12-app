@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,3 +42,9 @@ Route::prefix('orders')->name('orders.')->group(function () {
 
 Route::view('/users', 'admin.users.index')
     ->name('users.index');
+
+        Route::get('/sales-analytics', [SalesAnalyticsController::class, 'index'])
+        ->name('admin.sales.analytics');
+
+    Route::get('/sales-analytics/export', [SalesAnalyticsController::class, 'export'])
+        ->name('admin.sales.export');
