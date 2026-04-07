@@ -3,42 +3,149 @@
 @section('title', $page_title)
 
 @section('content')
+@php
+    $showInStockOnly = request()->boolean('in_stock');
+    $visibleProducts = $showInStockOnly
+        ? $products->getCollection()->filter(fn ($product) => (int) ($product->stock ?? 0) > 0)
+        : $products->getCollection();
+@endphp
+
 <div class="space-y-6">
-    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ $page_title }}</h1>
                 <p class="mt-1 text-sm text-slate-600">Showing {{ $total_products }} products</p>
+                @isset($load_time_ms)
+                    <p class="mt-1 text-xs text-slate-500">Loaded in {{ $load_time_ms }} ms</p>
+                @endisset
             </div>
 
-            <form method="GET" action="{{ route('user.products.index') }}" class="flex w-full gap-2 md:w-auto">
-                <input
-                    type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    class="w-full rounded-md border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-slate-500 focus:ring-1 focus:ring-slate-500 md:w-72"
-                    placeholder="Search products"
+            <form method="GET" action="{{ $listing_route ?? route('user.products.index') }}" class="flex items-center gap-2">
+                <input type="hidden" name="search" value="{{ request('search') }}">
+                <input type="hidden" name="category_id" value="{{ request('category_id', $selected_category ?? '') }}">
+                <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+                <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+                @if (request('in_stock'))
+                    <input type="hidden" name="in_stock" value="1">
+                @endif
+                <label for="sort" class="text-sm font-medium text-slate-700">Sort</label>
+                <select
+                    id="sort"
+                    name="sort"
+                    onchange="this.form.submit()"
+                    class="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
                 >
-                <x-button type="submit" variant="secondary">Search</x-button>
+                    <option value="newest" @selected(request('sort', 'newest') === 'newest')>Newest</option>
+                    <option value="price_asc" @selected(request('sort') === 'price_asc')>Price Low-High</option>
+                    <option value="price_desc" @selected(request('sort') === 'price_desc')>Price High-Low</option>
+                </select>
             </form>
         </div>
     </section>
 
-    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        @forelse ($products as $product)
-            <x-product-card :product="$product" />
-        @empty
-            <div class="col-span-full rounded-xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center text-sm text-slate-600">
-                No products available.
-            </div>
-        @endforelse
-    </section>
+    <div class="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <aside class="h-fit rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-24">
+            <h2 class="text-base font-semibold text-slate-900">Filters</h2>
 
-    <div class="flex flex-col gap-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-        <span>Showing {{ $products->firstItem() ?? 0 }} to {{ $products->lastItem() ?? 0 }} of {{ $products->total() }} results</span>
-        <div class="mt-4">
-            {{ $products->links() }}
-        </div>
+            <form method="GET" action="{{ $listing_route ?? route('user.products.index') }}" class="mt-4 space-y-5">
+                <div>
+                    <label for="search" class="mb-1 block text-sm font-medium text-slate-700">Search</label>
+                    <input
+                        id="search"
+                        type="text"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Search products"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                    >
+                </div>
+
+                <div>
+                    <label for="category_id" class="mb-1 block text-sm font-medium text-slate-700">Category</label>
+                    <select
+                        id="category_id"
+                        name="category_id"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                    >
+                        <option value="">All Categories</option>
+                        @foreach (($categories ?? []) as $category)
+                            <option value="{{ $category->id }}" @selected((string) request('category_id', $selected_category ?? '') === (string) $category->id)>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="min_price" class="mb-1 block text-sm font-medium text-slate-700">Min Price</label>
+                        <input
+                            id="min_price"
+                            type="number"
+                            min="0"
+                            name="min_price"
+                            value="{{ request('min_price') }}"
+                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                        >
+                    </div>
+                    <div>
+                        <label for="max_price" class="mb-1 block text-sm font-medium text-slate-700">Max Price</label>
+                        <input
+                            id="max_price"
+                            type="number"
+                            min="0"
+                            name="max_price"
+                            value="{{ request('max_price') }}"
+                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                        >
+                    </div>
+                </div>
+
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                        <input
+                            type="checkbox"
+                            name="in_stock"
+                            value="1"
+                            @checked(request('in_stock'))
+                            class="rounded border-slate-300 text-slate-900 focus:ring-slate-400"
+                        >
+                        In stock only
+                    </label>
+                </div>
+
+                <input type="hidden" name="sort" value="{{ request('sort', 'newest') }}">
+
+                <div class="grid gap-2">
+                    <button type="submit" class="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-black">
+                        Apply Filters
+                    </button>
+                    <a href="{{ route('user.products.index') }}" class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-center text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+                        Reset
+                    </a>
+                </div>
+            </form>
+        </aside>
+
+        <section class="space-y-5">
+            <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                @forelse ($visibleProducts as $product)
+                    <x-product-card :product="$product" />
+                @empty
+                    <div class="col-span-full rounded-xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center text-sm text-slate-600">
+                        No products match your filters.
+                    </div>
+                @endforelse
+            </div>
+
+            <div class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <span>Showing {{ $products->firstItem() ?? 0 }} to {{ $products->lastItem() ?? 0 }} of {{ $products->total() }} results</span>
+                <div>
+                    {{ $products->links() }}
+                </div>
+            </div>
+        </section>
     </div>
 </div>
 @endsection

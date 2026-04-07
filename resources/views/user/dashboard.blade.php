@@ -8,68 +8,61 @@
 @endphp
 
 <div class="space-y-8">
-    <section class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-        <div class="grid gap-0 lg:grid-cols-[1.2fr_0.8fr]">
-            <div class="space-y-5 p-8 sm:p-10">
-                <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Customer dashboard</p>
-                <h1 class="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-                    Welcome back, {{ auth()->user()->name }}
-                </h1>
-                <p class="max-w-2xl text-sm leading-7 text-slate-600">
-                    Track your shopping activity, review your cart, and jump back into the product catalog whenever you need it.
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+            <div>
+                <p class="text-xs uppercase tracking-[0.14em] text-slate-500">Customer dashboard</p>
+                <h1 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Welcome back, {{ auth()->user()->name }}</h1>
+                <p class="mt-3 text-sm leading-7 text-slate-600">
+                    Continue shopping, review your cart, and keep track of your recent activity from one place.
                 </p>
 
-                <div class="flex flex-wrap gap-3">
-                    <x-button href="{{ route('user.products.index') }}">Browse Products</x-button>
-                    <x-button href="{{ route('user.cart.index') }}" variant="secondary">Open Cart</x-button>
+                <div class="mt-5 flex flex-wrap gap-3">
+                    <a href="{{ route('user.products.index') }}" class="inline-flex items-center rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black">
+                        Browse Products
+                    </a>
+                    <a href="{{ route('user.cart.index') }}" class="inline-flex items-center rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+                        Open Cart
+                    </a>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-slate-950 to-slate-700 p-8 text-white sm:p-10">
-                <div class="grid h-full gap-4">
-                    <div class="rounded-[1.75rem] bg-white/10 p-5 backdrop-blur">
-                        <div class="text-xs uppercase tracking-[0.24em] text-slate-300">Account</div>
-                        <div class="mt-2 text-lg font-semibold">{{ auth()->user()->email }}</div>
-                        <div class="mt-1 text-sm text-slate-300">Role: {{ auth()->user()->role }}</div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="rounded-[1.75rem] bg-white/10 p-5 backdrop-blur">
-                            <div class="text-xs uppercase tracking-[0.24em] text-slate-300">Cart items</div>
-                            <div class="mt-2 text-3xl font-semibold">{{ $cartCount }}</div>
-                        </div>
-                        <div class="rounded-[1.75rem] bg-white/10 p-5 backdrop-blur">
-                            <div class="text-xs uppercase tracking-[0.24em] text-slate-300">Profile</div>
-                            <div class="mt-2 text-3xl font-semibold">1</div>
-                        </div>
-                    </div>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p class="text-xs uppercase tracking-[0.14em] text-slate-500">Email</p>
+                    <p class="mt-2 text-sm font-medium text-slate-900">{{ auth()->user()->email }}</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p class="text-xs uppercase tracking-[0.14em] text-slate-500">Items in Cart</p>
+                    <p class="mt-2 text-2xl font-semibold text-slate-900">{{ $cartCount }}</p>
                 </div>
             </div>
         </div>
     </section>
 
     <section class="grid gap-4 md:grid-cols-3">
-        <x-card title="Quick Links">
-            <div class="space-y-3">
-                <x-button href="{{ route('user.products.index') }}" class="w-full">Shop Products</x-button>
-                <x-button href="{{ route('user.profile.edit') }}" variant="secondary" class="w-full">Edit Profile</x-button>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-900">Quick Links</h2>
+            <div class="mt-4 space-y-2 text-sm">
+                <a href="{{ route('user.products.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50">Shop Products</a>
+                <a href="{{ route('user.profile.edit') }}" class="block rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50">Manage Profile</a>
             </div>
-        </x-card>
+        </div>
 
-        <x-card title="Cart Status">
-            <div class="rounded-2xl bg-slate-50 p-5">
-                <div class="text-sm text-slate-500">Items currently in cart</div>
-                <div class="mt-2 text-3xl font-semibold text-slate-900">{{ $cartCount }}</div>
-                <p class="mt-2 text-sm text-slate-600">Open the cart to adjust quantities or checkout.</p>
-            </div>
-        </x-card>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-900">Cart Status</h2>
+            <p class="mt-3 text-sm text-slate-600">Items currently in your cart</p>
+            <p class="mt-2 text-3xl font-semibold text-slate-900">{{ $cartCount }}</p>
+        </div>
 
-        <x-card title="Shopping Tips">
-            <div class="space-y-3 text-sm text-slate-600">
-                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">Use the product catalog to discover new items.</div>
-                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">Keep an eye on stock badges before adding to cart.</div>
-                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">Invoices are available immediately after checkout.</div>
-            </div>
-        </x-card>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-900">Shopping Tips</h2>
+            <ul class="mt-3 space-y-2 text-sm text-slate-600">
+                <li class="rounded-lg bg-slate-50 px-3 py-2">Use filters to narrow products quickly.</li>
+                <li class="rounded-lg bg-slate-50 px-3 py-2">Check stock status before checkout.</li>
+                <li class="rounded-lg bg-slate-50 px-3 py-2">Download invoice after order placement.</li>
+            </ul>
+        </div>
     </section>
 </div>
 @endsection
