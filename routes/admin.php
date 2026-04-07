@@ -1,59 +1,43 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminOrderController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
+use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Admin Routes
-|--------------------------------------------------------------------------
-| Only accessible by authenticated users with admin role
-*/
+Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+    ->name('dashboard');
 
-Route::middleware(['auth', 'checkrole:admin'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
+Route::prefix('products')->name('products.')->group(function () {
+    Route::get('/', [ProductController::class, 'index'])
+        ->name('index');
 
-        // Dashboard (optional)
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+    Route::get('/export', [ProductController::class, 'export'])
+        ->name('export');
 
-        // Product Management
-        Route::prefix('products')->name('products.')->group(function () {
+    Route::get('/create', [ProductController::class, 'create'])
+        ->name('create');
+    Route::post('/', [ProductController::class, 'store'])
+        ->name('store');
+    Route::get('/{product}/edit', [ProductController::class, 'edit'])
+        ->whereNumber('product')
+        ->name('edit');
+    Route::put('/{product}', [ProductController::class, 'update'])
+        ->whereNumber('product')
+        ->name('update');
+    Route::delete('/{product}', [ProductController::class, 'destroy'])
+        ->whereNumber('product')
+        ->name('destroy');
+});
 
-            Route::get('/create', [ProductController::class, 'create'])
-                ->name('create');
+Route::prefix('orders')->name('orders.')->group(function () {
+    Route::get('/', [AdminOrderController::class, 'index'])
+        ->name('index');
+    Route::get('/{order}', [AdminOrderController::class, 'show'])
+        ->name('show');
+    Route::put('/{order}/status', [AdminOrderController::class, 'updateStatus'])
+        ->name('status');
+});
 
-            Route::post('/', [ProductController::class, 'store'])
-                ->name('store');
-
-            Route::get('/{product}/edit', [ProductController::class, 'edit'])
-                ->whereNumber('product')
-                ->name('edit');
-
-            Route::put('/{product}', [ProductController::class, 'update'])
-                ->whereNumber('product')
-                ->name('update');
-
-            Route::delete('/{product}', [ProductController::class, 'destroy'])
-                ->whereNumber('product')
-                ->name('destroy');
-
-        });
-
-
-        Route::prefix('orders')->name('orders.')->group(function () {
-            Route::get('/', [AdminOrderController::class, 'index'])
-                ->name('admin.orders.index');
-
-            Route::get('/{order}', [AdminOrderController::class, 'show'])
-                ->name('admin.orders.show');
-
-            Route::put('/{order}/status', [AdminOrderController::class, 'updateStatus'])
-                ->name('admin.orders.status');
-        });
-
-    });
+Route::view('/users', 'admin.users.index')
+    ->name('users.index');

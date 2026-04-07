@@ -10,7 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldRescue;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class OrderPlaced implements ShouldBroadcast, ShouldRescue
+class OrderStatusUpdated implements ShouldBroadcast, ShouldRescue
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -20,12 +20,12 @@ class OrderPlaced implements ShouldBroadcast, ShouldRescue
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('admin.orders')];
+        return [new PrivateChannel('orders.'.$this->order->user_id)];
     }
 
     public function broadcastAs(): string
     {
-        return 'order.placed';
+        return 'order.status.updated';
     }
 
     public function broadcastWith(): array
@@ -33,10 +33,8 @@ class OrderPlaced implements ShouldBroadcast, ShouldRescue
         return [
             'order_id' => $this->order->id,
             'order_number' => $this->order->order_number,
-            'customer_name' => $this->order->user?->name,
-            'total' => (float) $this->order->total_amount,
-            'item_count' => $this->order->items()->count(),
             'status' => $this->order->status,
+            'updated_at' => $this->order->updated_at?->toDateTimeString(),
         ];
     }
 }

@@ -38,10 +38,14 @@ class ProductController extends Controller
 
         $products = $result['products'];
 
-        return view('products.index', [
+        $view = $request->routeIs('admin.*')
+            ? 'admin.products.index'
+            : 'user.products.index';
+
+        return view($view, [
             'products' => $result['products'],
             'total_products' => $result['total'],
-            'page_title' => 'Product Lit'
+            'page_title' => $request->routeIs('admin.*') ? 'Manage Products' : 'Product List',
         ]);
     }
 
@@ -56,7 +60,7 @@ class ProductController extends Controller
             'user_id' => auth()->id()
         ]);
 
-        return view('products.create', compact('categories'));
+        return view('admin.products.create', compact('categories'));
     }
 
     /**
@@ -88,7 +92,7 @@ class ProductController extends Controller
 
         $this->productService->createProduct($data);
 
-        return redirect()->route('products.index')
+        return redirect()->route('admin.products.index')
             ->with('success', 'Product created successfully');
 
     }
@@ -104,7 +108,7 @@ class ProductController extends Controller
 
         $product = $this->productService->getProduct($product);
 
-        return view('products.show', compact('product'));
+        return view('user.products.show', compact('product'));
     }
 
 
@@ -118,7 +122,7 @@ class ProductController extends Controller
 
         $categories = Category::all();
 
-        return view('products.edit', compact('product', 'categories'));
+        return view('admin.products.edit', compact('product', 'categories'));
     }
 
     /**
@@ -137,7 +141,7 @@ class ProductController extends Controller
 
             $this->productService->updateProduct($data, $product);
 
-            return redirect()->route('products.index')
+            return redirect()->route('admin.products.index')
                 ->with('success', 'Product updated successfully');
 
         } catch (Exception $e) {
@@ -161,7 +165,7 @@ class ProductController extends Controller
 
             $this->productService->deleteProduct($product);
 
-            return redirect()->route('products.index')
+            return redirect()->route('admin.products.index')
                 ->with('success', 'Product deleted successfully');
 
         } catch (Exception $e) {

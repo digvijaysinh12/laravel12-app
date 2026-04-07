@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\OrderPlaced;
 use App\Services\CheckoutService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
 
 class CheckoutController extends Controller
 {
@@ -16,9 +14,7 @@ class CheckoutController extends Controller
 
             session()->put('last_invoice', $invoice);
 
-            //event(new OrderPlaced(auth()->user(), $invoice['grand_total']));
-
-            return view('invoice.index', compact('invoice'))
+            return view('user.invoice.index', compact('invoice'))
                 ->with('success', 'Order placed successfully');
 
         } catch (\Exception $e) {
@@ -30,12 +26,13 @@ class CheckoutController extends Controller
     public function downloadPdf()
     {
         $invoice = session('last_invoice');
-    if (!$invoice) {
-        return back()->with('error', 'No invoice found');
-    }
 
-    $pdf = Pdf::loadView('invoice.pdf', compact('invoice'));
-
-    return $pdf->download('invoice_'.$invoice['invoice_no'].'.pdf');
+        if (! $invoice) {
+            return back()->with('error', 'No invoice found');
         }
+
+        $pdf = Pdf::loadView('user.invoice.pdf', compact('invoice'));
+
+        return $pdf->download('invoice_'.$invoice['invoice_no'].'.pdf');
+    }
 }

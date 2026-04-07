@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\OrderPlaced;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
@@ -68,10 +69,18 @@ class CheckoutService
 
             DB::commit();
 
+            Log::info('Broadcasting new order placed event', [
+                'order_id' => $order->id,
+                'user_id' => $order->user_id,
+                'order_number' => $order->order_number,
+            ]);
+
+            event(new OrderPlaced($order));
+
             return [
                 'success' => true,
                 'invoice_no' => $order->order_number,
-                'date' => now()->format('d M Y'),
+                'date' => now(),
                 'items' => $items,
                 'grand_total' => $total,
                 'user' => auth()->user()

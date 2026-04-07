@@ -145,6 +145,12 @@ return [
             'path' => storage_path('logs/auth.log'),
             'level' => 'warning' 
         ],
+        'admin' => [
+            'driver' => 'daily', // rotate logs daily
+            'path' => storage_path('logs/admin.log'),
+            'level' => 'info',
+            'days' => 14, // keep logs for 14 days
+        ],
     ],
 
 ];

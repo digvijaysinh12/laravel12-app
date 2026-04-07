@@ -2,7 +2,9 @@
 
 namespace App\Services\Admin;
 
+use App\Events\OrderStatusUpdated;
 use App\Models\Order;
+use Illuminate\Support\Facades\Log;
 
 
 class OrderService
@@ -25,6 +27,16 @@ class OrderService
         $order->update([
             'status' => $status
         ]);
+
+        $order->loadMissing('user');
+
+        Log::info('Broadcasting order status update event', [
+            'order_id' => $order->id,
+            'user_id' => $order->user_id,
+            'status' => $order->status,
+        ]);
+
+        event(new OrderStatusUpdated($order));
 
         return $order;
     }
