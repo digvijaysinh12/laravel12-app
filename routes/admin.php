@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [AdminDashboardController::class, 'index'])
@@ -40,11 +41,11 @@ Route::prefix('orders')->name('orders.')->group(function () {
         ->name('status');
 });
 
-Route::view('/users', 'admin.users.index')
+Route::get('/users', [UserController::class, 'index'])
     ->name('users.index');
 
-        Route::get('/sales-analytics', [SalesAnalyticsController::class, 'index'])
-        ->name('admin.sales.analytics');
+Route::get('/sales-analytics', [SalesAnalyticsController::class, 'index'])
+    ->name('sales.analytics');
 
-    Route::get('/sales-analytics/export', [SalesAnalyticsController::class, 'export'])
-        ->name('admin.sales.export');
+Route::get('/sales-analytics/export', [SalesAnalyticsController::class, 'export'])
+    ->name('sales.export');

@@ -26,6 +26,18 @@ const showRealtimeNotice = (message) => {
     }, 4500);
 };
 
+const appendFeedEntry = (message) => {
+    const feed = document.querySelector('[data-order-status-feed]');
+    if (!feed) {
+        return;
+    }
+
+    const item = document.createElement('div');
+    item.className = 'rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700';
+    item.textContent = message;
+    feed.prepend(item);
+};
+
 const subscribeToOrderStatus = () => {
     if (!window.Echo || !userId || userRole !== 'user') {
         return;
@@ -34,7 +46,10 @@ const subscribeToOrderStatus = () => {
     window.Echo.private(`orders.${userId}`)
         .listen('.order.status.updated', (event) => {
             const label = event.order_number || `#${event.order_id}`;
-            showRealtimeNotice(`Order ${label} is now ${event.status}.`);
+            const message = `Order ${label} is now ${event.status}.`;
+
+            appendFeedEntry(message);
+            showRealtimeNotice(message);
         });
 };
 

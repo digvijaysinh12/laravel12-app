@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\OrderAnalyticsController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,16 @@ Route::prefix('cart')->name('cart.')->group(function () {
 
 Route::post('/checkout', [CheckoutController::class, 'store'])
     ->name('checkout');
+
+Route::get('/checkout', [CheckoutController::class, 'create'])
+    ->name('checkout.index');
+
+Route::get('/orders', [OrderController::class, 'index'])
+    ->name('orders.index');
+
+Route::get('/orders/{order}', [OrderController::class, 'show'])
+    ->whereNumber('order')
+    ->name('orders.show');
 
 Route::get('/orders/realtime-example', function () {
     return view('user.orders.realtime-example');

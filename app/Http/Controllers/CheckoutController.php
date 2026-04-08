@@ -2,12 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CheckoutRequest;
+use App\Services\CartService;
 use App\Services\CheckoutService;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class CheckoutController extends Controller
 {
-    public function store(CheckoutService $service)
+    public function create(CartService $cartService)
+    {
+        $cart = $cartService->getCartItems();
+        $summary = $cartService->getSummary();
+        $shipping = $cartService->getShipping($cart);
+        $grandTotal = round($summary['total'] + $shipping['amount'], 2);
+
+        return view('user.checkout.index', compact('cart', 'summary', 'shipping', 'grandTotal'));
+    }
+
+    public function store(CheckoutRequest $request, CheckoutService $service)
     {
         try {
             $invoice = $service->process();

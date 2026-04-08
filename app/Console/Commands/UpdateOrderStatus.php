@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Order;
+use App\Services\Admin\OrderService;
 use Illuminate\Console\Command;
 
 class UpdateOrderStatus extends Command
@@ -24,18 +24,14 @@ class UpdateOrderStatus extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(OrderService $orderService): int
     {
-        $this->info("Updating order status... ");
+        $this->info('Updating overdue order statuses...');
 
-        $orders = Order::where('status','pending')
-                    ->where('created_at','<',now()->subHours(24))
-                    ->get();
+        $updatedCount = $orderService->promotePendingOrdersToProcessing();
 
-        foreach($orders as $order){
-            $order->update(['status' => 'processing']);
-        }
+        $this->info("Updated {$updatedCount} orders.");
 
-        $this->info("Updated " . $orders->count() . " orders.");
+        return self::SUCCESS;
     }
 }

@@ -7,7 +7,6 @@ use App\Observers\ProductObserver;
 use App\Services\DiscountService;
 use App\Services\GreetingService;
 use App\Services\PaymentService;
-use App\Services\ProductService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
@@ -35,10 +34,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DiscountService::class, function () {
             Log::info('DiscountService singleton created');
             return new DiscountService();
-        });
-
-        $this->app->bind(ProductService::class, function () {
-            return new ProductService();
         });
     }
 

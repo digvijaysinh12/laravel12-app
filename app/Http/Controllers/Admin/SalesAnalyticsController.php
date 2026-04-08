@@ -3,44 +3,39 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
+use App\Services\Admin\SalesAnalyticsService;
+use Illuminate\Http\Response;
+use Illuminate\View\View;
 
 class SalesAnalyticsController extends Controller
 {
-    public function index()
+    public function __construct(protected SalesAnalyticsService $salesAnalyticsService)
     {
+    }
 
-        $orders = Order::with('user','items.product.category')->get();
-       
-        $monthlySales = $orders->groupBy(function($order){
-            return Carbon::parse($order->created_at)->format('Y-m');
-        })
-        ->map(function ($monthOrders){
-            return [
-                'total_revenue' => $monthOrders->sum('total_amount'),
-                'average_order' => $monthOrders->avg('total_amount'),
-                'orders_count'  => $monthOrders->count(),
-            ];
-        })
-        ->sortKeysDesc();
+    public function index(): View
+    {
+        return view('admin.sales.analytics', $this->salesAnalyticsService->getAnalytics());
+    }
 
-        $topCustomers = $orders
-            ->groupBy('user_id')
-            ->map(function ($userOrders) {
-                return [
-                    'user_id'     => $userOrders->first()->user_id,
-                    'total_spent' => $userOrders->sum('total_amount'),
-                    'orders'      => $userOrders->count(),
-                ];
-            })
-            ->sortByDesc('total_spent')
-            ->take(10);
+    public function export(): Response
+    {
+        $orders = $this->salesAnalyticsService->getOrders();
 
-        return view('admin.sales.analytics', compact(
-    'monthlySales',
-    'topCustomers'
-));
+        return response()->streamDownload(function () use ($orders) {
+            $file = fopen('php://output', 'w');
+
+            fputcsv($file, ['order_number', 'customer', 'total_amount', 'status', 'created_at']);
+
+            foreach ($orders as $order) {
+                fputcsv($file, [
+                    $order->order_number,
+                    $order->user?->name ?? 'N/A',
+                    $order->total_amount,
+                    $order->status,
+                    $order->created_at?->format('Y-m-d H:i:s'),
+                ]);
+            }
+        }, 'sales-analytics.csv');
     }
 }
