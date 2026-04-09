@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('user.layouts.app')
 
 @section('title', '403')
 
@@ -8,7 +8,7 @@
     <h1 class="mt-3 text-3xl font-semibold text-slate-900">Forbidden</h1>
     <p class="mt-3 text-sm text-slate-500">You do not have permission to access this page.</p>
     <div class="mt-6">
-        <x-button href="{{ auth()->check() ? (auth()->user()->role === 'admin' ? route('admin.dashboard') : route('user.dashboard')) : route('login') }}">Go Back</x-button>
+        <x-button href="{{ auth()->check() ? (auth()->user()->role === 'admin' ? route('admin.dashboard') : route('dashboard')) : route('login') }}">Go Back</x-button>
     </div>
 </div>
 @endsection

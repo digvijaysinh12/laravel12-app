@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('user.layouts.app')
 
 @section('title', '404')
 
@@ -8,7 +8,7 @@
     <h1 class="mt-3 text-3xl font-semibold text-slate-900">Page not found</h1>
     <p class="mt-3 text-sm text-slate-500">The page you are looking for does not exist or has moved.</p>
     <div class="mt-6">
-        <x-button href="{{ auth()->check() ? (auth()->user()->role === 'admin' ? route('admin.dashboard') : route('user.dashboard')) : route('login') }}">Go Back</x-button>
+        <x-button href="{{ auth()->check() ? (auth()->user()->role === 'admin' ? route('admin.dashboard') : route('dashboard')) : route('login') }}">Go Back</x-button>
     </div>
 </div>
 @endsection

@@ -18,7 +18,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        return view('user.auth.login');
     }
 
     /**
@@ -31,11 +31,12 @@ class AuthenticatedSessionController extends Controller
 
         $this->restoreCartFromRedis();
 
-        $route = $request->user()?->role === 'admin'
-            ? route('admin.dashboard', absolute: false)
-            : route('user.dashboard', absolute: false);
 
-        return redirect()->intended($route);
+        $route = $request->user()?->role === 'admin'
+            ? route('admin.dashboard')
+            : route('dashboard');
+
+        return redirect($route);
     }
 
     /**

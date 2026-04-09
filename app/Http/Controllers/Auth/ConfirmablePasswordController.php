@@ -14,7 +14,7 @@ class ConfirmablePasswordController extends Controller
      */
     public function show(): View
     {
-        return view('auth.confirm-password');
+        return view('user.auth.confirm-password');
     }
 
     public function store(ConfirmPasswordRequest $request): RedirectResponse
@@ -23,7 +23,7 @@ class ConfirmablePasswordController extends Controller
 
         $route = $request->user()->role === 'admin'
             ? route('admin.dashboard', absolute: false)
-            : route('user.dashboard', absolute: false);
+            : route('dashboard', absolute: false);
 
         return redirect()->intended($route);
     }

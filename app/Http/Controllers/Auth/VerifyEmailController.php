@@ -17,7 +17,7 @@ class VerifyEmailController extends Controller
         if ($request->user()->hasVerifiedEmail()) {
             $route = $request->user()->role === 'admin'
                 ? route('admin.dashboard', absolute: false)
-                : route('user.dashboard', absolute: false);
+                : route('dashboard', absolute: false);
 
             return redirect()->intended($route.'?verified=1');
         }
@@ -28,7 +28,7 @@ class VerifyEmailController extends Controller
 
         $route = $request->user()->role === 'admin'
             ? route('admin.dashboard', absolute: false)
-            : route('user.dashboard', absolute: false);
+            : route('dashboard', absolute: false);
 
         return redirect()->intended($route.'?verified=1');
     }
