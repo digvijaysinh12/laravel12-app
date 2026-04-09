@@ -20,9 +20,15 @@ return Application::configure(basePath: dirname(__DIR__))
     )
 
     ->withMiddleware(function (Middleware $middleware): void {
+
+        // Aliases
         $middleware->alias([
             'checkrole' => \App\Http\Middleware\CheckRole::class,
         ]);
+
+        // Global middleware (IMPORTANT)
+        $middleware->append(\App\Http\Middleware\RequestContextMiddleware::class);
+
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {

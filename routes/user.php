@@ -1,21 +1,22 @@
 <?php
 
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\Customer\ProductController;
+use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\OrderAnalyticsController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Customer\ProfileController;
 use Illuminate\Support\Facades\Route;
-
-Route::get('/dashboard', fn () => view('user.dashboard'))
-    ->name('dashboard');
 
 Route::get('/profile', [ProfileController::class, 'edit'])
     ->name('profile.edit');
 
 Route::patch('/profile', [ProfileController::class, 'update'])
     ->name('profile.update');
+
+Route::put('/password', [PasswordController::class, 'update'])
+    ->name('password.update');
 
 Route::delete('/profile', [ProfileController::class, 'destroy'])
     ->name('profile.destroy');
@@ -40,37 +41,21 @@ Route::prefix('cart')->name('cart.')->group(function () {
     Route::delete('/remove/{id}', [CartController::class, 'remove'])->name('remove');
 });
 
-Route::post('/checkout', [CheckoutController::class, 'store'])
-    ->name('checkout');
+Route::prefix('checkout')->name('checkout.')->group(function () {
+    Route::get('/', [CheckoutController::class, 'create'])->name('index');
+    Route::post('/', [CheckoutController::class, 'store'])->name('store');
+});
 
-Route::get('/checkout', [CheckoutController::class, 'create'])
-    ->name('checkout.index');
-
-Route::get('/orders', [OrderController::class, 'index'])
-    ->name('orders.index');
-
-Route::get('/orders/{order}', [OrderController::class, 'show'])
-    ->whereNumber('order')
-    ->name('orders.show');
-
-Route::get('/orders/realtime-example', function () {
-    return view('user.orders.realtime-example');
-})->name('orders.realtime-example');
-
-Route::get('/orders/analytics', [OrderAnalyticsController::class, 'index'])
-    ->name('orders.analytics');
+Route::prefix('orders')->name('orders.')->group(function () {
+    Route::get('/', [OrderController::class, 'index'])->name('index');
+    Route::get('/{order}', [OrderController::class, 'show'])
+        ->whereNumber('order')
+        ->name('show');
+    Route::get('/analytics', [OrderAnalyticsController::class, 'index'])->name('analytics');
+});
 
 Route::prefix('invoice')->name('invoice.')->group(function () {
-    Route::get('/', function () {
-        $invoice = session('last_invoice');
-
-        if (!$invoice) {
-            return redirect()->route('user.cart.index')
-                ->with('error', 'No invoice found');
-        }
-
-        return view('user.invoice.index', compact('invoice'));
-    })->name('show');
+    Route::get('/', [CheckoutController::class, 'invoice'])->name('show');
     Route::get('/pdf', [CheckoutController::class, 'downloadPdf'])
         ->name('pdf');
 });

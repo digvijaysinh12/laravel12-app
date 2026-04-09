@@ -1,16 +1,25 @@
 <?php
 
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\HomePageController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\Customer\ProductController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [ProductController::class, 'featured'])->name('home');
+// Public storefront
+Route::get('/', [HomePageController::class, 'index'])->name('home');
+
+Route::middleware(['auth', 'checkrole:user'])
+    ->get('/dashboard', [ProductController::class, 'featured'])
+    ->name('dashboard');
 
 require __DIR__.'/auth.php';
 
-Route::middleware('auth')->name('user.')->group(function () {
+// Authenticated customer area
+Route::middleware(['auth', 'checkrole:user'])->name('user.')->group(function () {
     require __DIR__.'/user.php';
 });
 
+// Admin area
 Route::middleware(['auth', 'checkrole:admin'])
     ->prefix('admin')
     ->name('admin.')
@@ -18,4 +27,4 @@ Route::middleware(['auth', 'checkrole:admin'])
         require __DIR__.'/admin.php';
     });
 
-Route::fallback(fn () => response()->view('errors.404', [], 404));
+Route::fallback([PageController::class, 'notFound']);

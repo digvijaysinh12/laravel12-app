@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('user.layouts.app')
 
 @section('title', 'Checkout')
 
@@ -32,7 +32,7 @@
                 <h2 class="text-lg font-semibold text-slate-900">Shipping Details</h2>
                 <p class="mt-1 text-sm text-slate-600">Use the address where you want the order delivered.</p>
 
-                <form method="POST" action="{{ route('user.checkout') }}" class="mt-6 space-y-4">
+                <form method="POST" action="{{ route('user.checkout.store') }}" class="mt-6 space-y-4">
                     @csrf
 
                     <div>

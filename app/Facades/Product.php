@@ -7,6 +7,6 @@ class Product extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return \App\Services\ProductService::class;
+        return \App\Services\Customer\ProductService::class;
     }
 }

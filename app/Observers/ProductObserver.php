@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Product;
-use App\Services\ProductService;
+use App\Services\Customer\ProductService;
 use Illuminate\Support\Facades\Log;
 
 class ProductObserver
@@ -37,3 +37,5 @@ class ProductObserver
         ]);
     }
 }
+
+

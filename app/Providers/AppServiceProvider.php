@@ -6,7 +6,7 @@ use App\Models\Product;
 use App\Observers\ProductObserver;
 use App\Services\DiscountService;
 use App\Services\GreetingService;
-use App\Services\PaymentService;
+use App\Services\Customer\PaymentService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
