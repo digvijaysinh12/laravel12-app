@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
-use App\Services\ProductService;
+use App\Services\Customer\ProductService;
 use Exception;
 use Illuminate\Cache\TaggableStore;
 use Illuminate\Http\RedirectResponse;
@@ -25,7 +25,7 @@ class ProductController extends Controller
     public function index(Request $request): View
     {
         $startedAt = microtime(true);
-        $result = $this->productService->getAllProducts($request, 'admin');
+        $result = $this->productService->getAllProducts($request);
         $categories = $this->productService->getAllCategories();
         $loadTimeMs = round((microtime(true) - $startedAt) * 1000, 2);
 
