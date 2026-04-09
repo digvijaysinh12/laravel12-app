@@ -15,7 +15,7 @@ class SalesAnalyticsController extends Controller
 
     public function index(): View
     {
-        return view('admin.sales.analytics', $this->salesAnalyticsService->getAnalytics());
+        return view('admin.reports.index', $this->salesAnalyticsService->getAnalytics());
     }
 
     public function export(): Response
