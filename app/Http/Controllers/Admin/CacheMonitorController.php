@@ -15,7 +15,7 @@ class CacheMonitorController extends Controller
     public function index()
     {
         $stats = $this->monitor->stats();
-        return view('admin.cache-monitor', compact('stats'));
+        return view('admin.cache.index', compact('stats'));
     }
 
     public function clearAll()
