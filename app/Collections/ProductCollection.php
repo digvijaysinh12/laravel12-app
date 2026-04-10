@@ -7,20 +7,20 @@ use Illuminate\Database\Eloquent\Collection;
 class ProductCollection extends Collection
 {
     // Only products with stock > 0
-    public function inStock()
+    public function inStock(): static
     {
-        return $this->filter(fn ($product) => $product->stock > 0);
+        return $this->where('stock', '>', 0);
     }
 
     // Filter by price range
-    public function byPriceRange($min = null, $max = null)
+    public function byPriceRange($min = null, $max = null): static
     {
         return $this->filter(function ($product) use ($min, $max) {
-            if ($min !== null && $product->price < $min) {
+            if ($min !== null && (float) $product->price < (float) $min) {
                 return false;
             }
 
-            if ($max !== null && $product->price > $max) {
+            if ($max !== null && (float) $product->price > (float) $max) {
                 return false;
             }
 
@@ -29,49 +29,45 @@ class ProductCollection extends Collection
     }
 
     // Featured products
-    public function featured()
+    public function featured(): static
     {
         return $this->where('is_featured', true);
     }
 
     // On Sale products (has discount)
-    public function onSale()
+    public function onSale(): static
     {
         return $this->filter(fn ($product) =>
-            !is_null($product->discount_price) &&
-            $product->discount_price < $product->price
+            $product->getAttribute('discount_price') !== null &&
+            (float) $product->discount_price < (float) $product->price
         );
     }
 
     // Filter by multiple categories
-    public function byCategories(array $categoryIds = [])
+    public function byCategories(array $categoryIds = []): static
     {
         if (empty($categoryIds)) {
             return $this;
         }
 
-        return $this->filter(fn ($product) =>
-            in_array($product->category_id, $categoryIds)
-        );
+        return $this->whereIn('category_id', $categoryIds);
     }
 
     // Sorting
-    public function sortProducts($sort)
+    public function sortProducts($sort): static
     {
-        return match ($sort) {
+        return match (strtolower((string) $sort)) {
             'price_asc' => $this->sortBy('price'),
             'price_desc' => $this->sortByDesc('price'),
             'name_asc' => $this->sortBy('name'),
-            'popularity' => $this->sortByDesc('sales_count'), // assume column exists
-            default => $this->sortByDesc('id'), // newest
+            'popularity' => $this->sortByDesc(fn ($product) => (int) ($product->getAttribute('sales_count') ?? 0)),
+            default => $this->sortByDesc('id'),
         };
     }
 
     // Total inventory value
-    public function totalValue()
+    public function totalValue(): float|int
     {
-        return $this->sum(fn ($product) =>
-            $product->price * $product->stock
-        );
+        return $this->sum(fn ($product) => (float) $product->price * (int) $product->stock);
     }
 }
