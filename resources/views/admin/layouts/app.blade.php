@@ -30,7 +30,28 @@
                             <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Admin</p>
                             <h1 class="text-2xl font-semibold tracking-tight text-slate-900">@yield('page-title', 'Dashboard')</h1>
                         </div>
+                        <div class="relative">
+                            <button id="notificationBtn" class="relative text-xl">
+                                🔔
+                                <span id="notificationCount"
+                                    class="hidden absolute -top-2 -right-2 rounded-full bg-rose-600 px-1.5 text-xs text-white">
+                                    0
+                                </span>
+                            </button>
 
+                            <div id="notificationDropdown"
+                                class="hidden absolute right-0 mt-2 w-80 rounded-xl border bg-white shadow-lg z-50">
+                                <div class="flex items-center justify-between border-b p-3">
+                                    <span class="font-semibold">Notifications</span>
+                                    <button id="markAllNotificationsBtn" type="button" class="text-xs font-medium text-slate-500 hover:text-slate-900">
+                                        Mark all read
+                                    </button>
+                                </div>
+                                <div id="notificationList" class="max-h-64 overflow-y-auto text-sm">
+                                    <div class="p-3 text-slate-500">No notifications</div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="flex items-center gap-3">
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf

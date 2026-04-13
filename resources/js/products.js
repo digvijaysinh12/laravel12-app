@@ -42,16 +42,16 @@ const subscribeProductStock = () => {
 
     window.Echo.channel(`product.${productId}`)
         .listen('.stock.updated', (event) => {
+            // FIXED: the channel already tells us which product this is.
             const liveStock = Number(event.stock);
-            const liveProductId = Number(event.productId);
 
             console.log('[Realtime] stock.updated', event);
 
-            if (!Number.isFinite(liveStock) || !Number.isFinite(liveProductId)) {
+            if (!Number.isFinite(liveStock)) {
                 return;
             }
 
-            updateStockUI(liveProductId, liveStock);
+            updateStockUI(productId, liveStock);
         });
 };
 

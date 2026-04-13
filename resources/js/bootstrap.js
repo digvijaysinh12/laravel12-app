@@ -32,4 +32,4 @@ window.Echo = new Echo({
     auth: {
         headers: csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {},
     },
-});
+});          

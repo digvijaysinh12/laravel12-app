@@ -268,3 +268,23 @@ php artisan view:cache
 ## 11. Author
 
 Digvijaysinh Sarvaiya
+
+
+## Artisan Commands Used
+
+### php artisan list
+Shows all available Artisan commands in Laravel.
+
+### php artisan route:list
+Displays all routes (admin + customer).
+Used to verify routing structure.
+
+### php artisan db:show
+Shows database connection details and tables.
+
+### php artisan cache:clear
+Clears application cache.
+
+### cache:clear vs config:clear
+- cache:clear → clears runtime cache (data)
+- config:clear → clears cached config values
