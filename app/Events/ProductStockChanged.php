@@ -22,6 +22,7 @@ class ProductStockChanged implements ShouldBroadcast
 
     public function broadcastOn(): Channel
     {
+        // FIXED: public product channel for live stock updates.
         return new Channel('product.'.$this->productId);
     }
 
@@ -33,7 +34,7 @@ class ProductStockChanged implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'productId' => $this->productId,
+            // FIXED: the channel already tells us which product this is.
             'stock' => $this->stock,
         ];
     }

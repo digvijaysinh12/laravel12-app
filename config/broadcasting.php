@@ -15,7 +15,8 @@ return [
     |
     */
 
-    'default' => env('BROADCAST_CONNECTION', 'pusher'),
+    // FIXED: prefer BROADCAST_DRIVER, fallback to the older name.
+    'default' => env('BROADCAST_DRIVER', env('BROADCAST_CONNECTION', 'pusher')),
 
     /*
     |--------------------------------------------------------------------------

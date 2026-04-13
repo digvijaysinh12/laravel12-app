@@ -20,7 +20,8 @@ class OrderStatusUpdated implements ShouldBroadcast, ShouldRescue
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('orders.'.$this->order->user_id)];
+        // FIXED: customer listens to their own order id.
+        return [new PrivateChannel('order.'.$this->order->id)];
     }
 
     public function broadcastAs(): string
