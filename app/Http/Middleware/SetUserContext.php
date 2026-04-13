@@ -21,17 +21,34 @@ class SetUserContext
         Context::flush();
 
         $user = $request->user();
-        $userType = $user?->role ?? 'guest';
+        $userType = $user
+            ? ($user->role === 'admin' ? 'admin' : 'customer')
+            : 'guest';
         $context = [
-            'request_id' => $request->header('X-Request-ID', (string) Str::uuid()),
+            'request_id' => (string) Str::uuid(),
             'user_id' => $user?->id,
             'user_type' => $userType,
-            'ip_address' => $request->ip(),
+            'ip_address' => $this->resolveIpAddress($request),
         ];
 
         Context::add($context);
         Log::withContext($context);
 
         return $next($request);
+    }
+
+    private function resolveIpAddress(Request $request): string
+    {
+        $forwardedFor = $request->header('X-Forwarded-For');
+
+        if (is_string($forwardedFor) && $forwardedFor !== '') {
+            $candidate = trim(explode(',', $forwardedFor)[0]);
+
+            if (filter_var($candidate, FILTER_VALIDATE_IP)) {
+                return $candidate;
+            }
+        }
+
+        return (string) $request->ip();
     }
 }
