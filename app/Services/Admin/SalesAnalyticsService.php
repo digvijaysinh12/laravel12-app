@@ -56,16 +56,35 @@ class SalesAnalyticsService
 
     private function buildMonthlySales(): array
     {
-        return Order::query()
-            ->select(['created_at', 'total_amount'])
-            ->orderBy('created_at')
-            ->get()
-            ->groupBy(fn ($order) => Carbon::parse($order->created_at)->format('Y-m'))
-            ->map(function (Collection $monthOrders) {
+        $monthlySales = [];
+
+        Order::query()
+            ->select(['id', 'created_at', 'total_amount'])
+            ->orderBy('id')
+            ->chunkById(1000, function (Collection $orders) use (&$monthlySales) {
+                foreach ($orders as $order) {
+                    $month = Carbon::parse($order->created_at)->format('Y-m');
+
+                    if (! isset($monthlySales[$month])) {
+                        $monthlySales[$month] = [
+                            'revenue' => 0.0,
+                            'orders_count' => 0,
+                        ];
+                    }
+
+                    $monthlySales[$month]['revenue'] += (float) $order->total_amount;
+                    $monthlySales[$month]['orders_count']++;
+                }
+            }, 'id');
+
+        return collect($monthlySales)
+            ->map(function (array $monthData) {
                 return [
-                    'revenue' => (float) $monthOrders->sum('total_amount'),
-                    'average' => (float) $monthOrders->avg('total_amount'),
-                    'orders_count' => $monthOrders->count(),
+                    'revenue' => (float) $monthData['revenue'],
+                    'average' => $monthData['orders_count'] > 0
+                        ? round($monthData['revenue'] / $monthData['orders_count'], 2)
+                        : 0.0,
+                    'orders_count' => (int) $monthData['orders_count'],
                 ];
             })
             ->sortKeysDesc()
@@ -74,70 +93,113 @@ class SalesAnalyticsService
 
     private function buildTopCustomers(): array
     {
-        return Order::query()
-            ->select('user_id')
-            ->selectRaw('SUM(total_amount) as total_spent')
-            ->selectRaw('COUNT(*) as orders')
-            ->groupBy('user_id')
-            ->orderByDesc('total_spent')
-            ->limit(10)
-            ->get()
-            ->map(function ($row) {
+        $topCustomers = [];
+
+        Order::query()
+            ->select(['id', 'user_id', 'total_amount'])
+            ->orderBy('id')
+            ->chunkById(1000, function (Collection $orders) use (&$topCustomers) {
+                foreach ($orders as $order) {
+                    $userId = (int) $order->user_id;
+
+                    if (! isset($topCustomers[$userId])) {
+                        $topCustomers[$userId] = [
+                            'user_id' => $userId,
+                            'total_spent' => 0.0,
+                            'orders' => 0,
+                        ];
+                    }
+
+                    $topCustomers[$userId]['total_spent'] += (float) $order->total_amount;
+                    $topCustomers[$userId]['orders']++;
+                }
+            }, 'id');
+
+        return collect($topCustomers)
+            ->sortByDesc('total_spent')
+            ->take(10)
+            ->values()
+            ->map(function (array $row) {
                 return [
-                    'user_id' => (int) $row->user_id,
-                    'total_spent' => (float) $row->total_spent,
-                    'orders' => (int) $row->orders,
+                    'user_id' => (int) $row['user_id'],
+                    'total_spent' => (float) $row['total_spent'],
+                    'orders' => (int) $row['orders'],
                 ];
             })
-            ->values()
             ->all();
     }
 
     private function buildTopProducts(): array
     {
-        return OrderItem::query()
-            ->select(['product_id', 'quantity'])
-            ->with('product:id,name')
-            ->get()
-            ->groupBy('product_id')
-            ->map(function (Collection $items) {
-                $firstItem = $items->first();
+        $topProducts = [];
 
-                return [
-                    'product_id' => (int) $firstItem->product_id,
-                    'product_name' => $firstItem->product?->name ?? 'N/A',
-                    'quantity' => (int) $items->sum('quantity'),
-                ];
-            })
+        OrderItem::query()
+            ->select(['id', 'product_id', 'quantity'])
+            ->with('product:id,name')
+            ->orderBy('id')
+            ->chunkById(1000, function (Collection $items) use (&$topProducts) {
+                foreach ($items as $item) {
+                    $productId = (int) $item->product_id;
+
+                    if (! isset($topProducts[$productId])) {
+                        $topProducts[$productId] = [
+                            'product_id' => $productId,
+                            'product_name' => $item->product?->name ?? 'N/A',
+                            'quantity' => 0,
+                        ];
+                    }
+
+                    $topProducts[$productId]['quantity'] += (int) $item->quantity;
+                }
+            }, 'id');
+
+        return collect($topProducts)
             ->sortByDesc('quantity')
             ->take(10)
             ->values()
+            ->map(function (array $row) {
+                return [
+                    'product_id' => (int) $row['product_id'],
+                    'product_name' => $row['product_name'],
+                    'quantity' => (int) $row['quantity'],
+                ];
+            })
             ->all();
     }
 
     private function buildCategorySales(): array
     {
-        return OrderItem::query()
-            ->select(['product_id', 'quantity', 'price'])
-            ->with('product.category:id,name')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'category_id' => (int) ($item->product?->category_id ?? 0),
-                    'category_name' => $item->product?->category?->name ?? 'Uncategorized',
-                    'revenue' => (float) $item->price * (int) $item->quantity,
-                ];
-            })
-            ->groupBy('category_id')
-            ->map(function (Collection $items) {
-                $firstItem = $items->first();
+        $categorySales = [];
 
+        OrderItem::query()
+            ->select(['id', 'product_id', 'quantity', 'price'])
+            ->with('product.category:id,name')
+            ->orderBy('id')
+            ->chunkById(1000, function (Collection $items) use (&$categorySales) {
+                foreach ($items as $item) {
+                    $categoryId = (int) ($item->product?->category_id ?? 0);
+                    $categoryName = $item->product?->category?->name ?? 'Uncategorized';
+
+                    if (! isset($categorySales[$categoryId])) {
+                        $categorySales[$categoryId] = [
+                            'category_id' => $categoryId,
+                            'category_name' => $categoryName,
+                            'total_revenue' => 0.0,
+                        ];
+                    }
+
+                    $categorySales[$categoryId]['total_revenue'] += (float) $item->price * (int) $item->quantity;
+                }
+            }, 'id');
+
+        return collect($categorySales)
+            ->sortByDesc('total_revenue')
+            ->map(function (array $row) {
                 return [
-                    'category_name' => $firstItem['category_name'],
-                    'total_revenue' => (float) $items->sum('revenue'),
+                    'category_name' => $row['category_name'],
+                    'total_revenue' => (float) $row['total_revenue'],
                 ];
             })
-            ->sortByDesc('total_revenue')
             ->all();
     }
 }

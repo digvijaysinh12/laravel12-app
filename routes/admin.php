@@ -2,12 +2,12 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminOrderController;
-use App\Http\Controllers\Admin\CacheMonitorController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
+use App\Http\Controllers\Admin\CacheMonitorController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,5 +46,17 @@ Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory
 Route::get('/reports', [SalesAnalyticsController::class, 'index'])->name('reports.index');
 Route::get('/reports/export', [SalesAnalyticsController::class, 'export'])->name('reports.export');
 
+Route::prefix('cache')->name('admin.cache.')->group(function () {
+
+    Route::get('/', [CacheMonitorController::class, 'index'])
+        ->name('index');
+
+    Route::post('/clear', [CacheMonitorController::class, 'clear'])
+        ->name('clear');
+
+    Route::post('/clear-tag/{tag}', [CacheMonitorController::class, 'clearTag'])
+        ->name('clearTag');
+
+});
 
 Route::view('/logs', 'admin.logs.index')->name('logs.index');

@@ -28,19 +28,22 @@ class ProductCollection extends Collection
         });
     }
 
-    // Featured products
-    public function featured(): static
-    {
-        return $this->where('is_featured', true);
-    }
-
     // On Sale products (has discount)
     public function onSale(): static
     {
-        return $this->filter(fn ($product) =>
-            $product->getAttribute('discount_price') !== null &&
-            (float) $product->discount_price < (float) $product->price
-        );
+        return $this->filter(function ($product) {
+            $discountPrice = $product->getAttribute('discount_price');
+
+            if (! is_numeric($discountPrice)) {
+                $discountPrice = $product->getAttribute('sale_price');
+            }
+
+            if (! is_numeric($discountPrice)) {
+                return false;
+            }
+
+            return (float) $discountPrice < (float) $product->price;
+        });
     }
 
     // Filter by multiple categories
@@ -61,13 +64,7 @@ class ProductCollection extends Collection
             'price_desc' => $this->sortByDesc('price'),
             'name_asc' => $this->sortBy('name'),
             'popularity' => $this->sortByDesc(fn ($product) => (int) ($product->getAttribute('sales_count') ?? 0)),
-            default => $this->sortByDesc('id'),
+            default => $this->sortByDesc('created_at'),
         };
-    }
-
-    // Total inventory value
-    public function totalValue(): float|int
-    {
-        return $this->sum(fn ($product) => (float) $product->price * (int) $product->stock);
     }
 }

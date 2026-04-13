@@ -15,11 +15,11 @@ class ProductService
 {
     private const CACHE_KEY_REGISTRY = 'products.cache.keys';
 
-    public function getAllProducts(Request $request): array
+    public function getAllProducts(Request $request, array $overrides = []): array
     {
         $context = $request->routeIs('admin.*') ? 'admin' : 'user';
         $page = max(1, (int) $request->query('page', 1));
-        $filters = $this->extractListingFilters($request);
+        $filters = $this->extractListingFilters($request, $overrides);
 
         $cacheKey = sprintf(
             'products.list.%s.page.%d.filters.%s',
@@ -29,20 +29,7 @@ class ProductService
         );
 
         $products = $this->rememberWithMetrics($cacheKey, now()->addHour(), function () use ($filters, $page, $request) {
-            $allProducts = Product::query()
-                ->select([
-                    'id',
-                    'name',
-                    'price',
-                    'description',
-                    'category_id',
-                    'stock',
-                    'image',
-                    'is_featured',
-                    'created_at',
-                ])
-                ->with('category:id,name')
-                ->get();
+            $allProducts = $this->buildProductQuery($filters)->get();
 
             $filteredProducts = $this->filterProducts($allProducts, $filters);
             $perPage = 9;
@@ -70,9 +57,9 @@ class ProductService
 
     public function getProductsByCategory(Request $request, int $categoryId): array
     {
-        $request->merge(['category_ids' => [$categoryId]]);
-
-        return $this->getAllProducts($request);
+        return $this->getAllProducts($request, [
+            'category_ids' => [$categoryId],
+        ]);
     }
 
     public function getProductById(int $productId): Product
@@ -221,22 +208,6 @@ class ProductService
             });
         }
 
-        if (! empty($filters['category_ids'])) {
-            $products = $products->byCategories($filters['category_ids']);
-        }
-
-        if ($filters['min_price'] !== null && $filters['min_price'] !== '') {
-            $products = $products->byPriceRange($filters['min_price'], null);
-        }
-
-        if ($filters['max_price'] !== null && $filters['max_price'] !== '') {
-            $products = $products->byPriceRange(null, $filters['max_price']);
-        }
-
-        if ($filters['in_stock']) {
-            $products = $products->inStock();
-        }
-
         if ($filters['on_sale']) {
             $products = $products->onSale();
         }
@@ -244,23 +215,67 @@ class ProductService
         return $products->sortProducts($filters['sort'] ?? 'newest')->values();
     }
 
-    private function extractListingFilters(Request $request): array
+    private function extractListingFilters(Request $request, array $overrides = []): array
     {
-        $categoryIds = collect($request->input('category_ids', $request->input('category_id', [])))
-            ->filter(fn ($categoryId) => $categoryId !== null && $categoryId !== '')
-            ->map(fn ($categoryId) => (int) $categoryId)
-            ->values()
-            ->all();
-
-        return [
+        $filters = [
             'search' => trim((string) $request->query('search', '')),
-            'category_ids' => $categoryIds,
+            'category_ids' => collect($request->input('category_ids', $request->input('category_id', [])))
+                ->filter(fn ($categoryId) => $categoryId !== null && $categoryId !== '')
+                ->map(fn ($categoryId) => (int) $categoryId)
+                ->values()
+                ->all(),
             'min_price' => $request->query('min_price'),
             'max_price' => $request->query('max_price'),
             'sort' => $request->query('sort', 'newest'),
             'in_stock' => $request->boolean('in_stock'),
             'on_sale' => $request->boolean('on_sale'),
         ];
+
+        return array_replace($filters, $overrides);
+    }
+
+    private function buildProductQuery(array $filters)
+    {
+        $query = Product::query()
+            ->select([
+                'id',
+                'name',
+                'price',
+                'description',
+                'category_id',
+                'stock',
+                'image',
+                'is_featured',
+                'created_at',
+            ])
+            ->with('category:id,name')
+            ->orderByDesc('created_at');
+
+        if (! empty($filters['category_ids'])) {
+            $query->whereIn('category_id', $filters['category_ids']);
+        }
+
+        if ($filters['min_price'] !== null && $filters['min_price'] !== '') {
+            $query->where('price', '>=', $filters['min_price']);
+        }
+
+        if ($filters['max_price'] !== null && $filters['max_price'] !== '') {
+            $query->where('price', '<=', $filters['max_price']);
+        }
+
+        if ($filters['in_stock']) {
+            $query->where('stock', '>', 0);
+        }
+
+        if (($filters['sort'] ?? 'newest') === 'popularity') {
+            $query->selectSub(function ($subQuery) {
+                $subQuery->from('order_items')
+                    ->selectRaw('COALESCE(SUM(quantity), 0)')
+                    ->whereColumn('order_items.product_id', 'products.id');
+            }, 'sales_count');
+        }
+
+        return $query;
     }
 
     private function rememberWithMetrics(string $cacheKey, $ttl, callable $callback)

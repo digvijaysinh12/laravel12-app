@@ -7,6 +7,7 @@
         ['label' => 'Customers', 'route' => 'admin.customers.index', 'pattern' => 'admin.customers.*'],
         ['label' => 'Inventory', 'route' => 'admin.inventory.index', 'pattern' => 'admin.inventory.*'],
         ['label' => 'Reports', 'route' => 'admin.reports.index', 'pattern' => 'admin.reports.*'],
+          //['label' => 'Cache Monitor', 'route' => 'admin.cache.index', 'pattern' => 'admin.cache.*'],
     ];
 @endphp
 

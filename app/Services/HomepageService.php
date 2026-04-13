@@ -4,39 +4,26 @@ namespace App\Services;
 use Illuminate\Support\Facades\Concurrency;
 use App\Models\Product;
 use App\Models\Category;
+use Illuminate\Support\Facades\Cache;
 
 class HomepageService
 {
     public function getHomePageData()
     {
+        return Cache::remember('homepage.data', 3600, function () {
 
-        [$featured, $newArrivals, $onSale, $categories] = Concurrency::run([
-            
-            fn () => Product::where('is_featured', true)
-                ->take(8)
-                ->toBase()
-                ->get(),
+        $featured = Product::where('is_featured', true)->take(8)->get();
+        $newArrivals = Product::latest()->take(8)->get();
+        $onSale = Product::inRandomOrder()->take(8)->get();
+        $categories = Category::all();
 
-            fn () => Product::latest()
-                ->take(8)
-                ->toBase()
-                ->get(),
+            return [
+                'featured' => $featured,
+                'newArrivals' => $newArrivals,
+                'onSale' => $onSale,
+                'categories' => $categories,
+            ];
 
-            fn () => Product::inRandomOrder()
-                ->take(8)
-                ->toBase()
-                ->get(),
-
-            fn () => Category::all()
-                    ->toBase()
-                    ,
-        ]);
-
-        return [
-            'featured' => $featured,
-            'newArrivals' => $newArrivals,
-            'onSale' => $onSale,
-            'categories' => $categories,
-        ];
+        });
     }
 }
