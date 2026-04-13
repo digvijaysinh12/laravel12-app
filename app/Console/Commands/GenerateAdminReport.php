@@ -4,87 +4,51 @@ namespace App\Console\Commands;
 
 use App\Services\Reports\ReportService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Product;
-use App\Models\User;
 
 class GenerateAdminReport extends Command
 {
-    protected $signature = 'report:generate {type} {format} {--days=30}';
-    protected $description = 'Generate admin reports';
+    protected $signature = 'report:admin {--type=sales} {--format=csv}';
+    protected $description = 'Generate an admin report';
 
-    public function handle()
+    public function handle(): int
     {
-        $type = $this->argument('type');
-        $format = $this->argument('format');
-        $days = $this->option('days');
+        try {
+            // Read simple options from the command line.
+            $type = $this->option('type') ?: 'sales';
+            $format = $this->option('format') ?: 'csv';
 
-        $this->info("Generating $type report in $format format...");
+            $reportService = new ReportService();
+            $filePath = '';
 
-        $reportService = new ReportService();
+            // Keep the progress bar simple and beginner-friendly.
+            $steps = ['prepare', 'generate', 'finish'];
 
-        $filePath = $reportService->generate($type,$format,$days);
+            $this->withProgressBar($steps, function ($step) use (&$filePath, $reportService, $type, $format) {
+                if ($step === 'generate') {
+                    $filePath = $reportService->generate($type, $format);
+                }
 
-        $this->info("Report generated: " . $filePath);
-    }
+                usleep(50000);
+            });
 
-    private function getReportData($type)
-    {
-        return match ($type) {
-            'sales' => $this->salesReport(),
-            'inventory' => $this->inventoryReport(),
-            'customers' => $this->customerReport(),
-        };
-    }
+            $this->newLine(2);
 
-    private function salesReport()
-    {
-        $totalProducts = Product::count();
-        $totalValue = Product::sum('price');
-        $topProduct = Product::orderByDesc('price')->first()?->name ?? 'N/A';
+            $this->table(
+                ['Field', 'Value'],
+                [
+                    ['Type', $type],
+                    ['Format', $format],
+                    ['Saved To', $filePath],
+                ]
+            );
 
-        return [
-            [
-                'Total Products' => $totalProducts,
-                'Total Value' => $totalValue,
-                'Top Product' => $topProduct,
-            ]
-        ];
-    }
+            $this->info('Report generated successfully.');
 
-    private function inventoryReport()
-    {
-        return [
-            [
-                'Low Stock' => Product::where('stock', '<', 10)->count(),
-                'Out Of Stock' => Product::where('stock', 0)->count(),
-                'Total Value' => Product::sum('price'),
-            ]
-        ];
-    }
+            return self::SUCCESS;
+        } catch (\Throwable $e) {
+            $this->error($e->getMessage());
 
-    private function customerReport()
-    {
-        return [
-            [
-                'New Users Today' => User::whereDate('created_at', today())->count(),
-                'Total Users' => User::count(),
-                'Admins' => User::where('role', 'admin')->count(),
-            ]
-        ];
-    }
-
-    private function toCsv($data)
-    {
-        $output = fopen('php://temp', 'r+');
-
-        fputcsv($output, array_keys($data[0]));
-
-        foreach ($data as $row) {
-            fputcsv($output, $row);
+            return self::FAILURE;
         }
-
-        rewind($output);
-        return stream_get_contents($output);
     }
 }

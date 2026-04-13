@@ -12,7 +12,7 @@ class UpdateOrderStatus extends Command
      *
      * @var string
      */
-    protected $signature = 'orders:update-status';
+    protected $signature = 'order:update-status';
 
     /**
      * The console command description.

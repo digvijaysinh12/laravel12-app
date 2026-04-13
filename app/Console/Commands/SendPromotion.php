@@ -15,11 +15,19 @@ class SendPromotion extends Command
         // Ask inputs
         $code = $this->ask('Enter discount code');
 
-        $percentage = $this->ask('Enter discount percentage (0-100)');
+        // Keep asking until the discount is valid.
+        do {
+            $percentageInput = $this->ask('Enter discount percentage (0-100)');
+            $isValidPercentage = is_numeric($percentageInput)
+                && $percentageInput >= 0
+                && $percentageInput <= 100;
 
-        if ($percentage < 0 || $percentage > 100) {
-            return $this->error('Invalid percentage! Must be between 0 and 100.');
-        }
+            if (!$isValidPercentage) {
+                $this->error('Invalid percentage! Must be a number between 0 and 100.');
+            }
+        } while (!$isValidPercentage);
+
+        $percentage = (float) $percentageInput;
 
         // Audience selection
         $audience = $this->choice(
