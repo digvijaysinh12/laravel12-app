@@ -10,7 +10,7 @@ class LogHelper
     public static function log(string $message, string $level = 'info', array $context = []): void
     {
         $level = self::normalizeLevel($level);
-        $userType = Context::get('user_type', 'customer');
+        $userType = Context::get('user_type', 'guest');
         $payload = array_filter(
             array_merge(Context::all(), $context),
             static fn ($value) => $value !== null
