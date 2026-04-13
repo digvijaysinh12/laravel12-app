@@ -2,14 +2,14 @@
 
 namespace App\Services\Customer;
 
+use App\Collections\ProductCollection;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Cache\TaggableStore;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductService
 {
@@ -18,35 +18,45 @@ class ProductService
     public function getAllProducts(Request $request): array
     {
         $context = $request->routeIs('admin.*') ? 'admin' : 'user';
-        $page = (int) $request->query('page', 1);
+        $page = max(1, (int) $request->query('page', 1));
         $filters = $this->extractListingFilters($request);
-        $filterHash = md5(json_encode($filters));
-        $cacheKey = "products.list.{$context}.page.{$page}.filters.{$filterHash}";
+
+        $cacheKey = sprintf(
+            'products.list.%s.page.%d.filters.%s',
+            $context,
+            $page,
+            md5(json_encode($filters))
+        );
 
         $products = $this->rememberWithMetrics($cacheKey, now()->addHour(), function () use ($filters, $page, $request) {
+            $allProducts = Product::query()
+                ->select([
+                    'id',
+                    'name',
+                    'price',
+                    'description',
+                    'category_id',
+                    'stock',
+                    'image',
+                    'is_featured',
+                    'created_at',
+                ])
+                ->with('category:id,name')
+                ->get();
 
-            // DB Query (basic filtering for performance)
-            $query = Product::query()->with('category');
-            $this->applyCommonFilters($query, $filters);
-
-            $collection = $query->get();
-
-            // Collection Filtering 
-            $collection = $this->applyCollectionFilters($collection, $filters);
-
-            // Manual Pagination (for collections)
+            $filteredProducts = $this->filterProducts($allProducts, $filters);
             $perPage = 9;
-            $total = $collection->count();
-            $items = $collection->slice(($page - 1) * $perPage, $perPage)->values();
+
+            $pageItems = $filteredProducts->forPage($page, $perPage)->values();
 
             return new LengthAwarePaginator(
-                $items,
-                $total,
+                $pageItems,
+                $filteredProducts->count(),
                 $perPage,
                 $page,
                 [
                     'path' => $request->url(),
-                    'query' => array_filter($filters),
+                    'query' => $request->except('page'),
                 ]
             );
         });
@@ -60,7 +70,8 @@ class ProductService
 
     public function getProductsByCategory(Request $request, int $categoryId): array
     {
-        $request->merge(['category_id' => $categoryId]);
+        $request->merge(['category_ids' => [$categoryId]]);
+
         return $this->getAllProducts($request);
     }
 
@@ -70,7 +81,18 @@ class ProductService
 
         return $this->rememberWithMetrics($cacheKey, now()->addMinutes(30), function () use ($productId) {
             return Product::query()
-                ->with('category')
+                ->select([
+                    'id',
+                    'name',
+                    'price',
+                    'description',
+                    'category_id',
+                    'stock',
+                    'image',
+                    'is_featured',
+                    'created_at',
+                ])
+                ->with('category:id,name')
                 ->findOrFail($productId);
         });
     }
@@ -81,8 +103,18 @@ class ProductService
 
         return $this->rememberWithMetrics($cacheKey, now()->addHour(), function () use ($limit) {
             return Product::query()
+                ->select([
+                    'id',
+                    'name',
+                    'price',
+                    'description',
+                    'category_id',
+                    'stock',
+                    'image',
+                    'is_featured',
+                ])
                 ->where('is_featured', true)
-                ->with('category')
+                ->with('category:id,name')
                 ->latest('id')
                 ->take($limit)
                 ->get();
@@ -99,6 +131,7 @@ class ProductService
     public function createProduct(array $data): Product
     {
         Log::channel('products')->info('Creating product');
+
         return Product::create($data);
     }
 
@@ -109,6 +142,7 @@ class ProductService
         ]);
 
         $product->update($data);
+
         return $product->fresh();
     }
 
@@ -131,6 +165,7 @@ class ProductService
         if ($this->supportsTags()) {
             Cache::tags(['products'])->flush();
             Log::channel('products')->info('Product cache flushed using cache tags');
+
             return;
         }
 
@@ -149,52 +184,83 @@ class ProductService
 
     public function getProductsForApi()
     {
-        return Product::with('category')->latest()->get();
+        return Product::query()
+            ->select([
+                'id',
+                'name',
+                'price',
+                'description',
+                'category_id',
+                'stock',
+                'image',
+                'is_featured',
+            ])
+            ->with('category:id,name')
+            ->latest('id')
+            ->get();
     }
 
     public function getProductsForExport()
     {
-        return Product::orderBy('name')->get(['name', 'price', 'description']);
+        return Product::query()->orderBy('name')->get(['name', 'price', 'description']);
     }
 
-    private function applyCollectionFilters($collection, array $filters)
+    private function filterProducts(ProductCollection $products, array $filters): ProductCollection
     {
-        return $collection
-            ->when($filters['min_price'] || $filters['max_price'], function ($c) use ($filters) {
-                return $c->byPriceRange($filters['min_price'], $filters['max_price']);
-            })
-            ->when(!empty($filters['category_id']), function ($c) use ($filters) {
-                return $c->byCategories((array) $filters['category_id']);
-            })
-            ->when(request('in_stock'), fn ($c) => $c->inStock())
-            ->when(request('on_sale'), fn ($c) => $c->onSale())
-            ->sortProducts($filters['sort'] ?? 'newest');
+        if ($filters['search'] !== '') {
+            $search = mb_strtolower($filters['search']);
+
+            $products = $products->filter(function ($product) use ($search) {
+                $haystack = mb_strtolower(implode(' ', array_filter([
+                    (string) $product->name,
+                    (string) $product->description,
+                    (string) ($product->category?->name ?? ''),
+                ])));
+
+                return str_contains($haystack, $search);
+            });
+        }
+
+        if (! empty($filters['category_ids'])) {
+            $products = $products->byCategories($filters['category_ids']);
+        }
+
+        if ($filters['min_price'] !== null && $filters['min_price'] !== '') {
+            $products = $products->byPriceRange($filters['min_price'], null);
+        }
+
+        if ($filters['max_price'] !== null && $filters['max_price'] !== '') {
+            $products = $products->byPriceRange(null, $filters['max_price']);
+        }
+
+        if ($filters['in_stock']) {
+            $products = $products->inStock();
+        }
+
+        if ($filters['on_sale']) {
+            $products = $products->onSale();
+        }
+
+        return $products->sortProducts($filters['sort'] ?? 'newest')->values();
     }
 
     private function extractListingFilters(Request $request): array
     {
+        $categoryIds = collect($request->input('category_ids', $request->input('category_id', [])))
+            ->filter(fn ($categoryId) => $categoryId !== null && $categoryId !== '')
+            ->map(fn ($categoryId) => (int) $categoryId)
+            ->values()
+            ->all();
+
         return [
             'search' => trim((string) $request->query('search', '')),
-            'category_id' => $request->query('category_id'),
+            'category_ids' => $categoryIds,
             'min_price' => $request->query('min_price'),
             'max_price' => $request->query('max_price'),
             'sort' => $request->query('sort', 'newest'),
+            'in_stock' => $request->boolean('in_stock'),
+            'on_sale' => $request->boolean('on_sale'),
         ];
-    }
-
-    private function applyCommonFilters(Builder $query, array $filters): void
-    {
-        $search = (string) ($filters['search'] ?? '');
-
-        if ($search !== '') {
-            $query->where(function (Builder $q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('description', 'LIKE', "%{$search}%")
-                    ->orWhereHas('category', function (Builder $q2) use ($search) {
-                        $q2->where('name', 'LIKE', "%{$search}%");
-                    });
-            });
-        }
     }
 
     private function rememberWithMetrics(string $cacheKey, $ttl, callable $callback)

@@ -14,10 +14,6 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withBroadcasting(
-        __DIR__.'/../routes/channels.php',
-        ['middleware' => ['web', 'auth']]
-    )
 
     ->withMiddleware(function (Middleware $middleware): void {
 
@@ -26,8 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'checkrole' => \App\Http\Middleware\CheckRole::class,
         ]);
 
-        // Global middleware (IMPORTANT)
-        $middleware->append(\App\Http\Middleware\RequestContextMiddleware::class);
+        $middleware->append(\App\Http\Middleware\SetUserContext::class);
 
     })
 

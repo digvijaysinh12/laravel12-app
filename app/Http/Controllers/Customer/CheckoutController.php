@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Events\ProductAddedToCart;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\CheckoutRequest;
 use App\Services\Customer\CartService;
@@ -16,6 +17,7 @@ class CheckoutController extends Controller
         $summary = $cartService->getSummary();
         $shipping = $cartService->getShipping($cart);
         $grandTotal = round($summary['total'] + $shipping['amount'], 2);
+
 
         return view('user.checkout.index', compact('cart', 'summary', 'shipping', 'grandTotal'));
     }

@@ -22,7 +22,8 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function newCollection(array $models = []){
+    public function newCollection(array $models = []): ProductCollection
+    {
         return new ProductCollection($models);
     }
 }

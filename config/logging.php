@@ -146,11 +146,17 @@ return [
             'level' => 'warning' 
         ],
         'admin' => [
-            'driver' => 'daily', // rotate logs daily
+            'driver' => 'single',
             'path' => storage_path('logs/admin.log'),
-            'level' => 'info',
-            'days' => 14, // keep logs for 14 days
+            'level' => 'debug',
         ],
+
+        'customer' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/customer.log'),
+            'level' => 'debug',
+        ],
+
     ],
 
 ];

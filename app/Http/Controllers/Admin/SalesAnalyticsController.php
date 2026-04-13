@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\Admin\SalesAnalyticsService;
-use Illuminate\Http\Response;
+use App\Services\Reports\SalesReportService;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SalesAnalyticsController extends Controller
 {
-    public function __construct(protected SalesAnalyticsService $salesAnalyticsService)
-    {
+    public function __construct(
+        protected SalesAnalyticsService $salesAnalyticsService,
+        protected SalesReportService $salesReportService
+    ) {
     }
 
     public function index(): View
@@ -18,24 +22,8 @@ class SalesAnalyticsController extends Controller
         return view('admin.reports.index', $this->salesAnalyticsService->getAnalytics());
     }
 
-    public function export(): Response
+    public function export(Request $request): StreamedResponse
     {
-        $orders = $this->salesAnalyticsService->getOrders();
-
-        return response()->streamDownload(function () use ($orders) {
-            $file = fopen('php://output', 'w');
-
-            fputcsv($file, ['order_number', 'customer', 'total_amount', 'status', 'created_at']);
-
-            foreach ($orders as $order) {
-                fputcsv($file, [
-                    $order->order_number,
-                    $order->user?->name ?? 'N/A',
-                    $order->total_amount,
-                    $order->status,
-                    $order->created_at?->format('Y-m-d H:i:s'),
-                ]);
-            }
-        }, 'sales-analytics.csv');
+        return $this->salesReportService->exportCsv((int) $request->query('days', 30));
     }
 }

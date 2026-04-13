@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Events\ProductViewed;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\HomepageService;
 use App\Services\Customer\ProductService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,11 +19,9 @@ class ProductController extends Controller
     {
     }
 
-    public function featured(): View
+    public function featured(HomepageService $service): View
     {
-        return view('user.home.index', [
-            'featuredProducts' => $this->productService->getFeaturedProducts(),
-        ]);
+        return view('home.index', $service->getHomePageData());
     }
 
     public function index(Request $request): View
@@ -54,6 +54,8 @@ class ProductController extends Controller
 
     public function show(Product $product): View
     {
+        ProductViewed::dispatch($product, auth()->user());
+
         return view('user.products.show', [
             'product' => $this->productService->getProductById($product->id),
         ]);

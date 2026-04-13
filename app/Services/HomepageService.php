@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Services;
-
+use Illuminate\Support\Facades\Concurrency;
 use App\Models\Product;
 use App\Models\Category;
 
@@ -10,20 +10,27 @@ class HomepageService
     public function getHomePageData()
     {
 
-        $featured = Product::where('is_featured', true)
-            ->take(8)
-            ->get();
+        [$featured, $newArrivals, $onSale, $categories] = Concurrency::run([
+            
+            fn () => Product::where('is_featured', true)
+                ->take(8)
+                ->toBase()
+                ->get(),
 
-        $newArrivals = Product::latest()
-            ->take(8)
-            ->get();
+            fn () => Product::latest()
+                ->take(8)
+                ->toBase()
+                ->get(),
 
-        $onSale = Product::inRandomOrder()
-            ->take(8)
-            ->get();
+            fn () => Product::inRandomOrder()
+                ->take(8)
+                ->toBase()
+                ->get(),
 
-        $categories = Category::all();
-
+            fn () => Category::all()
+                    ->toBase()
+                    ,
+        ]);
 
         return [
             'featured' => $featured,

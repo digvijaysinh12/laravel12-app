@@ -7,9 +7,9 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Log;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -30,7 +30,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $this->restoreCartFromRedis();
-
 
         $route = $request->user()?->role === 'admin'
             ? route('admin.dashboard')
@@ -62,7 +61,7 @@ class AuthenticatedSessionController extends Controller
     private function restoreCartFromRedis(): void
     {
         try {
-            $key = 'cart:user_' . auth()->id();
+            $key = 'cart:user_'.auth()->id();
 
             $saved = Redis::get($key);
 
@@ -74,7 +73,7 @@ class AuthenticatedSessionController extends Controller
         } catch (\Exception $e) {
             Log::warning('Redis restore failed', [
                 'user_id' => auth()->id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -87,13 +86,14 @@ class AuthenticatedSessionController extends Controller
         try {
             $cart = session()->get('cart', []);
 
-            if (!empty($cart)) {
+            if (! empty($cart)) {
                 $userId = auth()->id();
 
                 Redis::setex(
-                    'cart:user_' . $userId,
+                    'cart:user_'.$userId,
                     60 * 60 * 24 * 30, // 30 days
-                    json_encode($cart)
+                    json_encode([$cart,
+                        'last_activity' => now()->timestamp])
                 );
 
                 Redis::sadd('cart_users', $userId);
@@ -102,7 +102,7 @@ class AuthenticatedSessionController extends Controller
         } catch (\Exception $e) {
             Log::warning('Redis store failed', [
                 'user_id' => auth()->id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

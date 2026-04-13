@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Events\ProductAddedToCart;
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Services\Customer\CartService;
 
 class CartController extends Controller
@@ -20,6 +22,9 @@ class CartController extends Controller
         $summary = $this->cartService->getSummary();
         $shipping = $this->cartService->getShipping($cart);
         $grandTotal = round($summary['total'] + $shipping['amount'], 2);
+        auth()->user()?->update([
+                'last_cart_activity' => now()
+            ]);
 
         return view('user.cart.index', compact('cart', 'summary', 'shipping', 'grandTotal'));
     }
@@ -27,6 +32,10 @@ class CartController extends Controller
     public function add($id)
     {
         $this->cartService->add($id);
+
+        $product = Product::find($id); 
+
+        ProductAddedToCart::dispatch($product, auth()->user()); 
 
         return back()->with('success', 'Added to cart');
     }

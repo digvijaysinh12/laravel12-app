@@ -147,5 +147,6 @@ class CheckoutService
 
         Cache::forget('admin.dashboard.stats');
         Cache::forget('admin.recent.orders');
+        Cache::forget('admin.sales.analytics');
     }
 }

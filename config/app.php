@@ -128,6 +128,7 @@ return [
     'App' => Illuminate\Support\Facades\App::class,
     'Greeting' => App\Facades\Greeting::class,
     'Route' => Illuminate\Support\Facades\Route::class,
+    App\Providers\EventServiceProvider::class,
 
 ],
 
