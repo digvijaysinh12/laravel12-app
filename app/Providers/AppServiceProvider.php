@@ -9,7 +9,6 @@ use App\Services\GreetingService;
 use App\Services\Customer\PaymentService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -22,7 +21,6 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(PaymentService::class, function () {
-            Log::info('PaymentService bind called');
             return new PaymentService();
         });
 
@@ -32,7 +30,6 @@ class AppServiceProvider extends ServiceProvider
 
         // Singleton: same instance reused.
         $this->app->singleton(DiscountService::class, function () {
-            Log::info('DiscountService singleton created');
             return new DiscountService();
         });
     }
@@ -42,8 +39,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Log::info('AppServiceProvider boot executed');
-
         Response::macro('success', function ($data) {
             return response()->json([
                 'success' => true,
