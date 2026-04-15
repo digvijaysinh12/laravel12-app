@@ -187,9 +187,32 @@ class ProductService
             ->get();
     }
 
-    public function getProductsForExport()
+    public function getProductsForExport(array $filters = [])
     {
-        return Product::query()->orderBy('name')->get(['name', 'price', 'description']);
+        $query = Product::query();
+
+        // Search
+        if (!empty($filters['search'])) {
+            $query->where('name', 'like', '%' . $filters['search'] . '%');
+        }
+
+        // Category
+        if (!empty($filters['category_id'])) {
+            $query->where('category_id', $filters['category_id']);
+        }
+
+        // Sorting
+        if (!empty($filters['sort'])) {
+            match ($filters['sort']) {
+                'price_asc' => $query->orderBy('price', 'asc'),
+                'price_desc' => $query->orderBy('price', 'desc'),
+                default => $query->latest(),
+            };
+        } else {
+            $query->orderBy('name');
+        }
+
+        return $query->get(['name', 'price', 'description']);
     }
 
     private function filterProducts(ProductCollection $products, array $filters): ProductCollection
