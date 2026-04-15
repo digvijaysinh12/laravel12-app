@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -45,8 +46,9 @@ class ProductController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
+
         $categories = $this->productService->getAllCategories();
 
         Log::channel('products')->info('Create product page opened', [
@@ -90,6 +92,9 @@ class ProductController extends Controller
             $data = $request->validated();
 
             if ($request->hasFile('image')) {
+                if($product->image){
+                    Storage::disk('public')->delete($product->image);
+                }
                 $data['image'] = $request->file('image')->store('products', 'public');
             }
 
@@ -130,18 +135,38 @@ class ProductController extends Controller
         }
     }
 
-    public function export(): StreamedResponse
+
+    public function export(Request $request): StreamedResponse
     {
-        return response()->streamDownload(function () {
+        // Get filters BEFORE closure
+        $filters = $request->only(['search', 'category_id', 'sort']);
+
+        return response()->streamDownload(function () use ($filters) {
+
             $file = fopen('php://output', 'w');
-            $products = $this->productService->getProductsForExport();
 
-            fputcsv($file, ['name', 'price', 'description']);
+            // Correct header columns (as per exercise)
+            fputcsv($file, ['ID', 'Name', 'Price', 'Stock']);
 
+            // Get data
+            $products = $this->productService->getProductsForExport($filters);
+
+            // Safe iteration 
             foreach ($products as $product) {
-                fputcsv($file, [$product->name, $product->price, $product->description]);
+                fputcsv($file, [
+                    $product->id,
+                    $product->name,
+                    $product->price,
+                    $product->stock
+                ]);
             }
-        }, 'products.csv');
+
+            // Close file
+            fclose($file);
+
+        }, 'products.csv', [
+            'Content-Type' => 'text/csv',
+        ]);
     }
 
     private function flushProductAndAdminCaches(): void
