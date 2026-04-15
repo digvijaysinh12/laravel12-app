@@ -9,7 +9,7 @@ use RuntimeException;
 
 class ReportService
 {
-    public function generate($type, $format, $days = 30)
+    public function generate(string $type, string $format, int $days = 30): string
     {
         $type = strtolower($type);
         $format = strtolower($format);
@@ -23,9 +23,9 @@ class ReportService
         }
 
         $data = match ($type) {
-            'sales' => (new SalesReportService())->getData($days),
-            'inventory' => (new InventoryReportService())->getData(),
-            'customers' => (new CustomerReportService())->getData(),
+            'sales' => app(SalesReportService::class)->getData($days),
+            'inventory' => app(InventoryReportService::class)->getData(),
+            'customers' => app(CustomerReportService::class)->getData(),
         };
 
         if (empty($data)) {
@@ -35,22 +35,21 @@ class ReportService
         return $this->store($type, $format, $data);
     }
 
-    public function store($type, $format, $data)
+    private function store(string $type, string $format, array $data): string
     {
-        // Save files in storage/app/reports.
-        $disk = Storage::disk('local');
-        $fileName = $type.'_'.now()->format('Ymd_His').'.'.$format;
-        $path = 'reports/'.$fileName;
+        $disk = Storage::disk('reports');
+
+        $fileName = "{$type}-report-" . now()->format('Ymd_His') . ".{$format}";
         $rows = $this->normalizeRows($data);
 
         if ($format === 'json') {
-            $disk->put($path, json_encode($data, JSON_PRETTY_PRINT));
+            $disk->put($fileName, json_encode($data, JSON_PRETTY_PRINT));
         }
 
         if ($format === 'csv') {
             $stream = fopen('php://temp', 'w+');
-            $headers = array_keys($rows[0] ?? []);
 
+            $headers = array_keys($rows[0] ?? []);
             fputcsv($stream, $headers);
 
             foreach ($rows as $row) {
@@ -58,7 +57,7 @@ class ReportService
             }
 
             rewind($stream);
-            $disk->put($path, stream_get_contents($stream));
+            $disk->put($fileName, stream_get_contents($stream));
         }
 
         if ($format === 'pdf') {
@@ -68,18 +67,14 @@ class ReportService
                 'rows' => $rows,
             ]);
 
-            $disk->put($path, $pdf->output());
+            $disk->put($fileName, $pdf->output());
         }
 
-        return $disk->path($path);
+        return $fileName; 
     }
 
     private function normalizeRows(array $data): array
     {
-        if (array_is_list($data)) {
-            return $data;
-        }
-
-        return [$data];
+        return array_is_list($data) ? $data : [$data];
     }
 }
