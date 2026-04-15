@@ -14,13 +14,13 @@ class SalesAnalyticsService
     public function getAnalytics(): array
     {
         return Cache::remember('admin.sales.analytics', now()->addMinutes(5), function () {
-            [$monthlySales, $topCustomers, $topProducts, $categorySales, $ordersCount] = Concurrency::run([
-                fn () => $this->buildMonthlySales(),
-                fn () => $this->buildTopCustomers(),
-                fn () => $this->buildTopProducts(),
-                fn () => $this->buildCategorySales(),
-                fn () => Order::count(),
-            ]);
+
+            // Execute sequentially (no concurrency)
+            $monthlySales = $this->buildMonthlySales();
+            $topCustomers = $this->buildTopCustomers();
+            $topProducts = $this->buildTopProducts();
+            $categorySales = $this->buildCategorySales();
+            $ordersCount = Order::count();
 
             return [
                 'monthlySales' => $monthlySales,
@@ -65,7 +65,7 @@ class SalesAnalyticsService
                 foreach ($orders as $order) {
                     $month = Carbon::parse($order->created_at)->format('Y-m');
 
-                    if (! isset($monthlySales[$month])) {
+                    if (!isset($monthlySales[$month])) {
                         $monthlySales[$month] = [
                             'revenue' => 0.0,
                             'orders_count' => 0,
@@ -102,7 +102,7 @@ class SalesAnalyticsService
                 foreach ($orders as $order) {
                     $userId = (int) $order->user_id;
 
-                    if (! isset($topCustomers[$userId])) {
+                    if (!isset($topCustomers[$userId])) {
                         $topCustomers[$userId] = [
                             'user_id' => $userId,
                             'total_spent' => 0.0,
@@ -141,7 +141,7 @@ class SalesAnalyticsService
                 foreach ($items as $item) {
                     $productId = (int) $item->product_id;
 
-                    if (! isset($topProducts[$productId])) {
+                    if (!isset($topProducts[$productId])) {
                         $topProducts[$productId] = [
                             'product_id' => $productId,
                             'product_name' => $item->product?->name ?? 'N/A',
@@ -180,7 +180,7 @@ class SalesAnalyticsService
                     $categoryId = (int) ($item->product?->category_id ?? 0);
                     $categoryName = $item->product?->category?->name ?? 'Uncategorized';
 
-                    if (! isset($categorySales[$categoryId])) {
+                    if (!isset($categorySales[$categoryId])) {
                         $categorySales[$categoryId] = [
                             'category_id' => $categoryId,
                             'category_name' => $categoryName,
