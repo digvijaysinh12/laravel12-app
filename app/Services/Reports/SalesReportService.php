@@ -4,40 +4,36 @@ namespace App\Services\Reports;
 
 use App\Models\Order;
 use Illuminate\Support\Facades\Cache;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SalesReportService
 {
-    public function getData($days): array
+    public function getData(int $days = 30): array
     {
-        $days = max(1, (int) $days);
+        // Ensure minimum 1 day to avoid invalid queries
+        $days = max(1, $days);
 
+        // Cache sales report data for 15 minutes to reduce database load
         return Cache::remember("reports.sales.{$days}", now()->addMinutes(15), function () use ($days) {
+
             $totals = Order::query()
+                // Filter orders within given time range
                 ->where('created_at', '>=', now()->subDays($days))
+
+                // Count total orders
                 ->selectRaw('COUNT(*) as total_orders')
+
+                // Sum total revenue (fallback to 0 if null)
                 ->selectRaw('COALESCE(SUM(total_amount), 0) as total_revenue')
+
                 ->first();
 
             return [
-                // Simple summary output for the report file.
+                // Total number of orders in given period
                 'total_orders' => (int) ($totals->total_orders ?? 0),
+
+                // Total revenue generated
                 'total_revenue' => (float) ($totals->total_revenue ?? 0),
             ];
         });
-    }
-
-    public function exportCsv(int $days = 30): StreamedResponse
-    {
-        $data = $this->getData($days);
-
-        return response()->streamDownload(function () use ($data) {
-            $handle = fopen('php://output', 'w');
-
-            fputcsv($handle, array_keys($data));
-            fputcsv($handle, array_values($data));
-
-            fclose($handle);
-        }, 'sales-report.csv');
     }
 }
