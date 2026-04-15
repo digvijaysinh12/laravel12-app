@@ -9,8 +9,9 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\Customer\ProductController;
 use App\Models\Order;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+
+
 
 // Public storefront
 Route::get('/', [HomePageController::class, 'index'])->name('home');

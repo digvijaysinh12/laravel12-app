@@ -58,4 +58,6 @@ Route::prefix('invoice')->name('invoice.')->group(function () {
     Route::get('/', [CheckoutController::class, 'invoice'])->name('show');
     Route::get('/pdf', [CheckoutController::class, 'downloadPdf'])
         ->name('pdf');
+    
+    Route::get('/{order}/download',[OrderController::class,'downloadSigned'])->name('download');
 });

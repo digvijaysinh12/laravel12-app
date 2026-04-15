@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\Admin\CacheMonitorController;
 use App\Http\Controllers\NotificationController;
@@ -45,6 +46,8 @@ Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory
 
 Route::get('/reports', [SalesAnalyticsController::class, 'index'])->name('reports.index');
 Route::get('/reports/export', [SalesAnalyticsController::class, 'export'])->name('reports.export');
+Route::get('/reports/download/{file}', [ReportController::class, 'download'])
+    ->name('reports.download');
 
 Route::prefix('cache')->name('admin.cache.')->group(function () {
 
