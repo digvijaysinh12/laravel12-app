@@ -60,7 +60,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             @foreach($onSale as $product)
                 <div class="bg-white shadow rounded-xl p-4 hover:shadow-lg transition">
-                    <img src="{{ asset('images/' . $product->image) }}" class="w-full h-40 object-cover rounded mb-3">
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image)  }}" class="w-full h-40 object-cover rounded mb-3">
 
                     <h3 class="font-semibold text-lg">{{ $product->name }}</h3>
 

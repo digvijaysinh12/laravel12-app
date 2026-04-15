@@ -1,7 +1,6 @@
 @php
-    $selected = old($name, $selected);
+    $selected = old($name) ?? $selected;
 @endphp
-
 <div class="space-y-1.5">
     <label for="{{ $name }}" class="block text-sm font-medium text-slate-700">{{ $label }}</label>
     <select

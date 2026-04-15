@@ -3,36 +3,114 @@
 @section('page-title', 'Categories')
 
 @section('content')
-<x-admin.card title="Categories" description="Organize products into simple collections.">
-    <div class="mb-4 flex items-center justify-end">
-        <x-admin.button href="{{ route('admin.categories.create') }}">Add Category</x-admin.button>
-    </div>
 
-    <x-admin.table :headers="['Category', 'Products', 'Actions']">
-        @forelse ($categories as $category)
-            <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 font-medium text-slate-900">{{ $category->name }}</td>
-                <td class="px-4 py-3 text-slate-600">{{ $category->products_count }}</td>
+<div class="space-y-5">
+
+<!-- Top -->
+<div class="flex justify-between items-center">
+    <input type="text" id="searchInput"
+           placeholder="Search category..."
+           class="border px-3 py-2 rounded-lg text-sm w-60">
+
+    <a href="{{ route('admin.categories.create') }}"
+       class="bg-slate-900 text-white px-3 py-2 rounded-lg text-sm">
+        + Add Category
+    </a>
+</div>
+
+<!-- Table -->
+<div class="rounded-xl border bg-white">
+    <table class="w-full text-sm">
+
+        <thead class="text-xs text-slate-500 border-b">
+            <tr>
+                <th class="px-4 py-3 text-left">Category</th>
+                <th class="px-4 py-3 text-left">Products</th>
+                <th class="px-4 py-3 text-left">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody id="categoryTable">
+
+            @foreach ($categories as $category)
+            <tr id="row-{{ $category->id }}" class="border-b hover:bg-slate-50">
+
                 <td class="px-4 py-3">
-                    <div class="flex items-center gap-2">
-                        <x-admin.button href="{{ route('admin.categories.edit', $category) }}" variant="secondary" class="px-3 py-1.5 text-xs">Edit</x-admin.button>
-                        <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" onsubmit="return confirm('Delete this category?')">
-                            @csrf
-                            @method('DELETE')
-                            <x-admin.button type="submit" variant="danger" class="px-3 py-1.5 text-xs">Delete</x-admin.button>
-                        </form>
+                    <div class="flex items-center gap-3">
+                        <div class="h-9 w-9 flex items-center justify-center rounded-md bg-slate-100">
+                            {{ strtoupper(substr($category->name, 0, 1)) }}
+                        </div>
+                        <div>
+                            <p class="font-medium">{{ $category->name }}</p>
+                            <p class="text-xs text-slate-400">
+                                {{ \Illuminate\Support\Str::slug($category->name) }}
+                            </p>
+                        </div>
                     </div>
                 </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="3" class="px-4 py-10 text-center text-sm text-slate-500">No data found.</td>
-            </tr>
-        @endforelse
-    </x-admin.table>
 
-    <div class="mt-4">
-        {{ $categories->links() }}
-    </div>
-</x-admin.card>
+                <td class="px-4 py-3">
+                    {{ $category->products_count }}
+                </td>
+
+                <td class="px-4 py-3 flex gap-2">
+
+                    <a href="{{ route('admin.categories.edit', $category) }}"
+                       class="border px-3 py-1 text-xs rounded">
+                        Edit
+                    </a>
+
+                    <button onclick="deleteCategory({{ $category->id }})"
+                            class="bg-red-600 text-white px-3 py-1 text-xs rounded">
+                        Delete
+                    </button>
+
+                </td>
+            </tr>
+            @endforeach
+
+        </tbody>
+
+    </table>
+</div>
+
+</div>
+
 @endsection
+
+@push('scripts')
+
+<script>
+
+// 🔹 Search
+$('#searchInput').on('keyup', function () {
+    let value = $(this).val().toLowerCase();
+    $('#categoryTable tr').filter(function () {
+        $(this).toggle($(this).text().toLowerCase().includes(value));
+    });
+});
+
+// 🔹 Delete AJAX
+function deleteCategory(id) {
+    if (!confirm('Delete this category?')) return;
+
+    $.ajax({
+        url: `/admin/categories/${id}`,
+        type: 'POST',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            _method: 'DELETE'
+        },
+        success: function () {
+            $('#row-' + id).remove();
+            showToast('Category deleted', 'success');
+        },
+        error: function () {
+            showToast('Delete failed', 'danger');
+        }
+    });
+}
+
+</script>
+
+@endpush

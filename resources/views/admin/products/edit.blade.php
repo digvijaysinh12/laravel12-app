@@ -27,7 +27,7 @@
             <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <p class="mb-3 text-sm font-medium text-slate-700">Current image</p>
                 @if ($product->image)
-                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-44 w-full rounded-lg object-cover">
+                    <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="h-44 w-full rounded-lg object-cover">
                 @else
                     <div class="flex h-44 items-center justify-center rounded-lg border border-dashed border-slate-300 text-sm text-slate-500">No image</div>
                 @endif
