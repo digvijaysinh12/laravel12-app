@@ -1,33 +1,14 @@
 <?php
 
-use App\Events\OrderDelivered;
-use App\Events\OrderPaid;
-use App\Events\OrderPlaced;
-use App\Events\OrderShipped;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\Customer\ProductController;
-use App\Models\Order;
+use App\Http\Middleware\SetUserContext;
 use Illuminate\Support\Facades\Route;
-
-
 
 // Public storefront
 Route::get('/', [HomePageController::class, 'index'])->name('home');
-
-Route::get('/test-order-events', function () {
-
-    // Dummy order (DB ma hoy to best)
-    $order = Order::first();
-
-    OrderPlaced::dispatch($order);
-    OrderPaid::dispatch($order);
-    OrderShipped::dispatch($order);
-    OrderDelivered::dispatch($order);
-
-    return "Events triggered successfully!";
-});
 
 Route::middleware(['auth', 'checkrole:user'])
     ->get('/dashboard', [ProductController::class, 'featured'])
@@ -36,9 +17,12 @@ Route::middleware(['auth', 'checkrole:user'])
 require __DIR__.'/auth.php';
 
 // Authenticated customer area
-Route::middleware(['auth', 'checkrole:user'])->name('user.')->group(function () {
-    require __DIR__.'/user.php';
-});
+Route::middleware(['auth', 'checkrole:user', SetUserContext::class])
+    ->prefix('user')
+    ->name('user.')
+    ->group(function () {
+        require __DIR__.'/user.php';
+    });
 
 // Admin area
 Route::middleware(['auth', 'checkrole:admin'])

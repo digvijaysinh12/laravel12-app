@@ -22,7 +22,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'checkrole' => \App\Http\Middleware\CheckRole::class,
         ]);
 
-        $middleware->append(\App\Http\Middleware\SetUserContext::class);
 
     })
 

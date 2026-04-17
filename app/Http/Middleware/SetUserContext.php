@@ -20,7 +20,10 @@ class SetUserContext
     {
         Context::flush();
 
+        
         $user = $request->user();
+
+        // dd($request->user()->role);
         $userType = $user
             ? ($user->role === 'admin' ? 'admin' : 'customer')
             : 'guest';
