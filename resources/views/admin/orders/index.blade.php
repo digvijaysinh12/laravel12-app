@@ -4,6 +4,10 @@
 
 @section('content')
 <x-admin.card title="Orders" description="Track order status and fulfillment progress.">
+    <div class="mb-4 flex justify-end">
+        <x-admin.button href="{{ route('admin.orders.create') }}">Create Order</x-admin.button>
+    </div>
+
     <x-admin.table :headers="['Order', 'Customer', 'Total', 'Status', 'Action']">
         @forelse ($orders as $order)
             <tr class="hover:bg-slate-50">
@@ -16,7 +20,15 @@
                     </x-admin.badge>
                 </td>
                 <td class="px-4 py-3">
-                    <x-admin.button href="{{ route('admin.orders.show', $order) }}" variant="secondary" class="px-3 py-1.5 text-xs">View</x-admin.button>
+                    <div class="flex flex-wrap gap-2">
+                        <x-admin.button href="{{ route('admin.orders.show', $order) }}" variant="secondary" class="px-3 py-1.5 text-xs">View</x-admin.button>
+                        <x-admin.button href="{{ route('admin.orders.edit', $order) }}" variant="secondary" class="px-3 py-1.5 text-xs">Edit</x-admin.button>
+                        <form method="POST" action="{{ route('admin.orders.destroy', $order) }}" onsubmit="return confirm('Delete this order?');">
+                            @csrf
+                            @method('DELETE')
+                            <x-admin.button type="submit" variant="danger" class="px-3 py-1.5 text-xs">Delete</x-admin.button>
+                        </form>
+                    </div>
                 </td>
             </tr>
         @empty

@@ -21,6 +21,15 @@
         </x-admin.card>
     </div>
 
+    <div class="flex flex-wrap justify-end gap-3">
+        <x-admin.button href="{{ route('admin.customers.edit', $customer) }}" variant="secondary">Edit Customer</x-admin.button>
+        <form method="POST" action="{{ route('admin.customers.destroy', $customer) }}" onsubmit="return confirm('Delete this customer account?');">
+            @csrf
+            @method('DELETE')
+            <x-admin.button type="submit" variant="danger">Delete Customer</x-admin.button>
+        </form>
+    </div>
+
     <x-admin.card title="Order history" description="Most recent orders for this customer.">
         <x-admin.table :headers="['Order', 'Date', 'Total', 'Status']">
             @forelse ($orders as $order)

@@ -73,5 +73,35 @@
             {{ $products->links() }}
         </div>
     </section>
+
+    @if (($recentlyViewedProducts ?? collect())->isNotEmpty())
+        <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-4">
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-600">Recently Viewed</p>
+                <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">Your Recent Products</h2>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                @foreach ($recentlyViewedProducts as $recentProduct)
+                    <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div class="h-40 overflow-hidden rounded-xl bg-slate-100">
+                            @if ($recentProduct->image)
+                                <img src="{{ asset('storage/' . $recentProduct->image) }}" alt="{{ $recentProduct->name }}" class="h-full w-full object-cover">
+                            @endif
+                        </div>
+
+                        <div class="mt-4 space-y-2">
+                            <p class="text-xs uppercase tracking-[0.16em] text-slate-500">{{ $recentProduct->category->name ?? 'Uncategorized' }}</p>
+                            <h3 class="text-lg font-semibold text-slate-900">{{ $recentProduct->name }}</h3>
+                            <div class="flex items-center justify-between">
+                                <span class="text-base font-semibold text-slate-900">INR {{ number_format($recentProduct->price, 2) }}</span>
+                                <a href="{{ route('user.products.show', $recentProduct) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50">View</a>
+                            </div>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        </section>
+    @endif
 </div>
 @endsection

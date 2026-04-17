@@ -10,106 +10,89 @@
 </head>
 
 <body class="h-screen overflow-hidden bg-slate-50 text-slate-900 antialiased">
+<div class="flex h-full">
+    <aside class="flex w-64 flex-col border-r border-slate-200 bg-white">
+        <div class="shrink-0 border-b px-5 py-5">
+            <a href="{{ route('admin.dashboard') }}" class="text-lg font-semibold text-slate-900">
+                {{ config('app.name') }}
+            </a>
+            <p class="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+                Admin panel
+            </p>
+        </div>
 
-<div class="h-full flex">
+        <div class="flex-1 overflow-y-auto">
+            <x-admin.sidebar />
+        </div>
+    </aside>
 
-```
-<!-- 🔹 SIDEBAR -->
-<aside class="w-64 border-r border-slate-200 bg-white flex flex-col">
+    <div class="flex min-w-0 flex-1 flex-col">
+        <header class="sticky top-0 z-30 border-b bg-white px-6 py-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-semibold">
+                    @yield('page-title', 'Dashboard')
+                </h1>
 
-    <div class="border-b px-5 py-5 shrink-0">
-        <a href="{{ route('admin.dashboard') }}" class="text-lg font-semibold text-slate-900">
-            {{ config('app.name') }}
-        </a>
-        <p class="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
-            Admin panel
-        </p>
-    </div>
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <button
+                            id="notificationBtn"
+                            type="button"
+                            class="relative rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                        >
+                            Alerts
+                            <span
+                                id="notificationCount"
+                                class="absolute -right-2 -top-2 hidden rounded-full bg-rose-600 px-1.5 text-xs text-white"
+                            >
+                                0
+                            </span>
+                        </button>
 
-    <div class="flex-1 overflow-y-auto">
-        <x-admin.sidebar />
-    </div>
+                        <div
+                            id="notificationDropdown"
+                            class="absolute right-0 z-50 mt-2 hidden w-80 rounded-xl border bg-white shadow-lg"
+                        >
+                            <div class="flex items-center justify-between border-b p-3">
+                                <span class="font-semibold">Notifications</span>
+                                <button
+                                    id="markAllNotificationsBtn"
+                                    type="button"
+                                    class="text-xs text-slate-500 hover:text-slate-900"
+                                >
+                                    Mark all read
+                                </button>
+                            </div>
 
-</aside>
-
-<!-- 🔹 CONTENT AREA -->
-<div class="flex-1 flex flex-col min-w-0">
-
-    <!-- 🔹 HEADER -->
-    <header class="sticky top-0 z-30 border-b bg-white px-6 py-4">
-        <div class="flex items-center justify-between">
-
-            <h1 class="text-xl font-semibold">
-                @yield('page-title', 'Dashboard')
-            </h1>
-
-            <div class="flex items-center gap-4">
-
-                <!-- 🔔 Notifications -->
-                <div class="relative">
-                    <button id="notificationBtn" class="relative text-xl">
-                        🔔
-                        <span id="notificationCount"
-                            class="hidden absolute -top-2 -right-2 rounded-full bg-rose-600 px-1.5 text-xs text-white">
-                            0
-                        </span>
-                    </button>
-
-                    <div id="notificationDropdown"
-                        class="hidden absolute right-0 mt-2 w-80 rounded-xl border bg-white shadow-lg z-50">
-
-                        <div class="flex items-center justify-between border-b p-3">
-                            <span class="font-semibold">Notifications</span>
-                            <button id="markAllNotificationsBtn"
-                                class="text-xs text-slate-500 hover:text-slate-900">
-                                Mark all read
-                            </button>
-                        </div>
-
-                        <div id="notificationList"
-                            class="max-h-64 overflow-y-auto text-sm">
-                            <div class="p-3 text-slate-500">
-                                No notifications
+                            <div id="notificationList" class="max-h-64 overflow-y-auto text-sm">
+                                <div class="p-3 text-slate-500">
+                                    No notifications
+                                </div>
                             </div>
                         </div>
-
                     </div>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button class="rounded-lg bg-slate-900 px-3 py-2 text-sm text-white">
+                            Logout
+                        </button>
+                    </form>
                 </div>
-
-                <!-- Logout -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button class="bg-slate-900 text-white px-3 py-2 rounded-lg text-sm">
-                        Logout
-                    </button>
-                </form>
-
             </div>
+        </header>
 
-        </div>
-    </header>
-
-    <!-- 🔹 SCROLLABLE CONTENT -->
-    <main id="main-content" class="flex-1 overflow-y-auto p-6 space-y-4">
-        @yield('content')
-    </main>
-
-</div>
-```
-
+        <main id="main-content" class="flex-1 space-y-4 overflow-y-auto p-6">
+            @yield('content')
+        </main>
+    </div>
 </div>
 
-<!-- 🔥 TOAST CONTAINER -->
-
-<div id="toast-container" class="fixed top-5 right-5 space-y-2 z-50"></div>
+<div id="toast-container" class="fixed right-5 top-5 z-50 space-y-2"></div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
 <script>
-
-// 🔥 GLOBAL TOAST FUNCTION
 function showToast(message, tone = 'success') {
-
     const classes = {
         success: 'border-emerald-200 bg-emerald-50 text-emerald-800',
         danger: 'border-rose-200 bg-rose-50 text-rose-800',
@@ -118,10 +101,10 @@ function showToast(message, tone = 'success') {
     };
 
     const icons = {
-        success: '✓',
-        danger: '✕',
-        warning: '⚠',
-        info: 'ℹ'
+        success: 'OK',
+        danger: 'X',
+        warning: '!',
+        info: 'i'
     };
 
     const toast = `
@@ -145,8 +128,6 @@ function showToast(message, tone = 'success') {
     }, 2500);
 }
 
-
-// 🔥 SESSION TOAST HANDLER
 @if(session('success'))
 document.addEventListener('DOMContentLoaded', function () {
     showToast(@json(session('success')), 'success');
@@ -165,13 +146,10 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 @endif
 
-
-// 🔥 SIDEBAR AJAX NAVIGATION
 $(document).on('click', '.sidebar-link', function (e) {
-
     e.preventDefault();
 
-    let url = $(this).attr('href');
+    const url = $(this).attr('href');
 
     $('.sidebar-link')
         .removeClass('bg-slate-900 text-white')
@@ -184,16 +162,11 @@ $(document).on('click', '.sidebar-link', function (e) {
     $('#main-content').html('<div class="p-6">Loading...</div>');
 
     $.get(url, function (response) {
-
-        let newContent = $(response).find('#main-content').html();
-
+        const newContent = $(response).find('#main-content').html();
         $('#main-content').html(newContent);
-
         window.history.pushState({}, '', url);
-
     });
 });
-
 </script>
 
 @stack('scripts')

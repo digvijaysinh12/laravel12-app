@@ -4,6 +4,10 @@
 
 @section('content')
 <x-admin.card title="Customers" description="View customer accounts and order activity.">
+    <div class="mb-4 flex justify-end">
+        <x-admin.button href="{{ route('admin.customers.create') }}">Create Customer</x-admin.button>
+    </div>
+
     <x-admin.table :headers="['ID', 'Name', 'Email', 'Orders', 'Action']">
         @forelse ($customers as $customer)
             <tr class="hover:bg-slate-50">
@@ -12,7 +16,15 @@
                 <td class="px-4 py-3 text-slate-600">{{ $customer->email }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ $customer->orders_count }}</td>
                 <td class="px-4 py-3">
-                    <x-admin.button href="{{ route('admin.customers.show', $customer) }}" variant="secondary" class="px-3 py-1.5 text-xs">View</x-admin.button>
+                    <div class="flex flex-wrap gap-2">
+                        <x-admin.button href="{{ route('admin.customers.show', $customer) }}" variant="secondary" class="px-3 py-1.5 text-xs">View</x-admin.button>
+                        <x-admin.button href="{{ route('admin.customers.edit', $customer) }}" variant="secondary" class="px-3 py-1.5 text-xs">Edit</x-admin.button>
+                        <form method="POST" action="{{ route('admin.customers.destroy', $customer) }}" onsubmit="return confirm('Delete this customer account?');">
+                            @csrf
+                            @method('DELETE')
+                            <x-admin.button type="submit" variant="danger" class="px-3 py-1.5 text-xs">Delete</x-admin.button>
+                        </form>
+                    </div>
                 </td>
             </tr>
         @empty

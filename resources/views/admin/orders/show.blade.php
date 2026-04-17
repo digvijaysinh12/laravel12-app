@@ -22,6 +22,15 @@
         </x-admin.card>
     </div>
 
+    <div class="flex flex-wrap justify-end gap-3">
+        <x-admin.button href="{{ route('admin.orders.edit', $order) }}" variant="secondary">Edit Order</x-admin.button>
+        <form method="POST" action="{{ route('admin.orders.destroy', $order) }}" onsubmit="return confirm('Delete this order?');">
+            @csrf
+            @method('DELETE')
+            <x-admin.button type="submit" variant="danger">Delete Order</x-admin.button>
+        </form>
+    </div>
+
     <x-admin.card title="Update status" description="Change fulfillment status for this order.">
         <form method="POST" action="{{ route('admin.orders.status', $order) }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
             @csrf
