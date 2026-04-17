@@ -28,7 +28,7 @@ class UpdateOrderStatus extends Command
     {
         $this->info('Updating overdue order statuses...');
 
-        $updatedCount = $orderService->promotePendingOrdersToProcessing();
+        $updatedCount = $orderService->promotePendingOrdersToConfirmed();
 
         $this->info("Updated {$updatedCount} orders.");
 
