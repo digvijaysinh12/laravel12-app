@@ -53,7 +53,7 @@
         </div>
     </section>
 
-    {{-- 💸 On Sale (Random Products) --}}
+    {{--  On Sale (Random Products) --}}
     <section class="mb-10">
         <h2 class="text-2xl font-semibold mb-4">On Sale</h2>
 

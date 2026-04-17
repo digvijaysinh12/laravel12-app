@@ -3,92 +3,112 @@
 @section('title', 'Order Details')
 
 @section('content')
-<div class="space-y-6" data-order-id="{{ $order->id }}">
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+<div style="max-width:1000px; margin:auto;">
+
+    <!-- Header -->
+    <div style="background:#fff; padding:15px; border:1px solid #ddd; margin-bottom:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-600">Order details</p>
-                <h1 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">{{ $order->order_number }}</h1>
-                <p class="mt-2 text-sm text-slate-600">Placed on {{ optional($order->created_at)->format('d M, Y h:i A') }}</p>
+                <h2 style="margin:0;">Order #{{ $order->order_number }}</h2>
+                <p style="margin:0; font-size:14px; color:gray;">
+                    Placed on {{ $order->created_at->format('d M Y') }}
+                </p>
             </div>
-            <span class="inline-flex rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700">
-                {{ ucfirst($order->status) }}
-            </span>
-        </div>
-    </section>
 
-    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p class="text-xs uppercase tracking-[0.14em] text-slate-500">Total</p>
-            <p class="mt-2 text-2xl font-semibold text-slate-900">INR {{ number_format($order->total_amount, 2) }}</p>
-        </div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p class="text-xs uppercase tracking-[0.14em] text-slate-500">Payment</p>
-            <p class="mt-2 text-2xl font-semibold text-slate-900">{{ $order->payment_method ?? 'N/A' }}</p>
-        </div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p class="text-xs uppercase tracking-[0.14em] text-slate-500">Payment Status</p>
-            <p class="mt-2 text-2xl font-semibold text-slate-900">{{ ucfirst($order->payment_status ?? 'N/A') }}</p>
-        </div>
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p class="text-xs uppercase tracking-[0.14em] text-slate-500">Items</p>
-            <p class="mt-2 text-2xl font-semibold text-slate-900">{{ $order->items->count() }}</p>
-        </div>
-    </section>
-
-    <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 class="text-lg font-semibold text-slate-900">Items</h2>
-            <div class="mt-4 overflow-x-auto">
-                <table class="w-full min-w-[640px] text-sm">
-                    <thead class="bg-slate-50 text-slate-600">
-                        <tr>
-                            <th class="px-4 py-3 text-left font-medium">Product</th>
-                            <th class="px-4 py-3 text-left font-medium">Qty</th>
-                            <th class="px-4 py-3 text-left font-medium">Price</th>
-                            <th class="px-4 py-3 text-left font-medium">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200">
-                        @forelse ($order->items as $item)
-                            <tr class="hover:bg-slate-50">
-                                <td class="px-4 py-3">
-                                    <div class="font-medium text-slate-900">{{ $item->product->name ?? 'Deleted product' }}</div>
-                                    <div class="text-xs text-slate-500">{{ $item->product->category->name ?? '' }}</div>
-                                </td>
-                                <td class="px-4 py-3 text-slate-700">{{ $item->quantity }}</td>
-                                <td class="px-4 py-3 text-slate-700">INR {{ number_format($item->price, 2) }}</td>
-                                <td class="px-4 py-3 font-semibold text-slate-900">INR {{ number_format($item->price * $item->quantity, 2) }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="px-4 py-10 text-center text-slate-500">No items found.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <div>
+                <span style="padding:5px 10px; background:#f0f0f0; font-size:13px;">
+                    {{ ucfirst($order->status) }}
+                </span>
             </div>
-        </section>
-
-        <aside class="space-y-4">
-            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-slate-900">Customer</h2>
-                <div class="mt-4 space-y-2 text-sm text-slate-700">
-                    <p><span class="font-medium text-slate-900">Name:</span> {{ $order->user->name ?? 'N/A' }}</p>
-                    <p><span class="font-medium text-slate-900">Email:</span> {{ $order->user->email ?? 'N/A' }}</p>
-                    <p><span class="font-medium text-slate-900">Phone:</span> {{ $order->phone ?? 'N/A' }}</p>
-                </div>
-            </section>
-
-            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-slate-900">Shipping Address</h2>
-                <p class="mt-3 text-sm leading-6 text-slate-700">{{ $order->shipping_address ?? 'N/A' }}</p>
-            </section>
-
-            <a href="{{ route('user.orders.index') }}" class="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
-                Back to Orders
-            </a>
-        </aside>
+        </div>
     </div>
+
+    <!-- Main Layout -->
+    <div style="display:flex; gap:15px;">
+
+        <!-- LEFT: Items -->
+        <div style="flex:2;">
+
+            <div style="background:#fff; border:1px solid #ddd; padding:15px;">
+                <h3>Items</h3>
+
+                @foreach($order->items as $item)
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:10px 0;">
+
+                        <div>
+                            <p style="margin:0; font-weight:bold;">
+                                {{ $item->product->name ?? 'Product' }}
+                            </p>
+                            <p style="margin:0; font-size:13px; color:gray;">
+                                Qty: {{ $item->quantity }}
+                            </p>
+                        </div>
+
+                        <div style="text-align:right;">
+                            <p style="margin:0;">₹{{ number_format($item->price, 2) }}</p>
+                            <p style="margin:0; font-weight:bold;">
+                                ₹{{ number_format($item->price * $item->quantity, 2) }}
+                            </p>
+                        </div>
+
+                    </div>
+                @endforeach
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Summary -->
+        <div style="flex:1;">
+
+            <!-- Price Summary -->
+            <div style="background:#fff; border:1px solid #ddd; padding:15px; margin-bottom:15px;">
+                <h3>Price Details</h3>
+
+                <p>Total: ₹{{ number_format($order->total_amount, 2) }}</p>
+
+                <hr>
+
+                <h3 style="color:#2874f0;">
+                    ₹{{ number_format($order->total_amount, 2) }}
+                </h3>
+            </div>
+
+            <!-- Customer -->
+            <div style="background:#fff; border:1px solid #ddd; padding:15px; margin-bottom:15px;">
+                <h4>Customer</h4>
+                <p>{{ $order->user->name }}</p>
+                <p style="font-size:13px; color:gray;">{{ $order->user->email }}</p>
+                <p style="font-size:13px;">{{ $order->phone }}</p>
+            </div>
+
+            <!-- Address -->
+            <div style="background:#fff; border:1px solid #ddd; padding:15px; margin-bottom:15px;">
+                <h4>Shipping Address</h4>
+                <p style="font-size:14px;">{{ $order->shipping_address }}</p>
+            </div>
+
+            <!-- Actions -->
+            <div style="background:#fff; border:1px solid #ddd; padding:15px; text-align:center;">
+
+                <a href="{{ $signedUrl }}" 
+                   style="display:block; padding:10px; background:#2874f0; color:#fff; text-decoration:none; margin-bottom:10px;">
+                    Download Invoice
+                </a>
+
+                <p style="color:red; font-size:12px;">
+                    Link expires in 10 minutes
+                </p>
+
+                <a href="{{ route('user.orders.index') }}" 
+                   style="display:block; padding:8px; border:1px solid #ccc; text-decoration:none;">
+                    Back to Orders
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 @endsection

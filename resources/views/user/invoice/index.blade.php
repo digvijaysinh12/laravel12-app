@@ -3,69 +3,83 @@
 @section('title', 'Invoice')
 
 @section('content')
-<div class="mx-auto max-w-5xl space-y-6">
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-600">Invoice</p>
-                <h1 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Invoice #{{ $invoice['invoice_no'] }}</h1>
-                <p class="mt-2 text-sm text-slate-500">Date: {{ $invoice['date']->format('d-m-Y') }}</p>
-            </div>
+<div style="max-width:900px; margin:auto; background:#fff; padding:20px; border:1px solid #ddd;">
 
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-right">
-                <div class="font-semibold text-slate-900">{{ config('app.name') }}</div>
-                <div class="text-sm text-slate-500">Order summary</div>
-            </div>
+    <!-- Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <h2 style="margin:0;">{{ config('app.name') }}</h2>
+            <p style="margin:0; font-size:14px; color:gray;">Order Invoice</p>
         </div>
-    </section>
-
-    <section class="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="text-sm text-slate-500">Billed to</div>
-            <div class="mt-1 text-lg font-semibold text-slate-900">{{ $invoice['user']->name ?? 'Guest' }}</div>
-            <div class="text-sm text-slate-600">{{ $invoice['user']->email ?? '' }}</div>
+        <div style="text-align:right;">
+            <h3 style="margin:0;">Invoice</h3>
+            <p style="margin:0;">#{{ $invoice['invoice_no'] }}</p>
+            <p style="margin:0;">Date: {{ $invoice['date']->format('d-m-Y') }}</p>
         </div>
+    </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="text-sm text-slate-500">Grand total</div>
-            <div class="mt-2 text-3xl font-semibold text-slate-900">INR {{ number_format($invoice['grand_total'], 2) }}</div>
-            <div class="mt-4 flex gap-3">
-                <a href="{{ route('user.invoice.pdf') }}" class="inline-flex w-full items-center justify-center rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-sky-700">
-                    Download PDF
-                </a>
-            </div>
-        </div>
-    </section>
+    <hr>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div class="border-b border-slate-200 px-5 py-4">
-            <h2 class="text-base font-semibold text-slate-900">Items</h2>
+    <!-- Customer + Summary -->
+    <div style="display:flex; justify-content:space-between; margin-top:20px;">
+        <div>
+            <h4>Billed To</h4>
+            <p style="margin:0;">{{ $invoice['user']->name ?? 'Guest' }}</p>
+            <p style="margin:0;">{{ $invoice['user']->email ?? '' }}</p>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full min-w-[640px] text-sm">
-                <thead class="bg-slate-50 text-slate-600">
-                    <tr>
-                        <th class="px-5 py-3 text-left font-medium">#</th>
-                        <th class="px-5 py-3 text-left font-medium">Product</th>
-                        <th class="px-5 py-3 text-left font-medium">Qty</th>
-                        <th class="px-5 py-3 text-left font-medium">Price</th>
-                        <th class="px-5 py-3 text-left font-medium">Total</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200">
-                    @foreach ($invoice['items'] as $index => $item)
-                        <tr class="hover:bg-slate-50">
-                            <td class="px-5 py-3 text-slate-500">{{ $index + 1 }}</td>
-                            <td class="px-5 py-3 font-medium text-slate-900">{{ $item['name'] }}</td>
-                            <td class="px-5 py-3 text-slate-600">{{ $item['quantity'] }}</td>
-                            <td class="px-5 py-3 text-slate-600">INR {{ number_format($item['price'], 2) }}</td>
-                            <td class="px-5 py-3 font-semibold text-slate-900">INR {{ number_format($item['total'], 2) }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <div style="text-align:right;">
+            <h4>Total Amount</h4>
+            <h2 style="margin:0; color:#2874f0;">
+                ₹{{ number_format($invoice['grand_total'], 2) }}
+            </h2>
         </div>
-    </section>
+    </div>
+
+    <hr>
+
+    <!-- Items Table -->
+    <table width="100%" border="1" cellspacing="0" cellpadding="10" style="border-collapse:collapse; margin-top:20px;">
+        <thead style="background:#f5f5f5;">
+            <tr>
+                <th>#</th>
+                <th align="left">Product</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($invoice['items'] as $index => $item)
+                <tr>
+                    <td align="center">{{ $index + 1 }}</td>
+                    <td>{{ $item['name'] }}</td>
+                    <td align="center">{{ $item['quantity'] }}</td>
+                    <td align="right">₹{{ number_format($item['price'], 2) }}</td>
+                    <td align="right">₹{{ number_format($item['total'], 2) }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <!-- Footer Total -->
+    <div style="margin-top:20px; text-align:right;">
+        <h3>Grand Total: ₹{{ number_format($invoice['grand_total'], 2) }}</h3>
+    </div>
+
+    <hr>
+
+    <!-- Download -->
+    <div style="text-align:center; margin-top:20px;">
+        <a href="{{ route('user.invoice.pdf') }}" 
+           style="padding:10px 15px; background:#2874f0; color:#fff; text-decoration:none;">
+            Download Invoice
+        </a>
+
+        <p style="color:red; margin-top:10px;">
+            (Link valid for 10 minutes)
+        </p>
+    </div>
+
 </div>
 @endsection

@@ -46,18 +46,15 @@ Route::prefix('checkout')->name('checkout.')->group(function () {
     Route::post('/', [CheckoutController::class, 'store'])->name('store');
 });
 
+// Orders
 Route::prefix('orders')->name('orders.')->group(function () {
     Route::get('/', [OrderController::class, 'index'])->name('index');
-    Route::get('/{order}', [OrderController::class, 'show'])
-        ->whereNumber('order')
-        ->name('show');
+    Route::get('/{order}', [OrderController::class, 'show'])->name('show');
     Route::get('/analytics', [OrderAnalyticsController::class, 'index'])->name('analytics');
 });
 
+// Invoice (ONLY SIGNED)
 Route::prefix('invoice')->name('invoice.')->group(function () {
-    Route::get('/', [CheckoutController::class, 'invoice'])->name('show');
-    Route::get('/pdf', [CheckoutController::class, 'downloadPdf'])
-        ->name('pdf');
-    
-    Route::get('/{order}/download',[OrderController::class,'downloadSigned'])->name('download');
+    Route::get('/{order}/download', [OrderController::class, 'downloadSigned'])
+        ->name('download');
 });
