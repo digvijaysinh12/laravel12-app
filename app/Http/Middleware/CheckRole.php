@@ -8,20 +8,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
 {
-    public function handle(Request $request, Closure $next, $role): Response
+    public function handle(Request $request, Closure $next, string $role): Response
     {
         if (!$request->user()) {
-            return redirect()->route('login');
+            return to_route('login');
         }
 
-        // If user role does not match required role
         if ($request->user()->role !== $role) {
-
-            // If admin is trying to access user routes → redirect
-            if ($request->user()->role === 'admin') {
-                return redirect('/admin/dashboard');
-            }
-
             abort(403);
         }
 
