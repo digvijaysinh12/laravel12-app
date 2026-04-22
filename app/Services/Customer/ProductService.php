@@ -77,6 +77,7 @@ class ProductService
                     'stock',
                     'image',
                     'is_featured',
+                    'rating',
                     'created_at',
                 ])
                 ->with('category:id,name')
@@ -115,22 +116,34 @@ class ProductService
         });
     }
 
-    public function createProduct(array $data): Product
+    public function createProduct(array $data): ?Product
     {
-        Log::channel('products')->info('Creating product');
+        return rescue(function () use ($data) {
 
-        return Product::create($data);
+            return tap(Product::create($data), function ($product) {
+                Log::channel('products')->info('Product created', [
+                    'id' => $product->id
+                ]);
+            });
+
+        }, function ($e) {
+            Log::error('Product creation failed', [
+                'error' => $e->getMessage()
+            ]);
+
+            return null; // fallback
+        });
     }
 
     public function updateProduct(array $data, Product $product): Product
     {
-        Log::channel('products')->info('Updating product', [
-            'product_id' => $product->id,
-        ]);
+        return tap($product, function ($product) use ($data) {
+            $product->update($data);
 
-        $product->update($data);
-
-        return $product->fresh();
+            Log::channel('products')->info('Updating product', [
+                'product_id' => $product->id,
+            ]);
+        });
     }
 
     public function deleteProduct(Product $product): bool
@@ -243,8 +256,8 @@ class ProductService
         $filters = [
             'search' => trim((string) $request->query('search', '')),
             'category_ids' => collect($request->input('category_ids', $request->input('category_id', [])))
-                ->filter(fn ($categoryId) => $categoryId !== null && $categoryId !== '')
-                ->map(fn ($categoryId) => (int) $categoryId)
+                ->filter(fn($categoryId) => $categoryId !== null && $categoryId !== '')
+                ->map(fn($categoryId) => (int) $categoryId)
                 ->values()
                 ->all(),
             'min_price' => $request->query('min_price'),
@@ -274,7 +287,7 @@ class ProductService
             ->with('category:id,name')
             ->orderByDesc('created_at');
 
-        if (! empty($filters['category_ids'])) {
+        if (!empty($filters['category_ids'])) {
             $query->whereIn('category_id', $filters['category_ids']);
         }
 
