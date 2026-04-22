@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\Admin\CacheMonitorController;
 use App\Http\Controllers\NotificationController;
@@ -33,13 +34,29 @@ Route::post('/notifications/read-all', [NotificationController::class, 'markAllA
 
 Route::prefix('orders')->name('orders.')->group(function () {
     Route::get('/', [AdminOrderController::class, 'index'])->name('index');
+    Route::get('/create', [AdminOrderController::class, 'create'])->name('create');
+    Route::post('/', [AdminOrderController::class, 'store'])->name('store');
+    Route::get('/{order}/edit', [AdminOrderController::class, 'edit'])->whereNumber('order')->name('edit');
+    Route::put('/{order}', [AdminOrderController::class, 'update'])->whereNumber('order')->name('update');
     Route::get('/{order}', [AdminOrderController::class, 'show'])->name('show');
     Route::put('/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('status');
+    Route::delete('/{order}', [AdminOrderController::class, 'destroy'])->whereNumber('order')->name('destroy');
 });
 
 Route::prefix('customers')->name('customers.')->group(function () {
     Route::get('/', [CustomerController::class, 'index'])->name('index');
+    Route::get('/create', [CustomerController::class, 'create'])->name('create');
+    Route::post('/', [CustomerController::class, 'store'])->name('store');
+    Route::get('/{customer}/edit', [CustomerController::class, 'edit'])->whereNumber('customer')->name('edit');
+    Route::put('/{customer}', [CustomerController::class, 'update'])->whereNumber('customer')->name('update');
     Route::get('/{customer}', [CustomerController::class, 'show'])->whereNumber('customer')->name('show');
+    Route::delete('/{customer}', [CustomerController::class, 'destroy'])->whereNumber('customer')->name('destroy');
+});
+
+Route::prefix('reviews')->name('reviews.')->group(function () {
+    Route::get('/', [ReviewController::class, 'index'])->name('index');
+    Route::put('/{review}', [ReviewController::class, 'update'])->whereNumber('review')->name('update');
+    Route::delete('/{review}', [ReviewController::class, 'destroy'])->whereNumber('review')->name('destroy');
 });
 
 Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
@@ -49,7 +66,7 @@ Route::get('/reports/export', [SalesAnalyticsController::class, 'export'])->name
 Route::get('/reports/download/{file}', [ReportController::class, 'download'])
     ->name('reports.download');
 
-Route::prefix('cache')->name('admin.cache.')->group(function () {
+Route::prefix('cache')->name('cache.')->group(function () {
 
     Route::get('/', [CacheMonitorController::class, 'index'])
         ->name('index');
