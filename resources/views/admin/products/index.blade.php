@@ -87,7 +87,9 @@
                     <th class="px-4 py-2 text-left">Product</th>
                     <th class="px-4 py-2 text-left">Price</th>
                     <th class="px-4 py-2 text-left">Stock</th>
-                    <th class="px-4 py-2 text-left">Actions</th>
+                    <th class="px-4 py-2 text-left">Actions</th>                    
+                    <th class="px-4 py-2 text-left">Size</th>
+
                 </tr>
             </thead>
 
@@ -138,6 +140,10 @@
                                 </button>
 
                             </div>
+                        </td>
+
+                        <td>
+{{ $product->image_size }}  
                         </td>
 
                     </tr>
