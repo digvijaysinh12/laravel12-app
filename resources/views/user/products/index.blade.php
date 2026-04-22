@@ -57,7 +57,7 @@
                         <h2 class="text-lg font-semibold text-slate-900">{{ $product->name }}</h2>
                         <p class="text-sm text-slate-600">{{ $product->description ?: 'No description available.' }}</p>
                         <div class="flex items-center justify-between pt-2">
-                            <span class="text-base font-semibold text-slate-900">INR {{ number_format($product->price, 2) }}</span>
+                            <span class="text-base font-semibold text-slate-900">{{ format_price($product->price) }}</span>
                             <a href="{{ route('user.products.show', $product) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50">View</a>
                         </div>
                     </div>
