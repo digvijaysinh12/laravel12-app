@@ -1,6 +1,6 @@
 const userRole = document.querySelector('meta[name="auth-user-role"]')?.getAttribute('content');
 const orderId = document.querySelector('[data-order-id]')?.getAttribute('data-order-id');
-const visibleStatuses = ['paid', 'shipped', 'delivered'];
+const visibleStatuses = ['confirmed', 'shipped', 'delivered'];
 
 const ensureRealtimeContainer = () => {
     let container = document.querySelector('[data-realtime-notifications]');
@@ -39,6 +39,16 @@ const appendFeedEntry = (message) => {
     feed.prepend(item);
 };
 
+const updateStatusBadge = (status) => {
+    const badge = document.querySelector('[data-order-current-status]');
+
+    if (!badge) {
+        return;
+    }
+
+    badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+};
+
 const subscribeToOrderStatus = () => {
     if (!window.Echo || !orderId || userRole !== 'user') {
         return;
@@ -55,7 +65,9 @@ const subscribeToOrderStatus = () => {
             const label = event.order_number || `#${event.order_id}`;
             const message = `Order ${label} is now ${status}.`;
 
+            updateStatusBadge(status);
             appendFeedEntry(message);
+            showRealtimeNotice(message);
         });
 };
 
