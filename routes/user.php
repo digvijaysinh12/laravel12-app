@@ -5,6 +5,7 @@ use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\OrderAnalyticsController;
+use App\Http\Controllers\Customer\ReviewController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Customer\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,12 @@ Route::prefix('products')->name('products.')->group(function () {
     Route::get('/{product}', [ProductController::class, 'show'])
         ->whereNumber('product')
         ->name('show');
+    Route::post('/{product}/reviews', [ReviewController::class, 'store'])
+        ->whereNumber('product')
+        ->name('reviews.store');
+    Route::delete('/{product}/reviews', [ReviewController::class, 'destroy'])
+        ->whereNumber('product')
+        ->name('reviews.destroy');
 });
 
 Route::prefix('cart')->name('cart.')->group(function () {
