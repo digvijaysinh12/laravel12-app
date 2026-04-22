@@ -17,9 +17,13 @@ Route::get('/http-client',function(){
 
         $products = $response->collect();
 
-        // dd($products);
+            if ($response->successful()) {
+                $products = $response->json();
 
-        return view('api', compact('products'));
+                return view('products.index', compact('products'));
+            }
+
+        return view('products.index', ['products' => []]);
 });
 
 Route::get('http-post', function () {
