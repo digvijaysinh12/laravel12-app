@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Services\HomepageService;
 use App\Services\Customer\ProductService;
+use App\Services\Customer\RecentlyViewedService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,12 +20,17 @@ class ProductController extends Controller
     {
     }
 
-    public function featured(HomepageService $service): View
+    public function featured(HomepageService $service, RecentlyViewedService $recentlyViewedService): View
     {
-        return view('home.index', $service->getHomePageData());
+        return view('home.index', array_merge(
+            $service->getHomePageData(),
+            [
+                'recentlyViewedProducts' => $recentlyViewedService->getProducts(auth()->user(), 6),
+            ]
+        ));
     }
 
-    public function index(Request $request): View
+    public function index(Request $request, RecentlyViewedService $recentlyViewedService): View
     {
         $data = $this->productService->getAllProducts($request);
 
@@ -35,10 +41,11 @@ class ProductController extends Controller
             'categories' => $this->productService->getAllCategories(),
             'selected_category' => $request->category_id,
             'listing_route' => route('user.products.index'),
+            'recentlyViewedProducts' => $recentlyViewedService->getProducts($request->user(), 6),
         ]);
     }
 
-    public function categoryProducts(Request $request, Category $category): View
+    public function categoryProducts(Request $request, Category $category, RecentlyViewedService $recentlyViewedService): View
     {
         $data = $this->productService->getProductsByCategory($request, $category->id);
 
@@ -49,15 +56,24 @@ class ProductController extends Controller
             'categories' => $this->productService->getAllCategories(),
             'selected_category' => $category->id,
             'listing_route' => route('user.products.category', $category),
+            'recentlyViewedProducts' => $recentlyViewedService->getProducts($request->user(), 6),
         ]);
     }
 
-    public function show(Product $product): View
+    public function show(Product $product, RecentlyViewedService $recentlyViewedService): View
     {
         ProductViewed::dispatch($product, auth()->user());
 
+        $product = $this->productService->getProductById($product->id);
+
         return view('user.products.show', [
-            'product' => $this->productService->getProductById($product->id),
+            'product' => $product->load([
+                'reviews' => fn ($query) => $query->approved()->with('user:id,name')->latest(),
+            ]),
+            'userReview' => auth()->check()
+                ? $product->reviews()->where('user_id', auth()->id())->latest()->first()
+                : null,
+            'recentlyViewedProducts' => $recentlyViewedService->getProducts(auth()->user(), 6, $product->id),
         ]);
     }
 
