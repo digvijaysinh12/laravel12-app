@@ -30,9 +30,9 @@
                         <td class="px-5 py-3 text-slate-700">{{ $order->items_count }}</td>
                         <td class="px-5 py-3 text-slate-700">INR {{ number_format($order->total_amount, 2) }}</td>
                         <td class="px-5 py-3">
-                            <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                                {{ ucfirst($order->status) }}
-                            </span>
+                        <span class="badge bg-{{ order_status_badge($order->status) }}">
+                            {{ $order->status }}
+                        </span>
                         </td>
                         <td class="px-5 py-3">
                             <a href="{{ route('user.orders.show', $order->id) }}" class="inline-flex rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-sky-700">
