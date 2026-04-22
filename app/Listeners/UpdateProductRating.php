@@ -3,33 +3,21 @@
 namespace App\Listeners;
 
 use App\Events\ProductReviewed;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 
 class UpdateProductRating
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
-     * Handle the event.
-     */
-    public function handle(ProductReviewed $event)
+    public function handle(ProductReviewed $event): void
     {
         $product = $event->product;
 
-        $avgRating = $product->reviews()->avg('rating');
+        $avgRating = (float) ($product->reviews()->approved()->avg('rating') ?? 0);
 
         $product->update([
             'rating' => $avgRating
         ]);
 
-        \Log::channel('products')->info('Rating updated', [
+        Log::channel('products')->info('Rating updated', [
             'product_id' => $product->id,
             'rating' => $avgRating
         ]);
