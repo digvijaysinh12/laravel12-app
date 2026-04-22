@@ -3,28 +3,22 @@
 namespace App\Listeners;
 
 use App\Events\ProductViewed;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use App\Services\Customer\RecentlyViewedService;
 use Illuminate\Support\Facades\Log;
 
 class TrackProductView
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
+    public function __construct(private readonly RecentlyViewedService $recentlyViewedService)
     {
-        //
     }
 
-    /**
-     * Handle the event.
-     */
-    public function handle(ProductViewed $event)
+    public function handle(ProductViewed $event): void
     {
+        $this->recentlyViewedService->record($event->product, $event->user);
+
         Log::channel('customer')->info('Product viewed', [
             'product_id' => $event->product->id,
-            'user_id' => $event->user->id ?? null,
+            'user_id' => $event->user?->id,
         ]);
     }
 }
