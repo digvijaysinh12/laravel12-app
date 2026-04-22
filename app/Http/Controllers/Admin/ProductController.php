@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Cache\TaggableStore;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -67,7 +68,7 @@ class ProductController extends Controller
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
         }
-
+        $data = Arr::only($data,['name','price','description','category_id','stock','image']);
         $this->productService->createProduct($data);
         $this->flushProductAndAdminCaches();
 
