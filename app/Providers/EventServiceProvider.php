@@ -19,7 +19,6 @@ use App\Listeners\SendCartReminder;
 use App\Listeners\SendOrderEmail;
 use App\Listeners\TrackAddToCart;
 use App\Listeners\TrackProductView;
-use App\Listeners\UpdateInventory;
 use App\Listeners\UpdateProductRating;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -38,7 +37,6 @@ class EventServiceProvider extends ServiceProvider
             SendOrderEmail::class,
             NotifyAdmin::class,
             NotifyUser::class,
-            UpdateInventory::class,
             LogOrderEvent::class,
         ],
 
