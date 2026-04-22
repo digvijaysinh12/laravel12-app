@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Services\Customer\OrderService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 
@@ -31,7 +32,7 @@ class OrderController extends Controller
         // Generate signed URL (10 minutes)
         $signedUrl = URL::temporarySignedRoute(
             'user.invoice.download',
-            now()->addMinutes(1),
+            now()->addMinutes(10),
             ['order' => $order->id]
         );
 
@@ -60,7 +61,7 @@ class OrderController extends Controller
             'user' => $order->user,
             'items' => $order->items->map(function ($item) {
                 return [
-                    'name' => $item->product->name ?? 'Product',
+                    'name' => Arr::get($item->toArray(), 'product.name', 'Product'),
                     'quantity' => $item->quantity,
                     'price' => $item->price,
                     'total' => $item->price * $item->quantity,
