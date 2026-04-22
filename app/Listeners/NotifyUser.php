@@ -71,7 +71,7 @@ class NotifyUser
         }
 
         if ($event instanceof OrderStatusUpdated) {
-            return in_array($event->order->status, ['paid', 'shipped', 'delivered'], true);
+            return $event->order->status === 'confirmed';
         }
 
         if ($event instanceof CartAbandoned) {
@@ -130,7 +130,7 @@ class NotifyUser
             $event instanceof OrderStatusUpdated => [
                 'type' => 'order',
                 'title' => 'Order Updated',
-                'message' => 'Your order '.$event->order->order_number.' is now '.$event->order->status.'.',
+                'message' => 'Your order '.$event->order->order_number.' is now '.strtolower($event->order->status).'.',
                 'user_id' => $user->id,
                 'is_read' => false,
             ],
