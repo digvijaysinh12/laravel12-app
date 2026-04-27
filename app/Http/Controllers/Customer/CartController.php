@@ -23,8 +23,8 @@ class CartController extends Controller
         $shipping = $this->cartService->getShipping($cart);
         $grandTotal = round($summary['total'] + $shipping['amount'], 2);
         auth()->user()?->update([
-                'last_cart_activity' => now()
-            ]);
+            'last_cart_activity' => now(),
+        ]);
 
         return view('user.cart.index', compact('cart', 'summary', 'shipping', 'grandTotal'));
     }
@@ -33,11 +33,11 @@ class CartController extends Controller
     {
         $this->cartService->add($id);
 
-        $product = Product::find($id); 
+        $product = Product::find($id);
 
-        ProductAddedToCart::dispatch($product, auth()->user()); 
+        ProductAddedToCart::dispatch($product, auth()->user());
 
-        return back()->with('success', 'Added to cart');
+        return back()->with('success', __('Added to cart'));
     }
 
     public function remove($id)
