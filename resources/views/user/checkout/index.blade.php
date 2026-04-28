@@ -3,6 +3,7 @@
 @section('title', 'Checkout')
 
 @section('content')
+
 <div class="space-y-6">
     <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -44,7 +45,9 @@
                         <label for="phone" class="mb-1 block text-sm font-medium text-slate-700">Phone</label>
                         <input id="phone" type="text" name="phone" value="{{ old('phone') }}" required class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-slate-400">
                     </div>
-
+<p class="text-sm text-slate-600">
+    {{ trans_choice('cart_items', $summary['item_count'], ['count' => $summary['item_count']]) }}
+</p>
                     <button type="submit" class="inline-flex w-full items-center justify-center rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-sky-700">
                         Place Order
                     </button>
