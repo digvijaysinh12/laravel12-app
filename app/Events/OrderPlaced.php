@@ -13,13 +13,10 @@ class OrderPlaced implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Order $order)
-    {
-    }
+    public function __construct(public Order $order) {}
 
     public function broadcastOn(): array
     {
-        // FIXED: admin channel for new order notifications.
         return [new PrivateChannel('admin.orders')];
     }
 
