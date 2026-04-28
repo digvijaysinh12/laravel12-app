@@ -3,7 +3,6 @@
 namespace App\Services\Customer;
 
 use App\Events\OrderPlaced;
-use App\Events\ProductStockChanged;
 use App\Exceptions\ProductNotFoundException;
 use App\Exceptions\ProductOutOfStockException;
 use App\Models\Order;
@@ -20,21 +19,28 @@ class CheckoutService
     public function process()
     {
         try {
+            Log::info('Checkout START', ['user_id' => auth()->id()]);
+
             $cartService = app(CartService::class);
             $cartService->clearCartCache();
 
             $cart = $cartService->getCartItems(true);
 
+            Log::info('Cart fetched', ['cart' => $cart]);
+
             if (empty($cart)) {
-                throw new Exception('Your cart is empty. Please add items before checkout.');
+                Log::warning('Cart is empty');
+                throw new Exception('Your cart is empty.');
             }
 
             $total = 0;
             $items = [];
 
             foreach ($cart as $id => $item) {
+                Log::info('Processing cart item', ['product_id' => $id, 'item' => $item]);
+
                 if (! isset($item['price'], $item['quantity'])) {
-                    throw new Exception('Invalid cart data detected.');
+                    throw new Exception('Invalid cart data');
                 }
 
                 $lineTotal = $item['price'] * $item['quantity'];
@@ -49,8 +55,10 @@ class CheckoutService
                 ];
             }
 
+            Log::info('Cart processed', ['total' => $total]);
+
             DB::beginTransaction();
-            $stockUpdates = [];
+            Log::info('Transaction START');
 
             $orderNumber = 'ORD-'.date('Y').'-'.strtoupper(uniqid());
 
@@ -61,26 +69,35 @@ class CheckoutService
                 'status' => 'pending',
                 'payment_method' => 'COD',
                 'payment_status' => 'pending',
-                'shipping_address' => 'Default Address', // replace later
+                'shipping_address' => 'Default Address',
                 'phone' => '9999999999',
             ]);
+
+            Log::info('Order created', ['order_id' => $order->id]);
 
             foreach ($items as $item) {
                 $product = Product::find($item['id']);
 
                 if (! $product) {
-                    throw new ProductNotFoundException();
+                    Log::error('Product not found', ['product_id' => $item['id']]);
+                    throw new ProductNotFoundException;
                 }
 
                 if ($product->stock < $item['quantity']) {
-                    throw new ProductOutOfStockException(
-                        $product->name.' is out of stock'
-                    );
+                    Log::error('Out of stock', [
+                        'product' => $product->name,
+                        'stock' => $product->stock,
+                    ]);
+                    throw new ProductOutOfStockException($product->name.' out of stock');
                 }
 
-                // Reduce product quantity immediately after validation.
                 $product->stock -= $item['quantity'];
                 $product->save();
+
+                Log::info('Stock updated', [
+                    'product_id' => $product->id,
+                    'new_stock' => $product->stock,
+                ]);
 
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -88,53 +105,37 @@ class CheckoutService
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                 ]);
-
-                $stockUpdates[] = [
-                    'product_id' => (int) $product->id,
-                    'stock' => (int) $product->stock,
-                ];
             }
 
             session()->forget('cart');
 
             DB::commit();
-            $cartService->clearCartCache();
-            $this->clearAdminDashboardCache();
-
-            foreach ($stockUpdates as $update) {
-                Log::info('Broadcasting product stock update', $update);
-                broadcast(new ProductStockChanged($update['product_id'], $update['stock']))->toOthers();
-            }
-
-            Log::info('Broadcasting new order placed event', [
-                'order_id' => $order->id,
-                'user_id' => $order->user_id,
-                'order_number' => $order->order_number,
-            ]);
+            Log::info('Transaction COMMIT');
 
             event(new OrderPlaced($order));
+            Log::info('OrderPlaced event fired');
 
             return [
                 'success' => true,
                 'invoice_no' => $order->order_number,
+                'order_id' => $order->id, // IMPORTANT FIX
                 'date' => now(),
                 'items' => $items,
                 'grand_total' => $total,
                 'user' => auth()->user(),
             ];
+
         } catch (Exception $e) {
             DB::rollBack();
 
-            Log::error('Checkout Failed', [
-                'message' => $e->getMessage(),
+            Log::error('Checkout FAILED', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
                 'user_id' => auth()->id(),
             ]);
 
-            throw new Exception(
-                app()->environment('local')
-                    ? $e->getMessage()
-                    : 'Something went wrong while placing your order. Please try again.'
-            );
+            throw $e; // 🔥 IMPORTANT for debug
         }
     }
 
@@ -142,6 +143,7 @@ class CheckoutService
     {
         if (Cache::getStore() instanceof TaggableStore) {
             Cache::tags(['admin'])->flush();
+
             return;
         }
 
