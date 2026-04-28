@@ -21,7 +21,7 @@
         <div class="card">
             <p class="muted">Invoice</p>
             <h1>Invoice #{{ $invoice['invoice_no'] }}</h1>
-            <p class="muted">Date: {{ $invoice['date']->format('d-m-Y') }}</p>
+            <p class="muted">Date: {{ optional($invoice['date'])->format('d-m-Y') }}</p>
         </div>
 
         <div class="card">
