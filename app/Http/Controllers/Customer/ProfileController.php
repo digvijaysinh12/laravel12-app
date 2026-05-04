@@ -55,4 +55,23 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    public function updateLocale(Request $request)
+    {
+        $request->validate([
+            'locale' => 'in:en,hi,gu',
+        ]);
+
+        $user = auth()->user();
+
+        if ($user) {
+            $user->update([
+                'preferred_locale' => $request->locale,
+            ]);
+        }
+
+        session(['locale' => $request->locale]);
+
+        return back()->with('success', __('Language updated'));
+    }
 }
