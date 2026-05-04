@@ -8,11 +8,14 @@ use App\Exceptions\ProductOutOfStockException;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Cache\TaggableStore;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class CheckoutService
 {
@@ -112,6 +115,9 @@ class CheckoutService
             DB::commit();
             Log::info('Transaction COMMIT');
 
+            $order->load('items.product', 'user');
+            $this->storeInvoicePdf($order);
+
             event(new OrderPlaced($order));
             Log::info('OrderPlaced event fired');
 
@@ -150,5 +156,27 @@ class CheckoutService
         Cache::forget('admin.dashboard.stats');
         Cache::forget('admin.recent.orders');
         Cache::forget('admin.sales.analytics');
+    }
+
+    private function storeInvoicePdf(Order $order): void
+    {
+        $invoice = [
+            'invoice_no' => $order->order_number,
+            'date' => $order->created_at,
+            'user' => $order->user,
+            'items' => $order->items->map(function (OrderItem $item) {
+                return [
+                    'name' => Arr::get($item->toArray(), 'product.name', 'Product'),
+                    'quantity' => $item->quantity,
+                    'price' => $item->price,
+                    'total' => $item->price * $item->quantity,
+                ];
+            }),
+            'grand_total' => $order->total_amount,
+        ];
+
+        $pdf = Pdf::loadView('user.invoice.pdf', compact('invoice'));
+
+        Storage::disk('local')->put($order->invoice_storage_path, $pdf->output());
     }
 }
