@@ -9,13 +9,13 @@ use Illuminate\Support\Facades\Mail;
 
 class SendOrderEmail
 {
-    public function handle(OrderPlaced $event)
+    public function handle(OrderPlaced $event): void
     {
         $order = $event->order;
 
         $order->loadMissing('items.product', 'user');
 
-        if (! $order->user || ! $order->user->email) {
+        if (! $order->user?->email) {
             Log::channel('orders')->error('User email missing', [
                 'order_id' => $order->id,
             ]);
@@ -24,16 +24,16 @@ class SendOrderEmail
         }
 
         try {
-            Mail::to($order->user->email)
+            Mail::to($order->user)
                 ->queue(new OrderConfirmation($order));
 
-            Log::channel('orders')->info('Email sent successfully', [
+            Log::channel('orders')->info('Order confirmation queued successfully', [
                 'order_id' => $order->id,
                 'email' => $order->user->email,
             ]);
 
         } catch (\Exception $e) {
-            Log::channel('orders')->error('Email failed', [
+            Log::channel('orders')->error('Failed to queue order confirmation email', [
                 'order_id' => $order->id,
                 'error' => $e->getMessage(),
             ]);
