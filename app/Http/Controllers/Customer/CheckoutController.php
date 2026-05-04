@@ -9,7 +9,6 @@ use App\Services\Customer\CheckoutService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\URL;
 
 class CheckoutController extends Controller
 {
@@ -33,10 +32,6 @@ class CheckoutController extends Controller
             $invoice = $service->process();
 
             session()->put('last_invoice', $invoice);
-
-            $url = URL::signedRoute('user.invoice.download', [
-                'order' => $invoice['order_id'],
-            ]);
 
             return redirect()
                 ->route('user.orders.show', $invoice['order_id'])
