@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Cache;
 class CartService
 {
     private const PRODUCT_CACHE_TTL_MINUTES = 30;
+
     private const CART_CACHE_TTL_MINUTES = 10;
+
     private const TAX_PERCENT = 5;
 
     public function getCart(): array
@@ -30,6 +32,7 @@ class CartService
             if (! $product) {
                 unset($cart[$productId]);
                 $cartChanged = true;
+
                 continue;
             }
 
@@ -92,7 +95,7 @@ class CartService
 
             return [
                 'amount' => $amount,
-                'method' => $quantity <= 0 ? 'No shipping' : 'Standard shipping',
+                'method' => $quantity <= 0 ? __('No shipping') : __('Standard shipping'),
                 'quantity' => $quantity,
             ];
         });
@@ -102,6 +105,7 @@ class CartService
     {
         if ($this->supportsTags()) {
             Cache::tags(['customer'])->flush();
+
             return;
         }
 
