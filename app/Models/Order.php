@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'user_id',
         'order_number',
@@ -33,5 +34,10 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function getInvoiceStoragePathAttribute(): string
+    {
+        return 'invoices/order-'.$this->id.'.pdf';
     }
 }
