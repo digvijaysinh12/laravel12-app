@@ -115,4 +115,12 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'admin_recipients' => [
+        'to' => array_filter(array_map('trim', explode(',', (string) env('MAIL_ADMIN_TO', 'admin@example.test')))),
+        'cc' => array_filter(array_map('trim', explode(',', (string) env('MAIL_ADMIN_CC', 'warehouse@example.test')))),
+        'bcc' => array_filter(array_map('trim', explode(',', (string) env('MAIL_ADMIN_BCC', 'archive@example.test')))),
+    ],
+
+    'low_stock_threshold' => (int) env('MAIL_LOW_STOCK_THRESHOLD', 10),
+
 ];
