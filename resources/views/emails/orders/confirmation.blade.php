@@ -3,27 +3,34 @@
     $logoPath = public_path('images/logo.png');
 @endphp
 
-@if(file_exists($logoPath))
-    <img src="{{ $message->embed($logoPath) }}" width="150">
+@if (file_exists($logoPath))
+<p>
+    <img src="{{ $message->embed($logoPath) }}" alt="{{ config('app.name') }}" width="140">
+</p>
 @endif
-# Order Confirmation
 
-Thank you for your order!
+# {{ __('emails.order.heading') }}
+
+{{ __('emails.order.greeting', ['name' => $order->user->name]) }}
+
+{{ __('emails.order.intro', ['id' => $order->order_number]) }}
 
 <x-mail::table>
-| Product | Qty | Price |
-|--------|-----|-------|
-@foreach($order->items as $item)
-| {{ $item->name }} | {{ $item->quantity }} | ₹{{ $item->price }} |
+| {{ __('emails.order.table.product') }} | {{ __('emails.order.table.quantity') }} | {{ __('emails.order.table.price') }} | {{ __('emails.order.table.total') }} |
+| :-- | :--: | --: | --: |
+@foreach ($order->items as $item)
+| {{ $item->product->name ?? __('emails.order.product_fallback') }} | {{ $item->quantity }} | Rs. {{ number_format($item->price, 2) }} | Rs. {{ number_format($item->price * $item->quantity, 2) }} |
 @endforeach
 </x-mail::table>
 
-**Total: ₹{{ $order->total }}**
+**{{ __('emails.order.total') }}: Rs. {{ number_format($order->total_amount, 2) }}**
 
 <x-mail::button :url="$url">
-View Order
+{{ __('emails.order.view_order') }}
 </x-mail::button>
 
-Thanks,<br>
+{{ __('emails.order.attachment_notice') }}
+
+{{ __('emails.order.thanks') }},<br>
 {{ config('app.name') }}
 </x-mail::message>
