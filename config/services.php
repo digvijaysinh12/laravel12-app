@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'fake_store' => [
+        'base_url' => env('FAKE_STORE_BASE_URL'),
+        'token' => env('FAKE_STORE_TOKEN'),
+    ],
+
 ];

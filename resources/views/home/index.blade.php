@@ -1,6 +1,12 @@
+
 @extends('user.layouts.app')
 
 @section('content')
+@if ($errors->any())
+    <div class="bg-red-100 text-red-700 p-3 mb-4 rounded">
+        {{ $errors->first() }}
+    </div>
+@endif
 <div class="container mx-auto px-4 py-6">
     <div class="mb-8 rounded-2xl bg-gray-900 p-10 text-white">
         <h1 class="mb-2 text-4xl font-bold">Welcome to Our Store</h1>

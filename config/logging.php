@@ -127,7 +127,7 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
-        'products' =>[
+        'products' => [
             'driver' => 'single',
             'path' => storage_path('logs/products.log'),
             'level' => 'info',
@@ -143,7 +143,7 @@ return [
         'authlog' => [
             'driver' => 'single',
             'path' => storage_path('logs/auth.log'),
-            'level' => 'warning' 
+            'level' => 'warning',
         ],
         'admin' => [
             'driver' => 'single',
@@ -154,6 +154,12 @@ return [
         'customer' => [
             'driver' => 'single',
             'path' => storage_path('logs/customer.log'),
+            'level' => 'debug',
+        ],
+
+        'mail' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/mail.log'),
             'level' => 'debug',
         ],
 

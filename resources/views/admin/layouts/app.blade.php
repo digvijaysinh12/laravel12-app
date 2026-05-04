@@ -159,7 +159,11 @@ $(document).on('click', '.sidebar-link', function (e) {
         .addClass('bg-slate-900 text-white')
         .removeClass('text-slate-600');
 
-    $('#main-content').html('<div class="p-6">Loading...</div>');
+$('#main-content').html(`
+    <div class="flex items-center justify-center h-40">
+        <div class="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+    </div>
+`);
 
     $.get(url, function (response) {
         const newContent = $(response).find('#main-content').html();

@@ -3,6 +3,15 @@
 @section('title', 'Profile')
 
 @section('content')
+<form method="POST" action="/user/profile/locale">
+    @csrf
+
+    <select name="locale" onchange="this.form.submit()">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="gu">Gujarati</option>
+    </select>
+</form>
 <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
     <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Profile information</h1>

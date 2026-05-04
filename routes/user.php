@@ -1,13 +1,13 @@
 <?php
 
-use App\Http\Controllers\Customer\ProductController;
+use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
-use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\OrderAnalyticsController;
-use App\Http\Controllers\Customer\ReviewController;
-use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Customer\OrderController;
+use App\Http\Controllers\Customer\ProductController;
 use App\Http\Controllers\Customer\ProfileController;
+use App\Http\Controllers\Customer\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/profile', [ProfileController::class, 'edit'])
@@ -21,6 +21,7 @@ Route::put('/password', [PasswordController::class, 'update'])
 
 Route::delete('/profile', [ProfileController::class, 'destroy'])
     ->name('profile.destroy');
+Route::post('/profile/locale', [ProfileController::class, 'updateLocale']);
 
 Route::prefix('products')->name('products.')->group(function () {
     Route::get('/', [ProductController::class, 'index'])->name('index');

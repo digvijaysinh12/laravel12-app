@@ -1,10 +1,14 @@
 <?php
 
+use App\Mail\OrderConfirmation;
+use App\Http\Controllers\Customer\ProductController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
-use App\Http\Controllers\Customer\ProductController;
+use App\Http\Controllers\PController;
 use App\Http\Middleware\SetUserContext;
+use App\Models\Order;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -12,30 +16,52 @@ use Illuminate\Support\Facades\Route;
 // Public storefront
 Route::get('/', [HomePageController::class, 'index'])->name('home');
 
-Route::get('/http-client',function(){
-        $response = Http::get('https://fakestoreapi.com/products');
+Route::post('/locale', function (Request $request) {
 
-        $products = $response->collect();
+    $locale = $request->locale;
 
-            if ($response->successful()) {
-                $products = $response->json();
+    if (! in_array($locale, ['en', 'hi', 'gu'])) {
+        abort(400);
+    }
 
-                return view('products.index', compact('products'));
-            }
+    session(['locale' => $locale]);
 
-        return view('products.index', ['products' => []]);
+    return back();
+
+})->name('locale.switch');
+
+Route::get('/prod', function () {
+    $response = Http::get('https://fakestoreapi.com/products');
+
+    return $response->json();
+});
+
+Route::get('/produ', [PController::class, 'index'])->name('products.index');
+
+Route::get('/http-client', function () {
+    $response = Http::get('https://fakestoreapi.com/products');
+
+    $products = $response->collect();
+
+    if ($response->successful()) {
+        $products = $response->json();
+
+        return view('products.index', compact('products'));
+    }
+
+    return view('products.index', ['products' => []]);
 });
 
 Route::get('http-post', function () {
 
     $response = Http::post('https://fakestoreapi.com/products', [
-        "id" => 10092387,
-        "title" => "Digvijaysinh Sarvaiyas"
+        'id' => 10092387,
+        'title' => 'Digvijaysinh Sarvaiyas',
     ]);
 
     if ($response->successful()) {
         Log::channel('products')->info('Product created successfully', [
-            'data' => $response->json()
+            'data' => $response->json(),
         ]);
 
         return $response->json();
@@ -44,7 +70,7 @@ Route::get('http-post', function () {
     if ($response->clientError()) {
         Log::channel('products')->warning('Client error while creating product', [
             'status' => $response->status(),
-            'body' => $response->body()
+            'body' => $response->body(),
         ]);
 
         return response()->json(['error' => 'Client error'], 400);
@@ -52,17 +78,22 @@ Route::get('http-post', function () {
 
     if ($response->serverError()) {
         Log::channel('products')->error('Server error from API', [
-            'status' => $response->status()
+            'status' => $response->status(),
         ]);
 
         return response()->json(['error' => 'Server error'], 500);
     }
 });
 
-
 Route::middleware(['auth', 'checkrole:user'])
     ->get('/dashboard', [ProductController::class, 'featured'])
     ->name('dashboard');
+
+if (app()->environment('local')) {
+    Route::get('/dev/mail/order/{order}', function (Order $order) {
+        return new OrderConfirmation($order->load('items.product', 'user'));
+    })->name('dev.mail.order');
+}
 
 require __DIR__.'/auth.php';
 
