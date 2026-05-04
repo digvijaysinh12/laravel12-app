@@ -1,0 +1,17 @@
+{
+    "Your Cart": "તમારી કાર્ટ",
+    "Continue Shopping": "ખરીદી ચાલુ રાખો",
+    "Remove": "દૂર કરો",
+    "Order Summary": "ઓર્ડર સારાંશ",
+    "Subtotal": "કુલ રકમ",
+    "Tax": "કર",
+    "Shipping": "ડિલિવરી",
+    "Total": "કુલ",
+    "Proceed to Checkout": "ચેકઆઉટ કરો",
+    "Your cart is empty": "તમારી કાર્ટ ખાલી છે",
+    "Browse Products": "પ્રોડક્ટ્સ જુઓ",
+    "Added to cart": "કાર્ટમાં ઉમેર્યું",
+    "Order Confirmed": "તમારો ઓર્ડર #:id તારીખ :date પર સફળતાપૂર્વક થયો",
+    "cart_items": "{0} કોઈ વસ્તુ નથી | {1} 1 વસ્તુ | [2,*] :count વસ્તુઓ",
+    "products_found": "{0} કોઈ પ્રોડક્ટ નથી મળી | {1} 1 પ્રોડક્ટ મળી | [2,*] :count પ્રોડક્ટ્સ મળી"
+}

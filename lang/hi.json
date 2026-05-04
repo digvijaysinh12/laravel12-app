@@ -1,0 +1,17 @@
+{
+    "Your Cart": "आपकी कार्ट",
+    "Continue Shopping": "खरीदारी जारी रखें",
+    "Remove": "हटाएं",
+    "Order Summary": "ऑर्डर सारांश",
+    "Subtotal": "उप-योग",
+    "Tax": "कर",
+    "Shipping": "डिलीवरी",
+    "Total": "कुल",
+    "Proceed to Checkout": "चेकआउट करें",
+    "Your cart is empty": "आपकी कार्ट खाली है",
+    "Browse Products": "उत्पाद देखें",
+    "Added to cart": "कार्ट में जोड़ा गया",
+    "Order Confirmed": "आपका ऑर्डर #:id दिनांक :date को सफलतापूर्वक किया गया",
+    "cart_items": "{0} कोई आइटम नहीं | {1} 1 आइटम | [2,*] :count आइटम",
+    "products_found": "{0} कोई प्रोडक्ट नहीं मिला | {1} 1 प्रोडक्ट मिला | [2,*] :count प्रोडक्ट मिले"
+}
