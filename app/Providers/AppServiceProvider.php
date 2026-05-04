@@ -7,6 +7,7 @@ use App\Observers\ProductObserver;
 use App\Services\DiscountService;
 use App\Services\GreetingService;
 use App\Services\Customer\PaymentService;
+use App\Services\ExternalApiService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Response;
@@ -31,6 +32,10 @@ class AppServiceProvider extends ServiceProvider
         // Singleton: same instance reused.
         $this->app->singleton(DiscountService::class, function () {
             return new DiscountService();
+        });
+
+        $this->app->singleton(ExternalApiService::class,function(){
+            return new ExternalApiService();
         });
     }
 
