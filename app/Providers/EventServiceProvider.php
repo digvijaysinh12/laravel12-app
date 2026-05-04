@@ -11,11 +11,13 @@ use App\Events\OrderStatusUpdated;
 use App\Events\ProductAddedToCart;
 use App\Events\ProductReviewed;
 use App\Events\ProductStockChanged;
+use App\Events\ProductStockLow;
 use App\Events\ProductViewed;
 use App\Listeners\LogOrderEvent;
 use App\Listeners\NotifyAdmin;
 use App\Listeners\NotifyUser;
 use App\Listeners\SendCartReminder;
+use App\Listeners\SendLowStockAlert;
 use App\Listeners\SendOrderEmail;
 use App\Listeners\TrackAddToCart;
 use App\Listeners\TrackProductView;
@@ -76,6 +78,10 @@ class EventServiceProvider extends ServiceProvider
 
         ProductStockChanged::class => [
             NotifyAdmin::class,
+        ],
+
+        ProductStockLow::class => [
+            SendLowStockAlert::class,
         ],
     ];
 
