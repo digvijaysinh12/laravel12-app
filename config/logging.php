@@ -163,6 +163,30 @@ return [
             'level' => 'debug',
         ],
 
+        'notification' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/notification.log'),
+            'level' => 'debug',
+        ],
+
+        'admin_notification' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/admin-notification.log'),
+            'level' => 'debug',
+        ],
+
+        'order_events' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/order-events.log'),
+            'level' => 'debug',
+        ],
+
+        'mail_tracking' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/mail.log'),
+            'level' => 'debug',
+        ],
+
     ],
 
 ];

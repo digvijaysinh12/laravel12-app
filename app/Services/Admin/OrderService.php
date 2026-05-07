@@ -5,8 +5,8 @@ namespace App\Services\Admin;
 use App\Events\OrderDelivered;
 use App\Events\OrderPaid;
 use App\Events\OrderPlaced;
-use App\Events\OrderStatusUpdated;
 use App\Events\OrderShipped;
+use App\Events\OrderStatusUpdated;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -85,9 +85,20 @@ class OrderService
             return $order->fresh(['items.product', 'user']);
         });
 
-        $this->dispatchLifecycleEvents($updatedOrder, $originalStatus, $originalPaymentStatus);
+        // $this->dispatchLifecycleEvents($updatedOrder, $originalStatus, $originalPaymentStatus);
 
         $this->clearOrderCaches([$originalUserId, $updatedOrder->user_id]);
+
+        if ($updatedOrder->status === 'shipped') {
+
+            Log::info('Order shipped notification triggered', [
+                'order_id' => $updatedOrder->id
+            ]);
+
+            $updatedOrder->user->notify(
+                new \App\Notifications\OrderShipped($updatedOrder)
+            );
+        }
 
         return $updatedOrder;
     }

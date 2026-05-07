@@ -129,7 +129,7 @@ const loadNotifications = async () => {
             setUnreadCount([]);
             return;
         }
-
+        console.log(response.data);
         response.data.forEach((notification) => {
             list.appendChild(renderNotificationItem(notification));
         });
@@ -209,9 +209,11 @@ const setupDropdown = () => {
 };
 
 const subscribeNotifications = () => {
+    console.log('Notification subscription starting...');
     const channel = notificationChannel();
-
+    console.log('Subscribed channel:', channel);
     if (!window.Echo || !channel) {
+        console.log('Echo or channel missing');
         return;
     }
 

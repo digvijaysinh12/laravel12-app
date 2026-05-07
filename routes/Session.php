@@ -1,10 +1,3 @@
-Session 5 to 6
+7-5-2026
 
-pluck and value
-
-pagination
-
-when custome use
-
-what is error when we doesnt use orderby with cursorpagination
-
+==> 

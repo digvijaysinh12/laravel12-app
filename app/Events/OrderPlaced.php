@@ -8,12 +8,19 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class OrderPlaced implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Order $order) {}
+    public function __construct(public Order $order)
+    {
+        Log::channel('order_events')->info('OrderPlaced event fired', [
+            'order_id' => $order->id,
+            'order_number' => $order->order_number,
+        ]);
+    }
 
     public function broadcastOn(): array
     {

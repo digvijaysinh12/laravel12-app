@@ -3,22 +3,19 @@
 namespace App\Listeners;
 
 use App\Events\CartAbandoned;
-use App\Events\OrderPlaced;
 use App\Events\NotificationBroadcast;
+use App\Events\OrderPlaced;
 use App\Events\ProductAddedToCart;
 use App\Events\ProductReviewed;
-use App\Events\ProductViewed;
 use App\Events\ProductStockChanged;
-use App\Models\Notification;
+use App\Events\ProductViewed;
+use App\Models\AdminNotification;
 use Illuminate\Support\Facades\Log;
 
 class NotifyAdmin
 {
     public function handle($event): void
     {
-        if (! ($event instanceof OrderPlaced)) {
-            return;
-        }
 
         $data = $this->makeNotification($event);
 
@@ -26,18 +23,28 @@ class NotifyAdmin
             return;
         }
 
-        $notification = Notification::create($data);
+        // $notification = Notification::create($data);
 
         // FIXED: broadcast the same custom row data to the admin channel.
+        // broadcast(new NotificationBroadcast(
+        //     $this->payload($notification),
+        //     'admin.notifications'
+        // ));
+        // dd($data);
+        $notification = AdminNotification::create($data);
+        // Log::channel('admin_notification')->info('Admin notification created', [
+        //     'id' => $notification->id,
+        //     'title' => $notification->title,
+        // ]);
+
         broadcast(new NotificationBroadcast(
             $this->payload($notification),
             'admin.notifications'
         ));
 
-        Log::channel('orders')->info($data['title'].' notification sent');
     }
 
-    private function payload(Notification $notification): array
+    private function payload(AdminNotification $notification): array
     {
         return [
             'id' => $notification->id,

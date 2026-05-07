@@ -1,119 +1,271 @@
-<nav class="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-600">
-<form method="POST" action="{{ route('locale.switch') }}">
-    @csrf
+<nav class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white/90 px-5 py-3 shadow-sm backdrop-blur">
 
-    <select name="locale" onchange="this.form.submit()">
-        <option value="">Language</option>
+    {{-- LEFT SIDE --}}
+    <div class="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-700">
 
-        <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>
-            English
-        </option>
+        {{-- Language Switch --}}
+        <form method="POST" action="{{ route('locale.switch') }}">
+            @csrf
 
-        <option value="hi" {{ app()->getLocale() == 'hi' ? 'selected' : '' }}>
-            Hindi
-        </option>
+            <select name="locale"
+                onchange="this.form.submit()"
+                class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition hover:border-slate-300 focus:ring-2 focus:ring-slate-200">
 
-        <option value="gu" {{ app()->getLocale() == 'gu' ? 'selected' : '' }}>
-            Gujarati
-        </option>
-    </select>
-</form>
+                <option value="">🌐 Language</option>
 
-    {{-- Primary Links (Keep Text) --}}
-    <a href="{{ route('home') }}"
-       class="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-slate-100 hover:text-slate-900
-       @if(request()->routeIs('home')) bg-slate-100 text-slate-900 @endif">
-       {{ __('nav.home') }}
-    </a>
+                <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>
+                    English
+                </option>
 
-    <a href="{{ route('user.products.index') }}"
-       class="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-slate-100 hover:text-slate-900
-       @if(request()->routeIs('user.products.*')) bg-slate-100 text-slate-900 @endif">
-        {{ __('nav.products') }}
-    </a>
+                <option value="hi" {{ app()->getLocale() == 'hi' ? 'selected' : '' }}>
+                    Hindi
+                </option>
 
-    {{-- Cart (Icon + Text) --}}
-    <a href="{{ route('user.cart.index') }}"
-       class="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-slate-100 hover:text-slate-900
-       @if(request()->routeIs('user.cart.*')) bg-slate-100 text-slate-900 @endif">
-        🛒 <span class="hidden sm:inline"><span class="hidden sm:inline">{{ __('nav.cart') }}</span></span>
-    </a>
+                <option value="gu" {{ app()->getLocale() == 'gu' ? 'selected' : '' }}>
+                    Gujarati
+                </option>
 
-    @auth
+            </select>
+        </form>
 
-        {{-- Orders --}}
-        <a href="{{ route('user.orders.index') }}"
-           class="rounded-lg px-3 py-2 hover:bg-slate-100 hover:text-slate-900
-           @if(request()->routeIs('user.orders.*')) bg-slate-100 text-slate-900 @endif">
-            {{ __('nav.orders') }}
+        {{-- Home --}}
+        <a href="{{ route('home') }}"
+            class="rounded-xl px-4 py-2 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900
+            @if(request()->routeIs('home')) bg-slate-900 text-white shadow-sm @endif">
+
+            {{ __('nav.home') }}
         </a>
 
-        {{-- Profile (Icon better here) --}}
-        <a href="{{ route('user.profile.edit') }}"
-           class="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-slate-100 hover:text-slate-900
-           @if(request()->routeIs('user.profile.*')) bg-slate-100 text-slate-900 @endif">
-                                  <img src="{{ asset('images/profile.png') }}"
-             alt="profile"
-             class="w-6 h-6 object-contain">
+        {{-- Products --}}
+        <a href="{{ route('user.products.index') }}"
+            class="rounded-xl px-4 py-2 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900
+            @if(request()->routeIs('user.products.*')) bg-slate-900 text-white shadow-sm @endif">
+
+            {{ __('nav.products') }}
         </a>
 
-        {{-- Notifications (ICON ONLY) --}}
-        <div class="relative">
-            <button id="notificationBtn"
-                class="relative rounded-lg p-2 hover:bg-slate-100 hover:text-slate-900"
-                type="button">
+        {{-- Cart --}}
+        <a href="{{ route('user.cart.index') }}"
+            class="flex items-center gap-2 rounded-xl px-4 py-2 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900
+            @if(request()->routeIs('user.cart.*')) bg-slate-900 text-white shadow-sm @endif">
 
-                      <img src="{{ asset('images/notification.png') }}"
-             alt="Notification"
-             class="w-6 h-6 object-contain">
+            🛒
+            <span class="hidden sm:inline">
+                {{ __('nav.cart') }}
+            </span>
+        </a>
 
-                <span id="notificationCount"
-                    class="hidden absolute -top-1 -right-1 rounded-full bg-rose-600 px-1.5 text-[10px] text-white">
-                    0
-                </span>
-            </button>
+        @auth
 
-            <div id="notificationDropdown"
-                class="hidden absolute right-0 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-lg z-50">
+            {{-- Orders --}}
+            <a href="{{ route('user.orders.index') }}"
+                class="rounded-xl px-4 py-2 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900
+                @if(request()->routeIs('user.orders.*')) bg-slate-900 text-white shadow-sm @endif">
 
-                <div class="flex items-center justify-between border-b p-3">
-                    <span class="font-semibold text-slate-900">{{ __('nav.notifications') }}</span>
-                    <button id="markAllNotificationsBtn"
-                        type="button"
-                        class="text-xs font-medium text-slate-500 hover:text-slate-900">
-                        Mark all read
-                    </button>
+                {{ __('nav.orders') }}
+            </a>
+
+        @endauth
+
+    </div>
+
+    {{-- RIGHT SIDE --}}
+    <div class="flex items-center gap-3">
+
+        @auth
+
+            {{-- Notifications --}}
+            <div class="relative">
+
+                <button id="notificationBtn"
+                    type="button"
+                    class="group relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 transition-all duration-200 hover:bg-slate-100 hover:shadow-sm">
+
+                    <img src="{{ asset('images/notification.png') }}"
+                        alt="Notification"
+                        class="h-6 w-6 object-contain transition group-hover:scale-110">
+
+                    @php
+                        $unreadCount = \Illuminate\Support\Facades\Cache::remember(
+                            'unread_notifications_count_' . auth()->id(),
+                            60,
+                            fn () => auth()->user()->unreadNotifications()->count()
+                        );
+                    @endphp
+
+                    @if($unreadCount > 0)
+                        <span id="notificationCount"
+                            class="absolute -right-1 -top-1 flex min-h-[20px] min-w-[20px] items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white shadow">
+
+                            {{ $unreadCount }}
+                        </span>
+                    @endif
+
+                </button>
+
+                {{-- Dropdown --}}
+                <div id="notificationDropdown"
+                    class="hidden absolute right-0 z-50 mt-3 w-96 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+
+                    {{-- Header --}}
+                    <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+
+                        <div>
+                            <h3 class="font-semibold text-slate-900">
+                                {{ __('nav.notifications') }}
+                            </h3>
+
+                            <p class="text-xs text-slate-500">
+                                Latest updates
+                            </p>
+                        </div>
+
+                        <form method="POST"
+                            action="{{ route('notifications.readAll') }}">
+
+                            @csrf
+
+                            <button type="submit"
+                                class="rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900">
+
+                                Mark all read
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                    {{-- Notifications List --}}
+                    <div id="notificationList"
+                        class="max-h-[400px] overflow-y-auto">
+
+                        @forelse(auth()->user()->notifications->take(10) as $notification)
+
+                            <form method="POST"
+                                action="{{ route('notifications.read', $notification->id) }}">
+
+                                @csrf
+
+                                <button type="submit"
+                                    class="flex w-full items-start gap-3 border-b border-slate-100 px-4 py-4 text-left transition hover:bg-slate-50">
+
+                                    {{-- Icon --}}
+                                    <div class="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-lg">
+
+                                        🚚
+
+                                    </div>
+
+                                    {{-- Content --}}
+                                    <div class="flex-1">
+
+                                        <div class="flex items-center justify-between">
+
+                                            <h4 class="text-sm font-semibold text-slate-900">
+                                                {{ $notification->data['title'] }}
+                                            </h4>
+
+                                            @if(is_null($notification->read_at))
+                                                <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                                            @endif
+
+                                        </div>
+
+                                        <p class="mt-1 text-sm text-slate-600">
+                                            {{ $notification->data['message'] }}
+                                        </p>
+
+                                        <span class="mt-2 block text-xs text-slate-400">
+                                            {{ $notification->created_at->diffForHumans() }}
+                                        </span>
+
+                                    </div>
+
+                                </button>
+
+                            </form>
+
+                        @empty
+
+                            <div class="flex flex-col items-center justify-center px-6 py-10 text-center">
+
+                                <div class="mb-3 text-4xl">
+                                    🔔
+                                </div>
+
+                                <h4 class="text-sm font-semibold text-slate-700">
+                                    No Notifications
+                                </h4>
+
+                                <p class="mt-1 text-xs text-slate-500">
+                                    You're all caught up.
+                                </p>
+
+                            </div>
+
+                        @endforelse
+
+                    </div>
+
+                    {{-- Footer --}}
+                    <div class="border-t border-slate-100 bg-slate-50 px-4 py-3 text-center">
+
+                        <a href="{{ route('notifications.index') }}"
+                            class="text-sm font-medium text-slate-700 transition hover:text-slate-900">
+
+                            View All Notifications →
+
+                        </a>
+
+                    </div>
+
                 </div>
 
-                <div id="notificationList" class="max-h-64 overflow-y-auto text-sm">
-                    <div class="p-3 text-slate-500">No notifications</div>
-                </div>
             </div>
-        </div>
 
-<form method="POST" action="{{ route('logout') }}">
-    @csrf
-    <button type="submit"
-        title="Logout"
-        class="p-2 rounded-lg hover:bg-slate-100 flex items-center justify-center">
+            {{-- Profile --}}
+            <a href="{{ route('user.profile.edit') }}"
+                class="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 transition-all duration-200 hover:bg-slate-100 hover:shadow-sm">
 
-        <img src="{{ asset('images/logout.png') }}"
-             alt="Logout"
-             class="w-6 h-6 object-contain">
-    </button>
-</form>
+                <img src="{{ asset('images/profile.png') }}"
+                    alt="Profile"
+                    class="h-6 w-6 object-contain">
+            </a>
 
-    @else
+            {{-- Logout --}}
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
 
-        <a href="{{ route('login') }}"
-           class="rounded-lg px-3 py-2 hover:bg-slate-100 hover:text-slate-900">
-            {{ __('nav.login') }}
-        </a>
+                <button type="submit"
+                    title="Logout"
+                    class="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 transition-all duration-200 hover:bg-rose-50 hover:shadow-sm">
 
-        <a href="{{ route('register') }}"
-           class="rounded-lg bg-slate-900 px-3 py-2 text-white hover:bg-slate-800">
-           {{ __('nav.register') }}
-        </a>
+                    <img src="{{ asset('images/logout.png') }}"
+                        alt="Logout"
+                        class="h-6 w-6 object-contain">
 
-    @endauth
+                </button>
+
+            </form>
+
+        @else
+
+            {{-- Login --}}
+            <a href="{{ route('login') }}"
+                class="rounded-xl px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900">
+
+                {{ __('nav.login') }}
+            </a>
+
+            {{-- Register --}}
+            <a href="{{ route('register') }}"
+                class="rounded-xl bg-slate-900 px-5 py-2 font-medium text-white shadow-sm transition hover:bg-slate-800">
+
+                {{ __('nav.register') }}
+            </a>
+
+        @endauth
+
+    </div>
+
 </nav>

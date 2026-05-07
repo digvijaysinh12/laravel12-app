@@ -2,61 +2,55 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Notification;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Models\AdminNotification;
+use Illuminate\Support\Facades\Cache;
 
 class NotificationController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index()
     {
-        $user = $request->user();
+        $notifications = AdminNotification::latest()
+            ->take(20)
+            ->get();
 
-        $query = Notification::query()->latest();
-
-        if ($user && $user->role === 'admin') {
-            // FIXED: admin sees global notifications.
-            $query->whereNull('user_id');
-        } elseif ($user) {
-            // FIXED: user sees only their own notifications.
-            $query->where('user_id', $user->id);
-        }
-
-        return response()->json(
-            $query->take(20)->get(['id', 'title', 'message', 'is_read', 'created_at'])
-        );
+        return response()->json($notifications);
     }
 
-    public function markAsRead(Request $request, int $id): JsonResponse
+    public function unread()
     {
-        $user = $request->user();
-        $notification = Notification::query()->where('id', $id);
+        $notifications = AdminNotification::where('is_read', false)
+            ->latest()
+            ->get();
 
-        if ($user && $user->role === 'admin') {
-            $notification->whereNull('user_id');
-        } elseif ($user) {
-            $notification->where('user_id', $user->id);
-        }
-
-        $row = $notification->firstOrFail();
-        $row->update(['is_read' => true]);
-
-        return response()->json(['success' => true]);
+        return response()->json($notifications);
     }
 
-    public function markAllAsRead(Request $request): JsonResponse
+    public function markAsRead($id)
     {
-        $user = $request->user();
-        $query = Notification::query();
+        $notification = AdminNotification::findOrFail($id);
 
-        if ($user && $user->role === 'admin') {
-            $query->whereNull('user_id');
-        } elseif ($user) {
-            $query->where('user_id', $user->id);
-        }
+        $notification->update([
+            'is_read' => true,
+        ]);
 
-        $query->update(['is_read' => true]);
+        Cache::forget('unread_notifications_count');
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+        ]);
+    }
+
+    public function markAllRead()
+    {
+        AdminNotification::where('is_read', false)
+            ->update([
+                'is_read' => true,
+            ]);
+
+        Cache::forget('unread_notifications_count');
+
+        return response()->json([
+            'success' => true,
+        ]);
     }
 }

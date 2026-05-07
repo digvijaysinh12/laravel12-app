@@ -10,13 +10,13 @@ Broadcast::channel('admin.orders', function ($user) {
 
 Broadcast::channel('admin.notifications', function ($user) {
     // FIXED: shared admin notification channel.
-    return $user && $user->is_admin;
+    return $user && $user->role === 'admin';
 });
 
 Broadcast::channel('order.{orderId}', function ($user, $orderId) {
-    $order = Order::find($orderId);
-
-    return $order && (int) $user->id === (int) $order->user_id;
+    return Order::where('id', $orderId)
+        ->where('user_id', $user->id)
+        ->exists();
 });
 
 Broadcast::channel('user.{id}.notifications', function ($user, $id) {

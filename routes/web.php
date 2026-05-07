@@ -1,12 +1,12 @@
 <?php
 
-use App\Mail\OrderConfirmation;
 use App\Http\Controllers\Customer\ProductController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PController;
 use App\Http\Middleware\SetUserContext;
+use App\Mail\OrderConfirmation;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -25,6 +25,14 @@ Route::post('/locale', function (Request $request) {
     }
 
     session(['locale' => $locale]);
+
+    if (auth()->check()) {
+
+        auth()->user()->update([
+            'preferred_locale' => $locale,
+        ]);
+
+    }
 
     return back();
 
@@ -113,11 +121,26 @@ Route::middleware(['auth', 'checkrole:admin'])
         require __DIR__.'/admin.php';
     });
 
+// Route::middleware('auth')->group(function () {
+//     // FIXED: shared notification API for both admin and users.
+//     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+//     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+//     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+// });
+
 Route::middleware('auth')->group(function () {
-    // FIXED: shared notification API for both admin and users.
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
+
+    Route::get('/notifications/unread', [NotificationController::class, 'unread'])
+        ->name('notifications.unread');
+
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
+        ->name('notifications.read');
+
+    Route::get('/notifications/read-all', [NotificationController::class, 'markAllRead'])
+        ->name('notifications.readAll');
 });
 
 Route::fallback([PageController::class, 'notFound']);

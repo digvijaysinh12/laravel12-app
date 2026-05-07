@@ -64,7 +64,7 @@ class OrderConfirmation extends Mailable implements ShouldQueue
     {
         $path = $this->order->invoice_storage_path;
 
-        if (! \Storage::disk('local')->exists($path)) {
+        if (! Storage::disk('local')->exists($path)) {
             Log::channel('mail')->warning('Order invoice attachment missing; sending mail without attachment.', [
                 'order_id' => $this->order->id,
                 'path' => $path,

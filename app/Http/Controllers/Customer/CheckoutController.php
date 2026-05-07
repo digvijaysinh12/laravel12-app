@@ -15,6 +15,14 @@ class CheckoutController extends Controller
     public function create(CartService $cartService)
     {
 
+        if (empty($cart)) {
+
+            return redirect()
+                ->route('cart.index')
+                ->with('error', 'Cart is empty');
+
+        }
+
         $cart = $cartService->getCartItems();
 
         $summary = $cartService->getSummary();
