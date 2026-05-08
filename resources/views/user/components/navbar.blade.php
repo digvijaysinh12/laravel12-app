@@ -1,3 +1,6 @@
+@php
+    use App\Support\Notifications\NotificationCache;
+@endphp
 <nav class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white/90 px-5 py-3 shadow-sm backdrop-blur">
 
     {{-- LEFT SIDE --}}
@@ -50,9 +53,11 @@
             @if(request()->routeIs('user.cart.*')) bg-slate-900 text-white shadow-sm @endif">
 
             🛒
+
             <span class="hidden sm:inline">
                 {{ __('nav.cart') }}
             </span>
+
         </a>
 
         @auth
@@ -77,61 +82,70 @@
             {{-- Notifications --}}
             <div class="relative">
 
+                @php
+                    $unreadCount = NotificationCache::unreadCountFor(auth()->user());
+
+                    $latestNotifications = auth()->user()
+                        ->notifications()
+                        ->latest()
+                        ->take(10)
+                        ->get();
+                @endphp
+
+                {{-- Bell Button --}}
                 <button id="notificationBtn"
                     type="button"
-                    class="group relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 transition-all duration-200 hover:bg-slate-100 hover:shadow-sm">
+                    class="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 transition-all duration-200 hover:bg-slate-100 hover:shadow-sm">
 
-                    <img src="{{ asset('images/notification.png') }}"
-                        alt="Notification"
-                        class="h-6 w-6 object-contain transition group-hover:scale-110">
-
-                    @php
-                        $unreadCount = \Illuminate\Support\Facades\Cache::remember(
-                            'unread_notifications_count_' . auth()->id(),
-                            60,
-                            fn () => auth()->user()->unreadNotifications()->count()
-                        );
-                    @endphp
+                    🔔
 
                     @if($unreadCount > 0)
-                        <span id="notificationCount"
-                            class="absolute -right-1 -top-1 flex min-h-[20px] min-w-[20px] items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white shadow">
+
+                        <span id="notificationCount" class="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1 text-xs font-bold text-white">
 
                             {{ $unreadCount }}
+
                         </span>
+
+                    @else
+
+                        <span id="notificationCount" class="absolute -right-1 -top-1 hidden h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1 text-xs font-bold text-white">
+                            0
+                        </span>
+
                     @endif
 
                 </button>
 
                 {{-- Dropdown --}}
                 <div id="notificationDropdown"
-                    class="hidden absolute right-0 z-50 mt-3 w-96 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                    class="absolute right-0 z-50 mt-3 hidden w-[380px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
 
                     {{-- Header --}}
-                    <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                    <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
 
                         <div>
-                            <h3 class="font-semibold text-slate-900">
-                                {{ __('nav.notifications') }}
+
+                            <h3 class="text-sm font-semibold text-slate-900">
+                                Notifications
                             </h3>
 
                             <p class="text-xs text-slate-500">
-                                Latest updates
+                                Latest updates and alerts
                             </p>
+
                         </div>
 
-                        <form method="POST"
-                            action="{{ route('notifications.readAll') }}">
+                        @if($unreadCount > 0)
 
-                            @csrf
-
-                            <button type="submit"
-                                class="rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900">
+                            <button id="markAllNotificationsBtn" type="button"
+                                class="text-xs font-medium text-blue-600 transition hover:text-blue-700">
 
                                 Mark all read
+
                             </button>
 
-                        </form>
+                        @endif
 
                     </div>
 
@@ -139,7 +153,7 @@
                     <div id="notificationList"
                         class="max-h-[400px] overflow-y-auto">
 
-                        @forelse(auth()->user()->notifications->take(10) as $notification)
+                        @forelse($latestNotifications as $notification)
 
                             <form method="POST"
                                 action="{{ route('notifications.read', $notification->id) }}">
@@ -152,7 +166,24 @@
                                     {{-- Icon --}}
                                     <div class="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-lg">
 
-                                        🚚
+                                        @switch($notification->data['icon'] ?? 'default')
+
+                                            @case('truck')
+                                                🚚
+                                                @break
+
+                                            @case('order')
+                                                📦
+                                                @break
+
+                                            @case('warning')
+                                                ⚠️
+                                                @break
+
+                                            @default
+                                                🔔
+
+                                        @endswitch
 
                                     </div>
 
@@ -162,18 +193,34 @@
                                         <div class="flex items-center justify-between">
 
                                             <h4 class="text-sm font-semibold text-slate-900">
-                                                {{ $notification->data['title'] }}
+                                                {{ $notification->data['title'] ?? 'Notification' }}
                                             </h4>
 
                                             @if(is_null($notification->read_at))
+
                                                 <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+
                                             @endif
 
                                         </div>
 
                                         <p class="mt-1 text-sm text-slate-600">
-                                            {{ $notification->data['message'] }}
+                                            {{ $notification->data['message'] ?? 'New notification received.' }}
                                         </p>
+
+                                        @if(isset($notification->data['tracking_number']))
+
+                                            <p class="mt-1 text-xs text-slate-500">
+
+                                                Tracking:
+
+                                                <span class="font-medium">
+                                                    {{ $notification->data['tracking_number'] }}
+                                                </span>
+
+                                            </p>
+
+                                        @endif
 
                                         <span class="mt-2 block text-xs text-slate-400">
                                             {{ $notification->created_at->diffForHumans() }}
@@ -213,7 +260,7 @@
                         <a href="{{ route('notifications.index') }}"
                             class="text-sm font-medium text-slate-700 transition hover:text-slate-900">
 
-                            View All Notifications →
+                            View All Notifications
 
                         </a>
 
@@ -230,6 +277,7 @@
                 <img src="{{ asset('images/profile.png') }}"
                     alt="Profile"
                     class="h-6 w-6 object-contain">
+
             </a>
 
             {{-- Logout --}}
