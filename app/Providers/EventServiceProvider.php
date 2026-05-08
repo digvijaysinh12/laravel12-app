@@ -14,6 +14,8 @@ use App\Events\ProductStockChanged;
 use App\Events\ProductStockLow;
 use App\Events\ProductViewed;
 use App\Listeners\LogOrderEvent;
+use App\Listeners\LogNotificationFailed;
+use App\Listeners\LogNotificationSent;
 use App\Listeners\NotifyAdmin;
 use App\Listeners\NotifyUser;
 use App\Listeners\SendCartReminder;
@@ -23,6 +25,8 @@ use App\Listeners\TrackAddToCart;
 use App\Listeners\TrackProductView;
 use App\Listeners\UpdateProductRating;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Illuminate\Notifications\Events\NotificationFailed;
+use Illuminate\Notifications\Events\NotificationSent;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -35,19 +39,16 @@ class EventServiceProvider extends ServiceProvider
         ],
 
         OrderPaid::class => [
-            SendOrderEmail::class,
             NotifyAdmin::class,
             LogOrderEvent::class,
         ],
 
         OrderShipped::class => [
-            SendOrderEmail::class,
             NotifyUser::class,
             LogOrderEvent::class,
         ],
 
         OrderDelivered::class => [
-            SendOrderEmail::class,
             NotifyUser::class,
             LogOrderEvent::class,
         ],
@@ -82,6 +83,14 @@ class EventServiceProvider extends ServiceProvider
 
         ProductStockLow::class => [
             SendLowStockAlert::class,
+        ],
+
+        NotificationSent::class => [
+            LogNotificationSent::class,
+        ],
+
+        NotificationFailed::class => [
+            LogNotificationFailed::class,
         ],
     ];
 
