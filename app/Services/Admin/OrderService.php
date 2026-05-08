@@ -10,6 +10,7 @@ use App\Events\OrderStatusUpdated;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\NotificationService;
 use Illuminate\Cache\TaggableStore;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -20,6 +21,11 @@ use Illuminate\Support\Facades\Log;
 class OrderService
 {
     private const NOTIFIABLE_STATUSES = ['confirmed', 'shipped', 'delivered'];
+
+    public function __construct(
+        private readonly NotificationService $notificationService,
+    ) {
+    }
 
     public function getAllOrders(): LengthAwarePaginator
     {
@@ -85,20 +91,9 @@ class OrderService
             return $order->fresh(['items.product', 'user']);
         });
 
-        // $this->dispatchLifecycleEvents($updatedOrder, $originalStatus, $originalPaymentStatus);
+        $this->dispatchLifecycleEvents($updatedOrder, $originalStatus, $originalPaymentStatus);
 
         $this->clearOrderCaches([$originalUserId, $updatedOrder->user_id]);
-
-        if ($updatedOrder->status === 'shipped') {
-
-            Log::info('Order shipped notification triggered', [
-                'order_id' => $updatedOrder->id
-            ]);
-
-            $updatedOrder->user->notify(
-                new \App\Notifications\OrderShipped($updatedOrder)
-            );
-        }
 
         return $updatedOrder;
     }
@@ -270,6 +265,7 @@ class OrderService
             ]);
 
             event(new OrderShipped($order));
+            $this->notificationService->notifyOrderShipped($order);
         }
 
         if ($order->status === 'delivered') {
