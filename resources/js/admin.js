@@ -79,6 +79,12 @@ const currentNodes = () => ({
     markAll: document.querySelector('#markAllNotificationsBtn'),
 });
 
+const notificationHeaders = {
+    headers: {
+        Accept: 'application/json',
+    },
+};
+
 const setUnreadCount = (notifications) => {
     const { count } = currentNodes();
 
@@ -103,7 +109,7 @@ const renderNotificationItem = (notification) => {
     `;
 
     item.addEventListener('click', async () => {
-        await markAsRead(notification.id, item);
+        await markAsRead(notification.id, item, notification.action_url || null);
     });
 
     return item;
@@ -115,7 +121,7 @@ const loadNotifications = async () => {
     }
 
     try {
-        const response = await axios.get(notificationUrl());
+        const response = await axios.get(`${notificationUrl()}?limit=10`, notificationHeaders);
         const { list } = currentNodes();
 
         if (!list) {
@@ -129,7 +135,6 @@ const loadNotifications = async () => {
             setUnreadCount([]);
             return;
         }
-        console.log(response.data);
         response.data.forEach((notification) => {
             list.appendChild(renderNotificationItem(notification));
         });
@@ -161,9 +166,9 @@ const prependNotification = (notification) => {
     }
 };
 
-const markAsRead = async (id, element) => {
+const markAsRead = async (id, element, actionUrl = null) => {
     try {
-        await axios.post(notificationUrl(`/${id}/read`));
+        const response = await axios.post(notificationUrl(`/${id}/read`), {}, notificationHeaders);
         element.classList.add('opacity-50');
 
         const { count } = currentNodes();
@@ -174,6 +179,12 @@ const markAsRead = async (id, element) => {
         const next = Math.max(0, Number(count.textContent || 0) - 1);
         count.textContent = String(next);
         count.classList.toggle('hidden', next === 0);
+
+        const redirectUrl = response.data?.redirect_url || actionUrl;
+
+        if (redirectUrl) {
+            window.location.href = redirectUrl;
+        }
     } catch (error) {
         console.error('Mark as read failed:', error);
     }
@@ -181,7 +192,7 @@ const markAsRead = async (id, element) => {
 
 const markAllAsRead = async () => {
     try {
-        await axios.post(notificationUrl('/read-all'));
+        await axios.post(notificationUrl('/read-all'), {}, notificationHeaders);
         await loadNotifications();
     } catch (error) {
         console.error('Mark all as read failed:', error);
@@ -209,11 +220,8 @@ const setupDropdown = () => {
 };
 
 const subscribeNotifications = () => {
-    console.log('Notification subscription starting...');
     const channel = notificationChannel();
-    console.log('Subscribed channel:', channel);
     if (!window.Echo || !channel) {
-        console.log('Echo or channel missing');
         return;
     }
 
@@ -224,6 +232,7 @@ const subscribeNotifications = () => {
             message: notification.message || '',
             is_read: Boolean(notification.is_read),
             created_at: notification.created_at || null,
+            action_url: notification.action_url || null,
         };
 
         showToast(payload.title, payload.message);
