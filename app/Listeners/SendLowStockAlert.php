@@ -3,13 +3,18 @@
 namespace App\Listeners;
 
 use App\Events\ProductStockLow;
-use App\Mail\LowStockAlert;
+use App\Notifications\ProductLowStock;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class SendLowStockAlert
 {
+    public function __construct(
+        private readonly NotificationService $notificationService,
+    ) {
+    }
+
     public function handle(ProductStockLow $event): void
     {
         $product = $event->product;
@@ -23,22 +28,11 @@ class SendLowStockAlert
             return;
         }
 
-        $recipients = config('mail.admin_recipients');
-        $to = $recipients['to'] ?? [];
-
-        if ($to === []) {
-            Log::channel('mail')->warning('Low stock alert skipped because no admin recipients were configured.', [
-                'product_id' => $product->id,
-            ]);
-
-            return;
-        }
-
         Cache::remember($throttleKey, now()->addHour(), fn () => true);
 
-        Mail::to($to)
-            ->cc($recipients['cc'] ?? [])
-            ->bcc($recipients['bcc'] ?? [])
-            ->queue(new LowStockAlert(collect([$product])));
+        $this->notificationService->notifyAdmins(new ProductLowStock($product), [
+            'event' => ProductStockLow::class,
+            'product_id' => $product->id,
+        ]);
     }
 }
