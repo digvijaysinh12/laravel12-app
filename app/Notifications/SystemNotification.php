@@ -2,21 +2,21 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
+use App\Notifications\Concerns\EnterpriseNotifiableNotification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class SystemNotification extends Notification
+class SystemNotification extends EnterpriseNotifiableNotification
 {
-    use Queueable;
-
     public function __construct(
         public string $type,
         public string $title,
         public string $message,
         public ?int $userId = null,
         public bool $isRead = false,
+        public ?string $actionUrl = null,
+        public string $icon = 'default',
     ) {
+        $this->afterCommit();
     }
 
     public function via(object $notifiable): array
@@ -46,6 +46,8 @@ class SystemNotification extends Notification
             'type' => $this->type,
             'title' => $this->title,
             'message' => $this->message,
+            'icon' => $this->icon,
+            'action_url' => $this->actionUrl,
             'user_id' => $this->userId,
             'is_read' => $this->isRead,
         ];
