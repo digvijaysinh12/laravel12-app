@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminManualAlertController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -10,7 +11,6 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\Admin\CacheMonitorController;
-use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [AdminDashboardController::class, 'index'])
@@ -28,9 +28,10 @@ Route::prefix('products')->name('products.')->group(function () {
     Route::delete('/{product}', [ProductController::class, 'destroy'])->whereNumber('product')->name('destroy');
 });
 
-Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+Route::prefix('notifications')->name('notifications.')->group(function () {
+    Route::get('/manual-alert', [AdminManualAlertController::class, 'create'])->name('manual-alert.create');
+    Route::post('/manual-alert', [AdminManualAlertController::class, 'store'])->name('manual-alert.store');
+});
 
 Route::prefix('orders')->name('orders.')->group(function () {
     Route::get('/', [AdminOrderController::class, 'index'])->name('index');
