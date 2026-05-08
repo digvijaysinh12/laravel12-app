@@ -3,241 +3,274 @@
 namespace App\Services\Customer;
 
 use App\Models\Product;
-use Illuminate\Cache\TaggableStore;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Cache;
 
 class CartService
 {
-    private const PRODUCT_CACHE_TTL_MINUTES = 30;
-
-    private const CART_CACHE_TTL_MINUTES = 10;
-
     private const TAX_PERCENT = 5;
 
+    /**
+     * Get cart from session.
+     */
     public function getCart(): array
     {
         return session()->get('cart', []);
     }
 
-    public function getCartItems(bool $forceFreshProducts = false): array
+    /**
+     * Get formatted cart items.
+     */
+    public function getCartItems(): array
     {
         $cart = $this->getCart();
+
         $items = [];
-        $cartChanged = false;
 
         foreach ($cart as $productId => $item) {
-            $product = $this->getCachedProduct((int) $productId, $forceFreshProducts);
 
+            $product = $this->getProduct((int) $productId);
+
+            // Remove invalid products from cart
             if (! $product) {
+
                 unset($cart[$productId]);
-                $cartChanged = true;
+
+                $this->saveCart($cart);
 
                 continue;
             }
 
-            $quantity = max(1, (int) ($item['quantity'] ?? 1));
-
-            $items[$productId] = [
-                'id' => (int) $product->id,
-                'name' => (string) $product->name,
-                'price' => (float) $product->price,
-                'quantity' => $quantity,
-                'image' => $product->image,
-                'stock' => (int) ($product->stock ?? 0),
-            ];
-        }
-
-        if ($cartChanged) {
-            session()->put('cart', $items);
-            $this->clearCartCache();
+            $items[$productId] = $this->formatCartItem(
+                $product,
+                (int) ($item['quantity'] ?? 1)
+            );
         }
 
         return $items;
     }
 
-    public function getSummary(): array
+    /**
+     * Add product to cart.
+     */
+    public function add(int $productId): void
     {
-        $key = 'cart_summary_'.$this->getCartOwnerKey();
+        $cart = $this->getCart();
 
-        return $this->customerCache()->remember($key, now()->addMinutes(self::CART_CACHE_TTL_MINUTES), function () {
-            $items = $this->getCartItems();
-            $subtotal = round(
-                collect($items)->sum(fn ($item) => $item['price'] * $item['quantity']),
-                2
-            );
-            $tax = round(($subtotal * self::TAX_PERCENT) / 100, 2);
+        if (isset($cart[$productId])) {
 
-            return [
-                'subtotal' => $subtotal,
-                'tax' => $tax,
-                'tax_percent' => self::TAX_PERCENT,
-                'total' => round($subtotal + $tax, 2),
-                'item_count' => (int) collect($items)->sum('quantity'),
+            $cart[$productId]['quantity']++;
+
+        } else {
+
+            $product = $this->getProduct($productId);
+
+            if (! $product) {
+                throw new ModelNotFoundException(
+                    "Product {$productId} not found."
+                );
+            }
+
+            $cart[$productId] = [
+                'quantity' => 1,
             ];
-        });
+        }
+
+        $this->saveCart($cart);
+        // dd($cart);
     }
 
-    public function getShipping(?array $items = null): array
+    /**
+     * Increase quantity.
+     */
+    public function increment(int $productId): void
     {
-        $key = 'cart_shipping_'.$this->getCartOwnerKey();
+        $cart = $this->getCart();
 
-        return $this->customerCache()->remember($key, now()->addMinutes(self::CART_CACHE_TTL_MINUTES), function () use ($items) {
-            $cartItems = $items ?? $this->getCartItems();
-            $quantity = (int) collect($cartItems)->sum('quantity');
+        if (isset($cart[$productId])) {
 
-            $amount = match (true) {
-                $quantity <= 0 => 0.0,
-                $quantity <= 2 => 40.0,
-                $quantity <= 5 => 70.0,
-                default => 100.0,
-            };
+            $cart[$productId]['quantity']++;
 
-            return [
-                'amount' => $amount,
-                'method' => $quantity <= 0 ? __('No shipping') : __('Standard shipping'),
-                'quantity' => $quantity,
-            ];
-        });
+            $this->saveCart($cart);
+        }
     }
 
-    public function clearCartCache(): void
+    /**
+     * Decrease quantity.
+     */
+    public function decrement(int $productId): void
     {
-        if ($this->supportsTags()) {
-            Cache::tags(['customer'])->flush();
+        $cart = $this->getCart();
 
+        if (! isset($cart[$productId])) {
             return;
         }
 
-        Cache::forget('cart_summary_'.$this->getCartOwnerKey());
-        Cache::forget('cart_shipping_'.$this->getCartOwnerKey());
-    }
+        if ($cart[$productId]['quantity'] > 1) {
 
-    public function add($productId): void
-    {
-        $cart = $this->getCart();
-        $id = (int) $productId;
+            $cart[$productId]['quantity']--;
 
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity']++;
         } else {
-            $product = $this->getCachedProduct($id);
 
-            if (! $product) {
-                throw new ModelNotFoundException("Product {$id} not found.");
-            }
-
-            $cart[$id] = [
-                'name' => (string) $product->name,
-                'price' => (float) $product->price,
-                'quantity' => 1,
-                'image' => $product->image,
-            ];
+            unset($cart[$productId]);
         }
 
-        session()->put('cart', $cart);
-        $this->clearCartCache();
+        $this->saveCart($cart);
     }
 
-    public function increment($productId): void
+    /**
+     * Remove item from cart.
+     */
+    public function remove(int $productId): void
     {
         $cart = $this->getCart();
-        $id = (int) $productId;
 
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity']++;
-            session()->put('cart', $cart);
-            $this->clearCartCache();
-        }
+        unset($cart[$productId]);
+
+        $this->saveCart($cart);
     }
 
-    public function decrement($productId): void
-    {
-        $cart = $this->getCart();
-        $id = (int) $productId;
-
-        if (isset($cart[$id])) {
-            if ((int) $cart[$id]['quantity'] > 1) {
-                $cart[$id]['quantity']--;
-            } else {
-                unset($cart[$id]);
-            }
-            session()->put('cart', $cart);
-            $this->clearCartCache();
-        }
-    }
-
-    public function remove($productId): void
-    {
-        $cart = $this->getCart();
-        $id = (int) $productId;
-
-        if (isset($cart[$id])) {
-            unset($cart[$id]);
-            session()->put('cart', $cart);
-            $this->clearCartCache();
-        }
-    }
-
+    /**
+     * Clear cart.
+     */
     public function clear(): void
     {
         session()->forget('cart');
-        $this->clearCartCache();
+
+        $this->clearCache();
     }
 
+    /**
+     * Cart financial summary.
+     */
+    public function getSummary(): array
+    {
+        $items = $this->getCartItems();
+
+        $subtotal = round(
+            collect($items)->sum(
+                fn ($item) => $item['price'] * $item['quantity']
+            ),
+            2
+        );
+
+        $tax = round(
+            ($subtotal * self::TAX_PERCENT) / 100,
+            2
+        );
+
+        return [
+            'subtotal' => $subtotal,
+            'tax' => $tax,
+            'tax_percent' => self::TAX_PERCENT,
+            'total' => round($subtotal + $tax, 2),
+            'item_count' => collect($items)->sum('quantity'),
+        ];
+    }
+
+    /**
+     * Shipping calculation.
+     */
+    public function getShipping(): array
+    {
+        $quantity = collect(
+            $this->getCartItems()
+        )->sum('quantity');
+
+        $amount = $this->calculateShipping($quantity);
+
+        return [
+            'amount' => $amount,
+            'method' => $quantity
+                ? __('Standard shipping')
+                : __('No shipping'),
+        ];
+    }
+
+    /**
+     * Totals for AJAX responses.
+     */
     public function getCartTotalsForResponse(): array
     {
         $summary = $this->getSummary();
+
         $shipping = $this->getShipping();
-        $grandTotal = round($summary['total'] + $shipping['amount'], 2);
 
         return [
             'summary' => $summary,
             'shipping' => $shipping,
-            'grand_total' => $grandTotal,
+            'grand_total' => round(
+                $summary['total'] + $shipping['amount'],
+                2
+            ),
         ];
     }
 
-    private function getCachedProduct(int $productId, bool $forceFresh = false): ?Product
+    /**
+     * Get cached product.
+     */
+    private function getProduct(int $productId): ?Product
     {
-        $key = "product_{$productId}";
+        return Cache::remember(
+            "product_{$productId}",
+            now()->addMinutes(30),
 
-        if ($forceFresh) {
-            $this->productCache()->forget($key);
-        }
-
-        return $this->productCache()->remember($key, now()->addMinutes(self::PRODUCT_CACHE_TTL_MINUTES), function () use ($productId) {
-            return Product::query()
-                ->select(['id', 'name', 'price', 'image', 'stock'])
-                ->find($productId);
-        });
+            fn () => Product::select([
+                'id',
+                'name',
+                'price',
+                'image',
+                'stock',
+            ])->find($productId)
+        );
     }
 
-    private function getCartOwnerKey(): string
-    {
-        if (auth()->check()) {
-            return 'user_'.auth()->id();
-        }
-
-        return 'session_'.session()->getId();
+    /**
+     * Format cart item.
+     */
+    private function formatCartItem(
+        Product $product,
+        int $quantity
+    ): array {
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'price' => (float) $product->price,
+            'quantity' => max(1, $quantity),
+            'image' => $product->image,
+            'stock' => (int) $product->stock,
+        ];
     }
 
-    private function productCache()
+    /**
+     * Save cart and clear cache.
+     */
+    private function saveCart(array $cart): void
     {
-        return $this->supportsTags()
-            ? Cache::tags(['products'])
-            : Cache::store();
+        session()->put('cart', $cart);
+
+        $this->clearCache();
     }
 
-    private function customerCache()
+    /**
+     * Clear cart-related cache.
+     */
+    private function clearCache(): void
     {
-        return $this->supportsTags()
-            ? Cache::tags(['customer'])
-            : Cache::store();
+        Cache::forget('cart_summary');
+        Cache::forget('cart_shipping');
     }
 
-    private function supportsTags(): bool
+    /**
+     * Shipping pricing logic.
+     */
+    private function calculateShipping(int $quantity): float
     {
-        return Cache::getStore() instanceof TaggableStore;
+        return match (true) {
+            $quantity <= 0 => 0,
+            $quantity <= 2 => 40,
+            $quantity <= 5 => 70,
+            default => 100,
+        };
     }
 }
