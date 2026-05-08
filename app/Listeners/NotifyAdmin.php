@@ -3,104 +3,118 @@
 namespace App\Listeners;
 
 use App\Events\CartAbandoned;
-use App\Events\NotificationBroadcast;
 use App\Events\OrderPlaced;
+use App\Events\OrderPaid;
 use App\Events\ProductAddedToCart;
 use App\Events\ProductReviewed;
 use App\Events\ProductStockChanged;
 use App\Events\ProductViewed;
-use App\Models\AdminNotification;
-use Illuminate\Support\Facades\Log;
+use App\Models\Order;
+use App\Models\Product;
+use App\Notifications\NewOrderReceived;
+use App\Notifications\ProductLowStock;
+use App\Notifications\SystemNotification;
+use App\Services\NotificationService;
 
 class NotifyAdmin
 {
-    public function handle($event): void
+    public function __construct(
+        private readonly NotificationService $notificationService,
+    ) {
+    }
+
+    public function handle(object $event): void
     {
+        match (true) {
+            $event instanceof OrderPlaced => $this->sendNewOrderNotification($event->order),
+            $event instanceof ProductStockChanged => $this->sendLowStockNotification($event->productId),
+            $event instanceof OrderPaid => $this->sendSystemNotification(
+                'order',
+                'Payment Received',
+                'Order '.$event->order->order_number.' has been marked as paid.',
+                route('admin.orders.show', $event->order)
+            ),
+            default => $this->sendSystemNotificationFromEvent($event),
+        };
+    }
 
-        $data = $this->makeNotification($event);
+    private function sendNewOrderNotification(Order $order): void
+    {
+        $order->loadMissing('user');
 
-        if (! $data) {
+        $this->notificationService->notifyAdmins(new NewOrderReceived($order), [
+            'event' => OrderPlaced::class,
+            'order_id' => $order->id,
+        ]);
+    }
+
+    private function sendLowStockNotification(int $productId): void
+    {
+        $product = Product::query()->find($productId);
+
+        if (! $product || (int) $product->stock > (int) config('mail.low_stock_threshold', 10)) {
             return;
         }
 
-        // $notification = Notification::create($data);
-
-        // FIXED: broadcast the same custom row data to the admin channel.
-        // broadcast(new NotificationBroadcast(
-        //     $this->payload($notification),
-        //     'admin.notifications'
-        // ));
-        // dd($data);
-        $notification = AdminNotification::create($data);
-        // Log::channel('admin_notification')->info('Admin notification created', [
-        //     'id' => $notification->id,
-        //     'title' => $notification->title,
-        // ]);
-
-        broadcast(new NotificationBroadcast(
-            $this->payload($notification),
-            'admin.notifications'
-        ));
-
+        $this->notificationService->notifyAdmins(new ProductLowStock($product), [
+            'event' => ProductStockChanged::class,
+            'product_id' => $productId,
+        ]);
     }
 
-    private function payload(AdminNotification $notification): array
+    private function sendSystemNotificationFromEvent(object $event): void
     {
-        return [
-            'id' => $notification->id,
-            'title' => $notification->title,
-            'message' => $notification->message,
-            'is_read' => $notification->is_read,
-            'created_at' => $notification->created_at?->toDateTimeString(),
-        ];
-    }
-
-    private function makeNotification($event): ?array
-    {
-        return match (true) {
-            $event instanceof OrderPlaced => [
-                'type' => 'order',
-                'title' => 'New Order',
-                'message' => $event->order->user->name.' placed '.$event->order->order_number,
-                'user_id' => null,
-                'is_read' => false,
-            ],
-            $event instanceof ProductAddedToCart => [
-                'type' => 'cart',
-                'title' => 'Added to Cart',
-                'message' => $event->user->name.' added '.$event->product->name.' to cart',
-                'user_id' => null,
-                'is_read' => false,
-            ],
-            $event instanceof CartAbandoned => [
-                'type' => 'cart',
-                'title' => 'Cart Abandoned',
-                'message' => $event->user->name.' abandoned a cart',
-                'user_id' => null,
-                'is_read' => false,
-            ],
-            $event instanceof ProductReviewed => [
-                'type' => 'product',
-                'title' => 'Product Reviewed',
-                'message' => $event->product->name.' received a new review',
-                'user_id' => null,
-                'is_read' => false,
-            ],
-            $event instanceof ProductViewed => [
-                'type' => 'product',
-                'title' => 'Product Viewed',
-                'message' => $event->user->name.' viewed '.$event->product->name,
-                'user_id' => null,
-                'is_read' => false,
-            ],
-            $event instanceof ProductStockChanged => [
-                'type' => 'product',
-                'title' => 'Stock Updated',
-                'message' => 'Product #'.$event->productId.' stock is now '.$event->stock,
-                'user_id' => null,
-                'is_read' => false,
-            ],
+        $notification = match (true) {
+            $event instanceof ProductAddedToCart => new SystemNotification(
+                type: 'cart',
+                title: 'Added to Cart',
+                message: $event->user->name.' added '.$event->product->name.' to cart',
+                actionUrl: route('admin.dashboard'),
+                icon: 'cart',
+            ),
+            $event instanceof CartAbandoned => new SystemNotification(
+                type: 'cart',
+                title: 'Cart Abandoned',
+                message: $event->user->name.' abandoned a cart',
+                actionUrl: route('admin.dashboard'),
+                icon: 'cart',
+            ),
+            $event instanceof ProductReviewed => new SystemNotification(
+                type: 'product',
+                title: 'Product Reviewed',
+                message: $event->product->name.' received a new review',
+                actionUrl: route('admin.reviews.index'),
+                icon: 'product',
+            ),
+            $event instanceof ProductViewed => new SystemNotification(
+                type: 'product',
+                title: 'Product Viewed',
+                message: $event->user->name.' viewed '.$event->product->name,
+                actionUrl: route('admin.dashboard'),
+                icon: 'product',
+            ),
             default => null,
         };
+
+        if (! $notification) {
+            return;
+        }
+
+        $this->notificationService->notifyAdmins($notification, [
+            'event' => $event::class,
+        ]);
+    }
+
+    private function sendSystemNotification(string $type, string $title, string $message, string $actionUrl): void
+    {
+        $this->notificationService->notifyAdmins(new SystemNotification(
+            type: $type,
+            title: $title,
+            message: $message,
+            actionUrl: $actionUrl,
+            icon: 'order',
+        ), [
+            'title' => $title,
+        ]);
     }
 }
