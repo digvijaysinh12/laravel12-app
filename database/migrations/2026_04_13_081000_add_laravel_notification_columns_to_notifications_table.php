@@ -8,22 +8,45 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasTable('notifications')) {
+            return;
+        }
+
         Schema::table('notifications', function (Blueprint $table) {
-            // FIXED: add the columns Laravel's database notifications need.
-            $table->unsignedBigInteger('notifiable_id')->nullable()->after('id');
-            $table->string('notifiable_type')->nullable()->after('notifiable_id');
-            $table->json('data')->nullable()->after('notifiable_type');
-            $table->timestamp('read_at')->nullable()->after('data');
-            $table->index(['notifiable_type', 'notifiable_id']);
+            // This guard keeps fresh migrations and upgraded databases compatible.
+            if (! Schema::hasColumn('notifications', 'notifiable_id')) {
+                $table->unsignedBigInteger('notifiable_id')->nullable()->after('id');
+            }
+
+            if (! Schema::hasColumn('notifications', 'notifiable_type')) {
+                $table->string('notifiable_type')->nullable()->after('notifiable_id');
+            }
+
+            if (! Schema::hasColumn('notifications', 'data')) {
+                $table->json('data')->nullable()->after('notifiable_type');
+            }
+
+            if (! Schema::hasColumn('notifications', 'read_at')) {
+                $table->timestamp('read_at')->nullable()->after('data');
+            }
+
         });
     }
 
     public function down(): void
     {
+        if (! Schema::hasTable('notifications')) {
+            return;
+        }
+
         Schema::table('notifications', function (Blueprint $table) {
-            $table->dropIndex(['notifiable_type', 'notifiable_id']);
-            $table->dropColumn(['notifiable_id', 'notifiable_type']);
-            $table->dropColumn(['data', 'read_at']);
+            if (Schema::hasColumn('notifications', 'notifiable_type') && Schema::hasColumn('notifications', 'notifiable_id')) {
+                $table->dropColumn(['notifiable_id', 'notifiable_type']);
+            }
+
+            if (Schema::hasColumn('notifications', 'data') && Schema::hasColumn('notifications', 'read_at')) {
+                $table->dropColumn(['data', 'read_at']);
+            }
         });
     }
 };
