@@ -128,7 +128,7 @@ Route::middleware(['auth', 'checkrole:admin'])
 //     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 // });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'throttle:notifications'])->group(function () {
 
     Route::get('/notifications', [NotificationController::class, 'index'])
         ->name('notifications.index');
@@ -139,7 +139,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
         ->name('notifications.read');
 
-    Route::get('/notifications/read-all', [NotificationController::class, 'markAllRead'])
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])
         ->name('notifications.readAll');
 });
 
