@@ -7,15 +7,14 @@ use App\Events\OrderDelivered;
 use App\Events\OrderPaid;
 use App\Events\OrderPlaced;
 use App\Events\OrderStatusUpdated;
-use App\Events\OrderShipped;
-use App\Events\NotificationBroadcast;
 use App\Events\ProductAddedToCart;
-use App\Models\Notification;
 use App\Models\User;
+use App\Notifications\SystemNotification;
+use Illuminate\Support\Facades\Log;
 
 class NotifyUser
 {
-    public function handle($event): void
+    public function handle(object $event): void
     {
         $user = $this->resolveUser($event);
 
@@ -27,19 +26,17 @@ class NotifyUser
             return;
         }
 
-        $data = $this->makeNotification($event, $user);
+        $notification = $this->makeNotification($event, $user);
 
-        if (! $data) {
-            return;
+        if ($notification) {
+            $user->notify($notification);
+
+            Log::info('Customer notification dispatched.', [
+                'event' => $event::class,
+                'user_id' => $user->id,
+                'notification' => $notification::class,
+            ]);
         }
-
-        $notification = Notification::create($data);
-
-        // FIXED: broadcast the same custom row data to the user channel.
-        broadcast(new NotificationBroadcast(
-            $this->payload($notification),
-            'user.'.$user->id.'.notifications'
-        ));
     }
 
     private function resolveUser($event): ?User
@@ -62,10 +59,6 @@ class NotifyUser
             return true;
         }
 
-        if ($event instanceof OrderShipped) {
-            return true;
-        }
-
         if ($event instanceof OrderDelivered) {
             return true;
         }
@@ -85,69 +78,57 @@ class NotifyUser
         return false;
     }
 
-    private function payload(Notification $notification): array
-    {
-        return [
-            'id' => $notification->id,
-            'title' => $notification->title,
-            'message' => $notification->message,
-            'is_read' => $notification->is_read,
-            'created_at' => $notification->created_at?->toDateTimeString(),
-        ];
-    }
-
-    private function makeNotification($event, User $user): ?array
+    private function makeNotification(object $event, User $user): ?SystemNotification
     {
         return match (true) {
-            $event instanceof OrderPlaced => [
-                'type' => 'order',
-                'title' => 'Order Placed',
-                'message' => 'Your order '.$event->order->order_number.' was placed successfully.',
-                'user_id' => $user->id,
-                'is_read' => false,
-            ],
-            $event instanceof OrderPaid => [
-                'type' => 'order',
-                'title' => 'Payment Received',
-                'message' => 'Payment received for order '.$event->order->order_number.'.',
-                'user_id' => $user->id,
-                'is_read' => false,
-            ],
-            $event instanceof OrderShipped => [
-                'type' => 'order',
-                'title' => 'Order Shipped',
-                'message' => 'Your order '.$event->order->order_number.' has been shipped.',
-                'user_id' => $user->id,
-                'is_read' => false,
-            ],
-            $event instanceof OrderDelivered => [
-                'type' => 'order',
-                'title' => 'Order Delivered',
-                'message' => 'Your order '.$event->order->order_number.' has been delivered.',
-                'user_id' => $user->id,
-                'is_read' => false,
-            ],
-            $event instanceof OrderStatusUpdated => [
-                'type' => 'order',
-                'title' => 'Order Updated',
-                'message' => 'Your order '.$event->order->order_number.' is now '.strtolower($event->order->status).'.',
-                'user_id' => $user->id,
-                'is_read' => false,
-            ],
-            $event instanceof CartAbandoned => [
-                'type' => 'cart',
-                'title' => 'Cart Reminder',
-                'message' => 'You still have items in your cart.',
-                'user_id' => $user->id,
-                'is_read' => false,
-            ],
-            $event instanceof ProductAddedToCart => [
-                'type' => 'cart',
-                'title' => 'Added to Cart',
-                'message' => $event->product->name.' was added to your cart.',
-                'user_id' => $user->id,
-                'is_read' => false,
-            ],
+            $event instanceof OrderPlaced => new SystemNotification(
+                type: 'order',
+                title: 'Order Placed',
+                message: 'Your order '.$event->order->order_number.' was placed successfully.',
+                userId: $user->id,
+                actionUrl: route('user.orders.show', $event->order),
+                icon: 'order',
+            ),
+            $event instanceof OrderPaid => new SystemNotification(
+                type: 'order',
+                title: 'Payment Received',
+                message: 'Payment received for order '.$event->order->order_number.'.',
+                userId: $user->id,
+                actionUrl: route('user.orders.show', $event->order),
+                icon: 'order',
+            ),
+            $event instanceof OrderDelivered => new SystemNotification(
+                type: 'order',
+                title: 'Order Delivered',
+                message: 'Your order '.$event->order->order_number.' has been delivered.',
+                userId: $user->id,
+                actionUrl: route('user.orders.show', $event->order),
+                icon: 'order',
+            ),
+            $event instanceof OrderStatusUpdated => new SystemNotification(
+                type: 'order',
+                title: 'Order Updated',
+                message: 'Your order '.$event->order->order_number.' is now '.strtolower($event->order->status).'.',
+                userId: $user->id,
+                actionUrl: route('user.orders.show', $event->order),
+                icon: 'order',
+            ),
+            $event instanceof CartAbandoned => new SystemNotification(
+                type: 'cart',
+                title: 'Cart Reminder',
+                message: 'You still have items in your cart.',
+                userId: $user->id,
+                actionUrl: route('user.cart.index'),
+                icon: 'cart',
+            ),
+            $event instanceof ProductAddedToCart => new SystemNotification(
+                type: 'cart',
+                title: 'Added to Cart',
+                message: $event->product->name.' was added to your cart.',
+                userId: $user->id,
+                actionUrl: route('user.cart.index'),
+                icon: 'cart',
+            ),
             default => null,
         };
     }
