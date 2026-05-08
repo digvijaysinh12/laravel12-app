@@ -2,55 +2,119 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AdminNotification;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
+use App\Support\Notifications\NotificationCache;
+use App\Support\Notifications\NotificationPayload;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class NotificationController extends Controller
 {
-    public function index()
+    /**
+     * Show notifications as either HTML or JSON.
+     */
+    public function index(Request $request): View|JsonResponse
     {
-        $notifications = AdminNotification::latest()
-            ->take(20)
-            ->get();
+        $query = $request->user()
+            ->notifications()
+            ->latest();
 
-        return response()->json($notifications);
+        if ($request->expectsJson()) {
+            $limit = min((int) $request->integer('limit', 10), 50);
+
+            return response()->json(
+                $query->take($limit)->get()->map(
+                    fn (DatabaseNotification $notification): array => NotificationPayload::fromDatabaseNotification($notification)
+                )->all()
+            );
+        }
+
+        $notifications = $query->paginate(20);
+
+        return view('notifications.index', compact('notifications'));
     }
 
-    public function unread()
+    /**
+     * Return unread notifications only.
+     */
+    public function unread(Request $request): JsonResponse
     {
-        $notifications = AdminNotification::where('is_read', false)
+        $notifications = $request->user()
+            ->unreadNotifications()
             ->latest()
             ->get();
 
-        return response()->json($notifications);
+        return response()->json(
+            $notifications->map(
+                fn (DatabaseNotification $notification): array => NotificationPayload::fromDatabaseNotification($notification)
+            )->all()
+        );
     }
 
-    public function markAsRead($id)
+    /**
+     * Mark single notification as read.
+     */
+    public function markAsRead(Request $request, string $id): RedirectResponse|JsonResponse
     {
-        $notification = AdminNotification::findOrFail($id);
+        $notification = $request->user()
+            ->notifications()
+            ->findOrFail($id);
 
-        $notification->update([
-            'is_read' => true,
-        ]);
+        $notification->markAsRead();
 
-        Cache::forget('unread_notifications_count');
+        NotificationCache::forgetFor($request->user());
 
-        return response()->json([
-            'success' => true,
-        ]);
+        $redirectUrl = $notification->data['action_url']
+            ?? $this->fallbackRedirectUrl($request, $notification);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'redirect_url' => $redirectUrl,
+            ], Response::HTTP_OK);
+        }
+
+        return redirect()->to($redirectUrl);
     }
 
-    public function markAllRead()
+    /**
+     * Mark all unread notifications as read.
+     */
+    public function markAllRead(Request $request): RedirectResponse|JsonResponse
     {
-        AdminNotification::where('is_read', false)
-            ->update([
-                'is_read' => true,
-            ]);
+        $request->user()
+            ->unreadNotifications
+            ->markAsRead();
 
-        Cache::forget('unread_notifications_count');
+        NotificationCache::forgetFor($request->user());
 
-        return response()->json([
-            'success' => true,
-        ]);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'ok',
+            ], Response::HTTP_OK);
+        }
+
+        return back()->with(
+            'success',
+            'All notifications marked as read.'
+        );
+    }
+
+    private function fallbackRedirectUrl(Request $request, DatabaseNotification $notification): string
+    {
+        if (isset($notification->data['order_id'])) {
+            return $request->user()->role === 'admin'
+                ? route('admin.orders.show', $notification->data['order_id'])
+                : route('user.orders.show', $notification->data['order_id']);
+        }
+
+        if (isset($notification->data['product_id']) && $request->user()->role === 'admin') {
+            return route('admin.products.edit', $notification->data['product_id']);
+        }
+
+        return url()->previous() ?: route('notifications.index');
     }
 }
