@@ -40,4 +40,13 @@ return [
         'token' => env('FAKE_STORE_TOKEN'),
     ],
 
+    'notifications' => [
+        'webhook' => [
+            'url' => env('NOTIFICATION_WEBHOOK_URL'),
+            'timeout' => (int) env('NOTIFICATION_WEBHOOK_TIMEOUT', 5),
+            'retries' => (int) env('NOTIFICATION_WEBHOOK_RETRIES', 3),
+            'retry_sleep_ms' => (int) env('NOTIFICATION_WEBHOOK_RETRY_SLEEP_MS', 200),
+        ],
+    ],
+
 ];
