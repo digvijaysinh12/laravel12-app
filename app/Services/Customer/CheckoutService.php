@@ -22,6 +22,7 @@ class CheckoutService
     public function process()
     {
         try {
+
             Log::info('Checkout START', ['user_id' => auth()->id()]);
 
             $cartService = app(CartService::class);
@@ -32,7 +33,7 @@ class CheckoutService
             Log::info('Cart fetched', ['cart' => $cart]);
 
             if (empty($cart)) {
-                Log::warning('Cart is empty');
+                Log::warning('Cart is empty', $cart);
                 throw new Exception('Your cart is empty.');
             }
 
