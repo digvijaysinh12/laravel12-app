@@ -14,11 +14,11 @@ class CheckoutController extends Controller
 {
     public function create(CartService $cartService)
     {
-
+        $cart = session()->get('cart', []);
         if (empty($cart)) {
 
             return redirect()
-                ->route('cart.index')
+                ->route('user.cart.index')
                 ->with('error', 'Cart is empty');
 
         }
