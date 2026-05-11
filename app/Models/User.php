@@ -72,6 +72,13 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->preferred_locale ?: config('app.locale');
     }
 
+    public function receivesBroadcastNotificationsOn(): string
+    {
+        return $this->role === 'admin'
+            ? 'admin.notifications'
+            : 'user.'.$this->getKey().'.notifications';
+    }
+
     public function routeNotificationForWebhook(Notification $notification): ?string
     {
         if ($this->role !== 'admin') {
