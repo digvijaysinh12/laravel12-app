@@ -13,8 +13,7 @@ class NotificationService
 {
     public function __construct(
         private readonly AdminRecipientResolver $adminRecipientResolver,
-    ) {
-    }
+    ) {}
 
     public function notifyOrderShipped(Order $order): void
     {
@@ -36,7 +35,7 @@ class NotificationService
         $admins = $this->adminRecipientResolver->getAdmins();
 
         if ($admins->isEmpty()) {
-            Log::warning('Admin notification skipped because no admin users were found.', $context + [
+            Log::channel('notification')->warning('Admin notification skipped because no admin users were found.', $context + [
                 'notification' => $notification::class,
             ]);
 
@@ -45,7 +44,7 @@ class NotificationService
 
         NotificationFacade::send($admins, $notification);
 
-        Log::info('Admin notification dispatched.', $context + [
+        Log::channel('notification')->info('Admin notification dispatched.', $context + [
             'notification' => $notification::class,
             'admin_count' => $admins->count(),
         ]);
@@ -63,7 +62,7 @@ class NotificationService
 
     public function sendAnonymousAdminAlert(string $email, Notification $notification, array $context = []): void
     {
-        $anonymous = new AnonymousNotifiable();
+        $anonymous = new AnonymousNotifiable;
         $anonymous->route('mail', $email);
 
         $anonymous->notify($notification);
