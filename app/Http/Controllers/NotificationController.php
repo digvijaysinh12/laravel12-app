@@ -2,39 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Support\Notifications\NotificationCache;
-use App\Support\Notifications\NotificationPayload;
+use App\Support\Notifications\NotificationViewData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class NotificationController extends Controller
 {
+    public function __construct(
+        private readonly NotificationViewData $notificationViewData,
+    ) {}
+
     /**
      * Show notifications as either HTML or JSON.
      */
     public function index(Request $request): View|JsonResponse
     {
-        $query = $request->user()
-            ->notifications()
-            ->latest();
-
+        $user = $request->user();
         if ($request->expectsJson()) {
             $limit = min((int) $request->integer('limit', 10), 50);
 
-            return response()->json(
-                $query->take($limit)->get()->map(
-                    fn (DatabaseNotification $notification): array => NotificationPayload::fromDatabaseNotification($notification)
-                )->all()
-            );
+            return response()->json($this->notificationViewData->forUser($user, $limit)['latestNotifications']);
         }
 
-        $notifications = $query->paginate(20);
+        $notifications = $this->notificationViewData->paginateForUser($user);
+        $hasUnreadNotifications = collect($notifications->items())
+            ->contains(fn (array $notification): bool => ! ($notification['is_read'] ?? false));
 
-        return view('notifications.index', compact('notifications'));
+        return view('notifications.index', compact('notifications', 'hasUnreadNotifications'));
     }
 
     /**
@@ -42,15 +41,8 @@ class NotificationController extends Controller
      */
     public function unread(Request $request): JsonResponse
     {
-        $notifications = $request->user()
-            ->unreadNotifications()
-            ->latest()
-            ->get();
-
         return response()->json(
-            $notifications->map(
-                fn (DatabaseNotification $notification): array => NotificationPayload::fromDatabaseNotification($notification)
-            )->all()
+            $this->notificationViewData->unreadForUser($request->user())
         );
     }
 
@@ -59,8 +51,10 @@ class NotificationController extends Controller
      */
     public function markAsRead(Request $request, string $id): RedirectResponse|JsonResponse
     {
-        $notification = $request->user()
-            ->notifications()
+        $user = $request->user();
+
+        $notification = $this->notificationViewData
+            ->queryFor($user)
             ->findOrFail($id);
 
         $notification->markAsRead();
@@ -85,8 +79,11 @@ class NotificationController extends Controller
      */
     public function markAllRead(Request $request): RedirectResponse|JsonResponse
     {
-        $request->user()
-            ->unreadNotifications
+        $user = $request->user();
+
+        $user->unreadNotifications()
+            ->where('data->audience', $this->notificationViewData->audienceFor($user))
+            ->get()
             ->markAsRead();
 
         NotificationCache::forgetFor($request->user());
