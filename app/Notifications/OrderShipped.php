@@ -71,6 +71,7 @@ class OrderShipped extends EnterpriseNotifiableNotification
         Log::channel('mail')->info('Persisting OrderShipped database notification.', [
             'order_id' => $this->order->id,
             'user_id' => $notifiable->id ?? null,
+
         ]);
 
         return [
@@ -85,6 +86,7 @@ class OrderShipped extends EnterpriseNotifiableNotification
                 'order_number' => $this->order->order_number,
                 'status' => $this->order->status,
             ],
+            'audience' => 'customer',
         ];
     }
 }
