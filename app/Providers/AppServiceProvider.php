@@ -8,6 +8,7 @@ use App\Services\DiscountService;
 use App\Services\GreetingService;
 use App\Services\Customer\PaymentService;
 use App\Services\ExternalApiService;
+use App\Support\Notifications\NotificationViewData;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Response;
@@ -61,6 +62,23 @@ class AppServiceProvider extends ServiceProvider
             }
 
             $view->with('cartCount', $cartCount);
+        });
+
+        View::composer('admin.layouts.app', function ($view) {
+            if (! auth()->check()) {
+                $view->with('adminNotificationData', [
+                    'audience' => 'admin',
+                    'unreadCount' => 0,
+                    'latestNotifications' => [],
+                ]);
+
+                return;
+            }
+
+            $view->with(
+                'adminNotificationData',
+                app(NotificationViewData::class)->forUser(auth()->user())
+            );
         });
 
         View::share('app_name', 'admin_panel');
