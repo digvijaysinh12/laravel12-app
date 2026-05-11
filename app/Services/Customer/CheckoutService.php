@@ -26,7 +26,6 @@ class CheckoutService
             Log::info('Checkout START', ['user_id' => auth()->id()]);
 
             $cartService = app(CartService::class);
-            $cartService->clearCartCache();
 
             $cart = $cartService->getCartItems(true);
 
