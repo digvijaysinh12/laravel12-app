@@ -6,7 +6,7 @@
                     <h1 class="text-xl font-semibold text-slate-900">{{ __('notifications.title') }}</h1>
                     <p class="mt-1 text-sm text-slate-500">{{ __('notifications.latest_updates') }}</p>
                 </div>
-                @if($notifications->whereNull('read_at')->isNotEmpty())
+                @if($hasUnreadNotifications)
                     <form method="POST" action="{{ route('notifications.readAll') }}">
                         @csrf
                         <button type="submit" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
@@ -18,26 +18,10 @@
 
             <div class="space-y-3">
                 @forelse($notifications as $notification)
-                    <form method="POST" action="{{ route('notifications.read', $notification->id) }}">
-                        @csrf
-                        <button type="submit" class="flex w-full items-start justify-between gap-4 rounded-2xl border border-slate-200 px-5 py-4 text-left transition hover:border-slate-300 hover:bg-slate-50">
-                            <div>
-                                <h2 class="text-sm font-semibold text-slate-900">
-                                    {{ $notification->data['title'] ?? 'Notification' }}
-                                </h2>
-                                <p class="mt-1 text-sm text-slate-600">
-                                    {{ $notification->data['message'] ?? '' }}
-                                </p>
-                                <p class="mt-2 text-xs text-slate-400">
-                                    {{ $notification->created_at?->diffForHumans() }}
-                                </p>
-                            </div>
-
-                            @if(is_null($notification->read_at))
-                                <span class="mt-1 h-2.5 w-2.5 rounded-full bg-blue-500"></span>
-                            @endif
-                        </button>
-                    </form>
+                    <x-notifications.item
+                        :notification="$notification"
+                        :wrapper-class="'flex w-full items-start justify-between gap-4 rounded-2xl border border-slate-200 px-5 py-4 text-left transition hover:border-slate-300 hover:bg-slate-50'"
+                    />
                 @empty
                     <div class="rounded-2xl border border-dashed border-slate-200 px-6 py-10 text-center text-sm text-slate-500">
                         {{ __('notifications.empty') }}
