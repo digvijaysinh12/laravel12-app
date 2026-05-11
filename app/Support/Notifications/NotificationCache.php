@@ -8,22 +8,26 @@ use Illuminate\Support\Facades\Cache;
 
 class NotificationCache
 {
-    public static function unreadCountKey(int|string $userId): string
+    public static function unreadCountKey(int|string $userId, string $audience): string
     {
-        return 'unread_notifications_count_'.$userId;
+        return 'unread_notifications_count_'.$audience.'_'.$userId;
     }
 
-    public static function unreadCountFor(Authenticatable|User $user): int
+    public static function unreadCountForAudience(Authenticatable|User $user, string $audience): int
     {
         return Cache::remember(
-            self::unreadCountKey($user->getAuthIdentifier()),
+            self::unreadCountKey($user->getAuthIdentifier(), $audience),
             60,
-            fn (): int => $user->unreadNotifications()->count(),
+            fn (): int => $user->unreadNotifications()
+                ->where('data->audience', $audience)
+                ->count(),
         );
     }
 
     public static function forgetFor(Authenticatable|User $user): void
     {
-        Cache::forget(self::unreadCountKey($user->getAuthIdentifier()));
+        foreach (['admin', 'customer'] as $audience) {
+            Cache::forget(self::unreadCountKey($user->getAuthIdentifier(), $audience));
+        }
     }
 }
