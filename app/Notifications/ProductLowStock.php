@@ -50,6 +50,7 @@ class ProductLowStock extends EnterpriseNotifiableNotification
     {
         return [
             'title' => 'Low Stock Alert',
+            'audience' => 'admin',
             'message' => $this->product->name.' stock is low.',
             'product_id' => $this->product->id,
             'stock' => $this->product->stock,
