@@ -11,6 +11,7 @@ class SystemNotification extends EnterpriseNotifiableNotification
         public string $type,
         public string $title,
         public string $message,
+        public string $audience = 'admin',
         public ?int $userId = null,
         public bool $isRead = false,
         public ?string $actionUrl = null,
@@ -50,6 +51,7 @@ class SystemNotification extends EnterpriseNotifiableNotification
             'action_url' => $this->actionUrl,
             'user_id' => $this->userId,
             'is_read' => $this->isRead,
+            'audience' => $this->audience,
         ];
     }
 }
