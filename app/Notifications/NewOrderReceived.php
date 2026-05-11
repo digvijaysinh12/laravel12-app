@@ -64,6 +64,7 @@ class NewOrderReceived extends EnterpriseNotifiableNotification
             'order_id' => $this->order->id,
             'action_url' => route('admin.orders.show', $this->order),
             'action_label' => 'Review Order',
+            'audience' => 'admin',
             'meta' => [
                 'order_number' => $this->order->order_number,
                 'total_amount' => (float) $this->order->total_amount,
