@@ -35,52 +35,7 @@
                     @yield('page-title', 'Dashboard')
                 </h1>
 
-                <div class="flex items-center gap-4">
-                    <div class="relative">
-                        <button
-                            id="notificationBtn"
-                            type="button"
-                            class="relative rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                        >
-                            Alerts
-                            <span
-                                id="notificationCount"
-                                class="absolute -right-2 -top-2 hidden rounded-full bg-rose-600 px-1.5 text-xs text-white"
-                            >
-                                0
-                            </span>
-                        </button>
-
-                        <div
-                            id="notificationDropdown"
-                            class="absolute right-0 z-50 mt-2 hidden w-80 rounded-xl border bg-white shadow-lg"
-                        >
-                            <div class="flex items-center justify-between border-b p-3">
-                                <span class="font-semibold">Notifications</span>
-                                <button
-                                    id="markAllNotificationsBtn"
-                                    type="button"
-                                    class="text-xs text-slate-500 hover:text-slate-900"
-                                >
-                                    Mark all read
-                                </button>
-                            </div>
-
-                            <div id="notificationList" class="max-h-64 overflow-y-auto text-sm">
-                                <div class="p-3 text-slate-500">
-                                    No notifications
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button class="rounded-lg bg-slate-900 px-3 py-2 text-sm text-white">
-                            Logout
-                        </button>
-                    </form>
-                </div>
+                <x-navbar.admin-navbar :notification-data="$adminNotificationData" />
             </div>
         </header>
 
