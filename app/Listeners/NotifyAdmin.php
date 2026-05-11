@@ -3,8 +3,8 @@
 namespace App\Listeners;
 
 use App\Events\CartAbandoned;
-use App\Events\OrderPlaced;
 use App\Events\OrderPaid;
+use App\Events\OrderPlaced;
 use App\Events\ProductAddedToCart;
 use App\Events\ProductReviewed;
 use App\Events\ProductStockChanged;
@@ -20,8 +20,7 @@ class NotifyAdmin
 {
     public function __construct(
         private readonly NotificationService $notificationService,
-    ) {
-    }
+    ) {}
 
     public function handle(object $event): void
     {
@@ -69,6 +68,7 @@ class NotifyAdmin
                 type: 'cart',
                 title: 'Added to Cart',
                 message: $event->user->name.' added '.$event->product->name.' to cart',
+                audience: 'admin',
                 actionUrl: route('admin.dashboard'),
                 icon: 'cart',
             ),
@@ -76,6 +76,7 @@ class NotifyAdmin
                 type: 'cart',
                 title: 'Cart Abandoned',
                 message: $event->user->name.' abandoned a cart',
+                audience: 'admin',
                 actionUrl: route('admin.dashboard'),
                 icon: 'cart',
             ),
@@ -83,6 +84,7 @@ class NotifyAdmin
                 type: 'product',
                 title: 'Product Reviewed',
                 message: $event->product->name.' received a new review',
+                audience: 'admin',
                 actionUrl: route('admin.reviews.index'),
                 icon: 'product',
             ),
@@ -90,6 +92,7 @@ class NotifyAdmin
                 type: 'product',
                 title: 'Product Viewed',
                 message: $event->user->name.' viewed '.$event->product->name,
+                audience: 'admin',
                 actionUrl: route('admin.dashboard'),
                 icon: 'product',
             ),
@@ -111,6 +114,7 @@ class NotifyAdmin
             type: $type,
             title: $title,
             message: $message,
+            audience: 'admin',
             actionUrl: $actionUrl,
             icon: 'order',
         ), [
