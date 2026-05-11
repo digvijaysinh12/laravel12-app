@@ -21,6 +21,7 @@ class NotificationPayload
             'icon' => $data['icon'] ?? 'default',
             'action_url' => $data['action_url'] ?? null,
             'action_label' => $data['action_label'] ?? null,
+            'audience' => $data['audience'] ?? null,
             'order_id' => $data['order_id'] ?? null,
             'product_id' => $data['product_id'] ?? null,
             'tracking_number' => $data['tracking_number'] ?? null,
