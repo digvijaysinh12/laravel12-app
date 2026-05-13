@@ -21,10 +21,12 @@ class UpdateProductRequest extends FormRequest
      */
     public function rules(): array
     {
+        
         return [
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'description' => 'nullable|string|max:500',
+            'stock' => 'numeric|max:10000|min:10',
             'category_id' => 'required|exists:categories,id',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ];

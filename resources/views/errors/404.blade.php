@@ -1,4 +1,3 @@
-@extends('user.layouts.app')
 
 @section('title', '404')
 

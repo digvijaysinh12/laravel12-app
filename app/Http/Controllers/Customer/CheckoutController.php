@@ -37,7 +37,7 @@ class CheckoutController extends Controller
     public function store(CheckoutRequest $request, CheckoutService $service)
     {
         try {
-            $invoice = $service->process();
+            $invoice = $service->process($request->validated());
 
             session()->put('last_invoice', $invoice);
 

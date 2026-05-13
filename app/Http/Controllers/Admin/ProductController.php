@@ -98,7 +98,7 @@ class ProductController extends Controller
                 }
                 $data['image'] = $request->file('image')->store('products', 'public');
             }
-
+            
             $this->productService->updateProduct($data, $product);
             Cache::forget('product_'.$product->id);
             Cache::forget('product.'.$product->id);

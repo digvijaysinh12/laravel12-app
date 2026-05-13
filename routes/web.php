@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Support\Facades\Notification;
 use App\Http\Controllers\Customer\ProductController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\NotificationController;
@@ -15,6 +15,21 @@ use Illuminate\Support\Facades\Route;
 
 // Public storefront
 Route::get('/', [HomePageController::class, 'index'])->name('home');
+
+Route::get('/test-error', function () {
+
+Notification::route(
+    'slack',
+    config('services.slack.channels.errors')
+)->notify(
+    new SystemErrorAlert(
+        $e,
+        request()->fullUrl()
+    )
+);
+
+    return 'Slack test sent';
+});
 
 Route::post('/locale', function (Request $request) {
 

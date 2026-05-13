@@ -7,21 +7,39 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\Models\User;
+use App\Models\OrderItem;
 class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'order_number',
-        'total_amount',
-        'status',
-        'tracking_number',
-        'payment_method',
-        'payment_status',
-        'shipping_address',
-        'phone',
-    ];
+protected $fillable = [
+    'user_id',
+
+    'full_name',
+
+    'order_number',
+
+    'total_amount',
+
+    'status',
+
+    'tracking_number',
+
+    'payment_method',
+
+    'payment_status',
+
+    'shipping_address',
+
+    'phone',
+
+    'city',
+
+    'pincode',
+
+    'notes',
+];
 
     protected $casts = [
         'total_amount' => 'decimal:2',

@@ -143,6 +143,10 @@
 
             @forelse ($products as $product)
 
+                @php
+                    $stock = (int) ($product->stock ?? 0);
+                @endphp
+
                 <article class="group overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
 
                     <!-- Product Image -->
@@ -173,18 +177,38 @@
                             {{ \Illuminate\Support\Str::limit($product->description ?: __('products.no_description'), 80) }}
                         </p>
 
-                        <div class="mt-5 flex items-center justify-between">
+                        <div class="mt-5 space-y-4">
 
-                            <span class="text-lg font-semibold text-slate-900">
-                                {{ format_price($product->price) }}
-                            </span>
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="text-lg font-semibold text-slate-900">
+                                    {{ format_price($product->price) }}
+                                </span>
 
-                            <a href="{{ route('user.products.show', $product) }}"
-                               class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+                                <span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold {{ $stock > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+                                    {{ $stock > 0 ? 'In Stock' : 'Out of Stock' }}
+                                </span>
+                            </div>
 
-                                {{ __('products.view') }}
+                            <div class="grid grid-cols-2 gap-2">
+                                <a href="{{ route('user.products.show', $product) }}"
+                                   class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
 
-                            </a>
+                                    {{ __('products.view') }}
+
+                                </a>
+
+                                <form action="{{ route('user.cart.add', $product->id) }}" method="POST">
+                                    @csrf
+                                    <button
+                                        type="submit"
+                                        class="add-to-cart-btn inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                                        data-product-id="{{ $product->id }}"
+                                        @disabled($stock <= 0)
+                                    >
+                                        {{ $stock <= 0 ? 'Out of Stock' : 'Add to Cart' }}
+                                    </button>
+                                </form>
+                            </div>
 
                         </div>
 
@@ -238,6 +262,10 @@
 
                 @foreach ($recentlyViewedProducts as $recentProduct)
 
+                    @php
+                        $recentStock = (int) ($recentProduct->stock ?? 0);
+                    @endphp
+
                     <article class="group overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
 
                         <div class="overflow-hidden rounded-2xl bg-slate-100">
@@ -262,18 +290,38 @@
                                 {{ $recentProduct->name }}
                             </h3>
 
-                            <div class="mt-5 flex items-center justify-between">
+                            <div class="mt-5 space-y-4">
 
-                                <span class="text-lg font-semibold text-slate-900">
-                                    {{ format_price($recentProduct->price) }}
-                                </span>
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="text-lg font-semibold text-slate-900">
+                                        {{ format_price($recentProduct->price) }}
+                                    </span>
 
-                                <a href="{{ route('user.products.show', $recentProduct) }}"
-                                   class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+                                    <span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold {{ $recentStock > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+                                        {{ $recentStock > 0 ? 'In Stock' : 'Out of Stock' }}
+                                    </span>
+                                </div>
 
-                                    {{ __('products.view') }}
+                                <div class="grid grid-cols-2 gap-2">
+                                    <a href="{{ route('user.products.show', $recentProduct) }}"
+                                       class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
 
-                                </a>
+                                        {{ __('products.view') }}
+
+                                    </a>
+
+                                    <form action="{{ route('user.cart.add', $recentProduct->id) }}" method="POST">
+                                        @csrf
+                                        <button
+                                            type="submit"
+                                            class="add-to-cart-btn inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                                            data-product-id="{{ $recentProduct->id }}"
+                                            @disabled($recentStock <= 0)
+                                        >
+                                            {{ $recentStock <= 0 ? 'Out of Stock' : 'Add to Cart' }}
+                                        </button>
+                                    </form>
+                                </div>
 
                             </div>
 

@@ -34,6 +34,14 @@
             <p class="muted">Grand total</p>
             <div class="total">INR {{ number_format($invoice['grand_total'], 2) }}</div>
         </div>
+        <p>{{ $invoice['phone'] }}</p>
+
+<p>{{ $invoice['shipping_address'] }}</p>
+
+<p>
+    {{ $invoice['city'] }}
+    - {{ $invoice['pincode'] }}
+</p>
 
         <div class="card">
             <table>

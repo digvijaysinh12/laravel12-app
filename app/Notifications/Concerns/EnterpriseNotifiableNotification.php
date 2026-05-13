@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Log;
 abstract class EnterpriseNotifiableNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+    
+    public $deleteWhenMissingModels = true;
 
     public int $tries = 3;
 

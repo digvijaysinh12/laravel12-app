@@ -1,3 +1,10 @@
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 @extends('admin.layouts.app')
 
 @section('page-title', 'Edit Product')
@@ -27,7 +34,7 @@
             <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <p class="mb-3 text-sm font-medium text-slate-700">Current image</p>
                 @if ($product->image)
-<img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}">
+    <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image) }}">
                 @else
                     <div class="flex h-44 items-center justify-center rounded-lg border border-dashed border-slate-300 text-sm text-slate-500">No image</div>
                 @endif

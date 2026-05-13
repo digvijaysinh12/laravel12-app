@@ -21,6 +21,7 @@ use App\Listeners\NotifyUser;
 use App\Listeners\SendCartReminder;
 use App\Listeners\SendLowStockAlert;
 use App\Listeners\SendOrderEmail;
+use App\Listeners\SendOrderShippedEmail;
 use App\Listeners\TrackAddToCart;
 use App\Listeners\TrackProductView;
 use App\Listeners\UpdateProductRating;
@@ -39,11 +40,13 @@ class EventServiceProvider extends ServiceProvider
         ],
 
         OrderPaid::class => [
+            
             NotifyAdmin::class,
             LogOrderEvent::class,
         ],
 
         OrderShipped::class => [
+            SendOrderShippedEmail::class,
             NotifyUser::class,
             LogOrderEvent::class,
         ],

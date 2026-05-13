@@ -29,10 +29,19 @@ return [
     ],
 
     'slack' => [
-        'notifications' => [
-            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
-            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
+
+        'bot_token' => env('SLACK_BOT_TOKEN'),
+
+        'channels' => [
+
+            'orders' => env('SLACK_ORDERS_WEBHOOK'),
+
+            'alerts' => env('SLACK_ALERTS_WEBHOOK'),
+
+            'errors' => env('SLACK_ERRORS_WEBHOOK'),
         ],
+
+        'signing_secret' => env('SLACK_SIGNING_SECRET'),
     ],
 
     'fake_store' => [

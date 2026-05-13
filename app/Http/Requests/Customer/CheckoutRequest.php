@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Customer;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CheckoutRequest extends FormRequest
@@ -12,14 +11,46 @@ class CheckoutRequest extends FormRequest
         return $this->user() !== null;
     }
 
-    /**
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            'address' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
+            'name' => ['required', 'string', 'max:100'],
+
+            'phone' => [
+                'required',
+                'digits:10',
+            ],
+
+            'address' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'city' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'pincode' => [
+                'required',
+                'digits:6',
+            ],
+
+            'notes' => [
+                'nullable',
+                'string',
+                'max:500',
+            ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'phone.digits' => 'Phone number must be 10 digits.',
+            'pincode.digits' => 'Pincode must be 6 digits.',
         ];
     }
 }

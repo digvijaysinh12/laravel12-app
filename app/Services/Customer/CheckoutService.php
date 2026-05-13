@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Storage;
 
 class CheckoutService
 {
-    public function process()
+    public function process(array $data)
     {
         try {
 
@@ -67,13 +67,28 @@ class CheckoutService
 
             $order = Order::create([
                 'user_id' => auth()->id(),
+
+                'full_name' => $data['name'],
+
                 'order_number' => $orderNumber,
+
                 'total_amount' => $total,
+
                 'status' => 'pending',
+
                 'payment_method' => 'COD',
+
                 'payment_status' => 'pending',
-                'shipping_address' => 'Default Address',
-                'phone' => '9999999999',
+
+                'shipping_address' => $data['address'],
+
+                'phone' => $data['phone'],
+
+                'city' => $data['city'],
+
+                'pincode' => $data['pincode'],
+
+                'notes' => $data['notes'] ?? null,
             ]);
 
             Log::info('Order created', ['order_id' => $order->id]);
@@ -173,6 +188,15 @@ class CheckoutService
                 ];
             }),
             'grand_total' => $order->total_amount,
+            'shipping_address' => $order->shipping_address,
+
+            'phone' => $order->phone,
+
+            'city' => $order->city,
+
+            'pincode' => $order->pincode,
+
+            'notes' => $order->notes,
         ];
 
         $pdf = Pdf::loadView('user.invoice.pdf', compact('invoice'));

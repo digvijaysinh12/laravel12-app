@@ -5,6 +5,10 @@ namespace App\Listeners;
 use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Support\Facades\Log;
 
+use App\Models\Order;
+use App\Models\Review;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 class LogNotificationFailed
 {
     public function handle(NotificationFailed $event): void

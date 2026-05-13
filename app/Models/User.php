@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Order;
+use App\Models\Review;
+
+use App\Notifications\NewOrderReceived;
+use App\Notifications\ProductLowStock;
+
+use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Notifications\Notification;
 
 class User extends Authenticatable implements HasLocalePreference
 {
@@ -71,20 +76,42 @@ class User extends Authenticatable implements HasLocalePreference
     {
         return $this->preferred_locale ?: config('app.locale');
     }
+    
+public function routeNotificationForSlack($notification = null): ?string
+{
+    // Step 1: Method call થઈ કે નહીં તે confirm કરો
+    Log::info('routeNotificationForSlack called', [
+        'user_id'           => $this->id,
+        'role'              => $this->role,
+        'notification_type' => $notification ? get_class($notification) : 'null',
+    ]);
 
-    public function receivesBroadcastNotificationsOn(): string
-    {
-        return $this->role === 'admin'
-            ? 'admin.notifications'
-            : 'user.'.$this->getKey().'.notifications';
+    // Step 2: Role check fail થાય છે કે નહીં
+    if ($this->role !== 'admin') {
+        Log::warning('routeNotificationForSlack: user is not admin, returning null', [
+            'user_id' => $this->id,
+            'role'    => $this->role,
+        ]);
+        return null;
     }
 
-    public function routeNotificationForWebhook(Notification $notification): ?string
-    {
-        if ($this->role !== 'admin') {
-            return null;
-        }
+    $channel = match (true) {
+        $notification instanceof NewOrderReceived =>
+            config('services.slack.channels.orders'),
 
-        return config('services.notifications.webhook.url');
-    }
+        $notification instanceof ProductLowStock =>
+            config('services.slack.channels.alerts'),
+
+        default =>
+            config('services.slack.channels.default'),
+    };
+
+    // Step 3: Config માંથી actually URL મળ્યો કે null આવ્યો
+    Log::info('routeNotificationForSlack: resolved channel URL', [
+        'channel_url' => $channel ?? 'NULL - config key missing!',
+    ]);
+
+    return $channel;
+}
+
 }

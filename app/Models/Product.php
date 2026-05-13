@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 
+use App\Models\Category;
+use App\Models\OrderItem;
+use App\Models\Review;
 class Product extends Model
 {
     use HasFactory;
@@ -54,4 +57,7 @@ public function getImageSizeAttribute()
 
     return '0 B';
 }
+
+
+
 }

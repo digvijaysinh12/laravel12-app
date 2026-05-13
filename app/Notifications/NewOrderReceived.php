@@ -8,6 +8,9 @@ use App\Notifications\Concerns\EnterpriseNotifiableNotification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Slack\SlackMessage;
+use Illuminate\Notifications\Slack\SlackAttachment;
 
 class NewOrderReceived extends EnterpriseNotifiableNotification
 {
@@ -27,7 +30,7 @@ class NewOrderReceived extends EnterpriseNotifiableNotification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', 'broadcast', WebhookChannel::class];
+        return ['mail', 'database', 'broadcast', 'slack'];
     }
 
     /**
@@ -78,23 +81,49 @@ class NewOrderReceived extends EnterpriseNotifiableNotification
         return new BroadcastMessage($this->toArray($notifiable));
     }
 
-    public function toWebhook(object $notifiable): array
+    public function toSlack($notifiable): SlackMessage
     {
-        return [
-            'event' => 'new_order_received',
-            'notification' => static::class,
-            'order' => [
-                'id' => $this->order->id,
-                'number' => $this->order->order_number,
-                'status' => $this->order->status,
-                'total_amount' => (float) $this->order->total_amount,
-            ],
-            'customer' => [
-                'id' => $this->order->user?->id,
-                'name' => $this->order->user?->name,
-                'email' => $this->order->user?->email,
-            ],
-            'sent_at' => now()->toISOString(),
-        ];
+
+        Log::channel('notification')->info('Slack channel called');
+        $order = $this->order;
+
+        $highValueThreshold = 10000;
+
+        $isHighValue = $order->total_amount >= $highValueThreshold;
+
+        $color = $isHighValue ? 'warning' : 'good';
+
+        $emoji = $isHighValue ? '🔥' : '🛒';
+
+        return (new SlackMessage)
+            ->to('#orders')
+            ->success()
+            ->attachment(function (SlackAttachment $attachment) use (
+                $order,
+                $color,
+                $emoji,
+                $isHighValue
+            ) {
+                $attachment
+                    ->color($color)
+                    ->title(
+                        "{$emoji} New Order #{$order->order_number}"
+                    )
+                    ->content(
+                        "Customer: {$order->user?->name}"
+                    )
+                    ->fields([
+                        'Order ID' => $order->id,
+                        'Customer' => $order->user?->name ?? 'Customer',
+                        'Total Amount' => '₹' . number_format($order->total_amount, 2),
+                        'Item Count' => $order->items->count(),
+                        'Payment Method' => ucfirst($order->payment_method ?? 'N/A'),
+                        'Priority' => $isHighValue ? 'High Value Order' : 'Normal',
+                    ])
+                    ->action(
+                        'View Order',
+                        route('admin.orders.show', $order)
+                    );
+            });
     }
 }

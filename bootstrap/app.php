@@ -9,6 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\SystemErrorAlert;
+
 return Application::configure(basePath: dirname(__DIR__))
 
     ->withRouting(
@@ -35,27 +39,101 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
 
-    ->withExceptions(function (Exceptions $exceptions): void {
+->withExceptions(function (Exceptions $exceptions): void {
 
-        // 🔹 404 - Model Not Found
-        $exceptions->render(function (ModelNotFoundException $e, $request) {
-            return response()->view('errors.404', [], 404);
-        });
+    /*
+    |--------------------------------------------------------------------------
+    | SLACK ERROR ALERTS
+    |--------------------------------------------------------------------------
+    */
 
-        // 🔹 403 - Forbidden
-        $exceptions->render(function (HttpException $e, $request) {
-            if ($e->getStatusCode() === 403) {
-                return response()->view('errors.403', [], 403);
-            }
-        });
+    $exceptions->report(function (Throwable $e) {
 
-        // 🔹 500 - Server Error (ONLY in production)
-        $exceptions->render(function (\Throwable $e, $request) {
-            if (app()->environment('production')) {
-                return response()->view('errors.500', [], 500);
-            }
-        });
+        // Only production
+        if (! app()->environment('production')) {
+            return;
+        }
 
-    })
+        // Ignore console errors
+        if (app()->runningInConsole()) {
+            return;
+        }
+
+        // Ignore 404 errors
+        if ($e instanceof ModelNotFoundException) {
+            return;
+        }
+
+        // Create unique exception signature
+        $signature = md5(
+            get_class($e) .
+            $e->getMessage() .
+            $e->getFile() .
+            $e->getLine()
+        );
+
+        $cacheKey = 'slack_error_' . $signature;
+
+        // Prevent Slack flooding
+        if (! Cache::has($cacheKey)) {
+
+            // Store for 10 minutes
+            Cache::put(
+                $cacheKey,
+                true,
+                now()->addMinutes(10)
+            );
+
+            Notification::route(
+                'slack',
+                config('services.slack.channels.errors')
+            )->notify(
+                new SystemErrorAlert(
+                    $e,
+                    request()->fullUrl()
+                )
+            );
+        }
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | 404 - Model Not Found
+    |--------------------------------------------------------------------------
+    */
+
+    $exceptions->render(function (ModelNotFoundException $e, $request) {
+        return response()->view('errors.404', [], 404);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | 403 - Forbidden
+    |--------------------------------------------------------------------------
+    */
+
+    $exceptions->render(function (HttpException $e, $request) {
+
+        if ($e->getStatusCode() === 403) {
+
+            return response()->view('errors.403', [], 403);
+        }
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | 500 - Server Error
+    |--------------------------------------------------------------------------
+    */
+
+    $exceptions->render(function (Throwable $e, $request) {
+
+        if (app()->environment('production')) {
+
+            return response()->view('errors.500', [], 500);
+        }
+    });
+
+})
 
     ->create();

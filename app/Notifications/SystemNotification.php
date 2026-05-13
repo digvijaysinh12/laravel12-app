@@ -2,56 +2,58 @@
 
 namespace App\Notifications;
 
-use App\Notifications\Concerns\EnterpriseNotifiableNotification;
-use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\DatabaseMessage;
 
-class SystemNotification extends EnterpriseNotifiableNotification
+class SystemNotification extends Notification
 {
-    public function __construct(
-        public string $type,
-        public string $title,
-        public string $message,
-        public string $audience = 'admin',
-        public ?int $userId = null,
-        public bool $isRead = false,
-        public ?string $actionUrl = null,
-        public string $icon = 'default',
-    ) {
-        $this->afterCommit();
-    }
+    use Queueable;
 
+    public function __construct(
+        protected string $type,
+        protected string $title,
+        protected string $message,
+        protected string $audience,
+        protected string $actionUrl,
+        protected string $icon = 'system',
+    ) {}
+
+    /**
+     * Get the notification delivery channels.
+     */
     public function via(object $notifiable): array
     {
-        // FIXED: keep database and broadcast support in one notification.
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
-    public function toArray(object $notifiable): array
-    {
-        return $this->payload();
-    }
-
-    public function toDatabase(object $notifiable): array
-    {
-        return $this->payload();
-    }
-
-    public function toBroadcast(object $notifiable): BroadcastMessage
-    {
-        return new BroadcastMessage($this->payload());
-    }
-
-    private function payload(): array
+    /**
+     * Store notification in database.
+     */
+    public function toDatabase(object $notifiable): DatabaseMessage|array
     {
         return [
             'type' => $this->type,
             'title' => $this->title,
             'message' => $this->message,
-            'icon' => $this->icon,
-            'action_url' => $this->actionUrl,
-            'user_id' => $this->userId,
-            'is_read' => $this->isRead,
             'audience' => $this->audience,
+            'action_url' => $this->actionUrl,
+            'icon' => $this->icon,
+        ];
+    }
+
+    /**
+     * Array representation.
+     */
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'type' => $this->type,
+            'title' => $this->title,
+            'message' => $this->message,
+            'audience' => $this->audience,
+            'action_url' => $this->actionUrl,
+            'icon' => $this->icon,
         ];
     }
 }

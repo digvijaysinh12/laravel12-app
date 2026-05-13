@@ -1,3 +1,4 @@
+
 <?php
 
 use App\Http\Controllers\Auth\PasswordController;
@@ -9,6 +10,8 @@ use App\Http\Controllers\Customer\ProductController;
 use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Customer\ReviewController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/', [HomePageController::class, 'index'])->name('home');
 
 Route::get('/profile', [ProfileController::class, 'edit'])
     ->name('profile.edit');

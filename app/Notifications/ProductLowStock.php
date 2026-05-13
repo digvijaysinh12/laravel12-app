@@ -3,8 +3,13 @@
 namespace App\Notifications;
 
 use App\Models\Product;
-use App\Notifications\Concerns\EnterpriseNotifiableNotification;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Slack\SlackMessage;
+use App\Notifications\Concerns\EnterpriseNotifiableNotification;
+
+use App\Notifications\NewOrderReceived;
+use App\Notifications\ProductLowStock;
 
 class ProductLowStock extends EnterpriseNotifiableNotification
 {
@@ -22,7 +27,7 @@ class ProductLowStock extends EnterpriseNotifiableNotification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['database', 'slack'];
     }
 
     /**
@@ -34,8 +39,8 @@ class ProductLowStock extends EnterpriseNotifiableNotification
             ->subject('Low Stock Alert')
             ->greeting('Hello Admin,')
             ->line('A product is running low on stock.')
-            ->line('Product: '.$this->product->name)
-            ->line('Current Stock: '.$this->product->stock)
+            ->line('Product: ' . $this->product->name)
+            ->line('Current Stock: ' . $this->product->stock)
             ->action(
                 'View Product',
                 route('admin.products.edit', $this->product->id)
@@ -51,7 +56,7 @@ class ProductLowStock extends EnterpriseNotifiableNotification
         return [
             'title' => 'Low Stock Alert',
             'audience' => 'admin',
-            'message' => $this->product->name.' stock is low.',
+            'message' => $this->product->name . ' stock is low.',
             'product_id' => $this->product->id,
             'stock' => $this->product->stock,
             'icon' => 'warning',
@@ -64,4 +69,45 @@ class ProductLowStock extends EnterpriseNotifiableNotification
             ],
         ];
     }
+
+    /**
+     * Slack notification.
+     */
+
+public function toSlack($notifiable): SlackMessage
+{
+    // Step 1: confirm this method is even being called
+    Log::info('ProductLowStock::toSlack called', [
+        'product_id' => $this->product->id,
+        'stock'      => $this->product->stock,
+    ]);
+
+    $critical = $this->product->stock < 5;
+
+    Log::info('ProductLowStock: criticality determined', [
+        'critical' => $critical,
+    ]);
+
+    $message = "• {$this->product->name} ({$this->product->stock} left)";
+
+    $slackMessage = (new SlackMessage)
+        ->to('#alerts')
+        ->warning()
+        ->content('⚠️ Low Stock Alert')
+        ->attachment(function ($attachment) use ($message, $critical) {
+            $content = $critical
+                ? "<!subteam^WAREHOUSE_ID>\n\n{$message}"
+                : $message;
+
+            $attachment
+                ->title('Inventory Warning')
+                ->content($content)
+                ->color($critical ? 'danger' : 'warning');
+        });
+
+    // Step 2: confirm the message object was built without errors
+    Log::info('ProductLowStock: SlackMessage built successfully');
+
+    return $slackMessage;
+}
 }
